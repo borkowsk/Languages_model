@@ -864,8 +864,9 @@ void jworld::simulate_one_step()
 {
 	_update_age();//Pomocnicza
 	if(use_SW_links)
-		_connect_far_links(SW_reconect_percent);//Probuje przy³¹czyc 100 procent dalekich linków
-	
+	{
+		_connect_far_links(SW_reconect_percent);//Probuje przy³¹czyc N% procent dalekich linków
+	}
 	switch(BiasMode){
 	case NO_BIAS:	        _one_step_no_bias();       break;
 	case SIMPLE_BIAS:	    _one_step_simple_bias();    break;
@@ -972,6 +973,33 @@ unsigned jworld::_far_link::get_target_count()
 		return MyWorld->FarLinks.get(a,b).count;
 	else
 		return 0;
+}
+
+//Implementacja zapisu stanu symulacji w formacie NET lub NET2 (z atrybutami)
+void jworld::dump_net_file(const char* core_name,unsigned long Step)
+{
+	unsigned N=(double(MyWidth)*double(MyWidth));
+	wb_pchar Name(512);
+	Name.prn("%s%06d.net",core_name,Step);
+	ofstream Out(Name.get(),ios::out);
+	if(Out)
+	{   unsigned wer,col;
+		Out<<N<<endl;
+		for(wer=0;wer<MyWidth;wer++)//Po wierszach
+		 for(col=0;col<MyWidth;col++)//Po kolumnach we wierszu
+		 {
+			Out<<col<<'\t'<<wer<<'\t'<<Agenci.get(col,wer).Power<<"  "<<col<<'x'<<wer<<endl;
+		 }
+
+		for(wer=0;wer<MyWidth;wer++)//Po wierszach
+		 for(col=0;col<MyWidth;col++)//Po kolumnach we wierszu
+		 {
+			_far_link& lnk=FarLinks.get(col,wer);
+			if(0<=lnk.a && lnk.a<MyWidth && 0<=lnk.b && lnk.b<MyWidth)
+			 Out<<(wer*MyWidth)+col<<'\t'<<(lnk.b*MyWidth)+lnk.a<<'\t'<<1<<endl;
+		 }
+	}
+	Out.close();
 }
 
 jworld* jworld::_far_link::MyWorld;//=NULL;

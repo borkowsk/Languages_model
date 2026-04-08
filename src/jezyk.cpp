@@ -5,11 +5,14 @@
 // metoda wielowarstwowego przekazywania przekonan
 //
 //	JEZYK czyli LANGUAGES
-//			versja  1.99b - przejœcie do modelu Small Words:
+//			versja  2.04 - Ciag³e zrzucanie sieci jako parametr
+//			versja  2.03a - Implementacja zrzutu sieci SW w postaci plików NET
+//			vrsja   2.01-2 - Uruchomienie modelu Small Worlds
+//			versja  1.99b - przejœcie do modelu Small Worlds:
 //							Przygotowanie nowego uk³adu wizualizacji
 //							Przygotowanie ¿róde³ danych i grafu dla dalekich po³¹czeñ
 //							Implemetcja algorytmu dynamicznych dalekich po³¹czeñ "politycznych"
-//							W³¹czenie wplywów z dalekich polaczeñ do implmentacji modeli wp³ywu
+//							W³¹czenie wplywów z dalekich polaczeñ do implementacji modeli wp³ywu
 //							(nie przetestowane dla skomplikowanych biasów)
 //
 //			versja  1.53a - drobne zmiany konieczne do uruchomienia komplacji pod BDS 2006
@@ -49,7 +52,7 @@
 //			version 1.05b - wbudowana obsluga pracy w batch'u i powtarzania eksperymentu
 //			version 1.10b - wprowadzenie "biasu" dla parametrow jezyka
 
-const char* WINDOW_HEADER="LANGUAGES version SW 2.02a, compilation "__DATE__ ", " __TIME__ ;
+const char* WINDOW_HEADER="LANGUAGES version SW 2.04a, compilation "__DATE__ ", " __TIME__ ;
 const char* Authors="(programed by W.Borkowski for ISS UW & Ohio State Univ.)";
 const char* SCREENDUMPNAME="LANGUAGES";
 
@@ -77,15 +80,17 @@ bool UseSpatialCorr=false;		//Uzywanie korelacji przestrzennej (kosztownej w lic
 unsigned spatial_correlation_mode=50;	//Liczba przebiegow losowan w ekonomiczniejszym trybie liczenia korelacji przestrzennej
 
 char  LogName[512]="languagesSW2.log\0-------------------+--";
-char HistName[512]="\0--+---------languagesSW.otx----------";
-char MapLName[512]="\0--+---------languagesSW.gif----------";
-char MapPName[512]="\0--+---------powersSW.gif------------";
-char MaskName[512]="\0--+---------maskSW.gif--------------";
+char NetCName[512]="languagesSW_\0---------------------+--";
+char HistName[512]="\0--+---------languagesSW2.otx----------";
+char MapLName[512]="\0--+---------languagesSW2.gif----------";
+char MapPName[512]="\0--+---------powersSW2.gif------------";
+char MaskName[512]="\0--+---------maskSW2.gif--------------";
 unsigned iWidth=100;
 unsigned iMaxIterations=0xffffffff;
 unsigned iLogRatio=10;
 unsigned iViewRatio=1;
 
+bool ZrzucajNET=false;      //Czy zrzucaæ pliki sieci?
 int  RuchomaSila=0;			//Czy sila ma sie powiekrzac "z wiekiem"
 int  MaksymalnaSila=10000;		//Jaka najwieksza sila
 int  MinimalnaSila=10;      //Jaka najmniejsza sila - jak takie same to ta sama wartosc wszedzie
@@ -119,7 +124,7 @@ cout<<Authors<<endl;			assert((cerr<<"All assertions are active!"<<endl));
 cout<<endl<<flush;
 
 if(!parse_options(argc,argv))
-        exit(1);
+		exit(1);
 
 main_area_menager Lufciki(24,SWIDTH,SHEIGHT,28);
 if(!Lufciki.start(WINDOW_HEADER,argc,argv,1))
@@ -158,23 +163,25 @@ jworld& tenSwiat=*new jworld(iWidth,
 						   );
 
 if(&tenSwiat==NULL)
-    {
-    cerr<<"Can't allocate simulation world!\n"<<endl;
-    exit(1);
-    }
+	{
+	cerr<<"Can't allocate simulation world!\n"<<endl;
+	exit(1);
+	}
 
 //INICJALIZACJA
-RANDOMIZE(); //inicjalizacja globalnego randomizera 
+RANDOMIZE(); //inicjalizacja globalnego randomizera
 tenSwiat.set_max_iteration(iMaxIterations);//Ile najwiecej krokow
 tenSwiat.set_input_ratio(iViewRatio);
 tenSwiat.set_log_ratio(iLogRatio);
 tenSwiat.set_bias_from_str(BIAS_STR);
 cout<<WINDOW_HEADER<<": LOADED."<<endl;
 tenSwiat.set_history_stream(HistName);
+if(ZrzucajNET && NetCName && *NetCName!='\0')
+	tenSwiat.DumpNetName=NetCName;
 if(Replay)
-{	
+{
 	tenSwiat.initialize(&Lufciki,1);//inicjalizacja wizualizacji
-	cout<<WINDOW_HEADER<<": PREPARED FOR READING. WAITING!"<<endl;
+	cout<<WINDOW_HEADER<<": PREPARED FOR READING. WAIT!"<<endl;
 	Lufciki.restore(0);
 	Lufciki.replot(0);
 	Lufciki.process_input();//Pierwsze zdazenia. Koncza sie po ctrl-B
@@ -186,7 +193,7 @@ else
 	cout<<WINDOW_HEADER<<": INITIALISED."<<endl;
 	if(!AUTOSTART)
 	{
-		//Lufciki.process_input();//Pierwsze zdazenia. Koncza sie po ctrl-B	
+		//Lufciki.process_input();//Pierwsze zdazenia. Koncza sie po ctrl-B
 		//GLOWNA PETLA SYMULACJI
 		cout<<WINDOW_HEADER<<": STARTED."<<endl;
 		Lufciki.restore(0);
@@ -211,7 +218,7 @@ else
 				}
 			}
 	}
-	
+
 }
 
 cout<<WINDOW_HEADER<<": CLOSING."<<endl;
@@ -335,6 +342,12 @@ int parse_options(const int argc,const char* argv[])
 	   cerr<<"* SW links will be used. "<<SW_start_perc<<"% at start, and "
 			<<SW_step_perc<<"% at every step"<<endl;
 	   SW_links=true;
+	}
+	else //ZrzucajNET
+	if((pom=strstr(rob,"NETD="))!=NULL) //Nie NULL czyli jest
+	{
+		ZrzucajNET=(toupper(pom[5])=='Y');
+		cerr<<"NETD="<<(ZrzucajNET?"Yes":"No")<<endl;
 	}
 	else
 	if((pom=strstr(rob,"TRSP="))!=NULL) //Nie NULL czyli jest
@@ -588,6 +601,7 @@ HELPPRINT:
         cerr<<"\tMIPO=NN - min strength for initilization ("<<MinimalnaSila<<")\n"	;
 		cerr<<"\tDSTB=N - level and kind of strength distribution ("<<DistributionLevel<<")\n";
 		cerr<<"\nSWST=PP/PP - percent of SW links created at every step, and at the beginingg (0)\n";
+		cerr<<"\nNETD=N/Y - dumping net files paralelly to statistics (N)\n";
 //		cerr<<"\tWPOW=N	- walking step of strenght	("<<RuchomaSila<<")\n";
 		cerr<<"\tTRSP=N - % of treshold of strenght ("<<TresProcent<<")\n";
 		cerr<<"\tPRTR=2..WIDTH^2-1 - number of interaction partners ("<<IleSasiadow<<")\n";

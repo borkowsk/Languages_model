@@ -185,16 +185,19 @@ int		implement_output(ostream& o) const;
 virtual
 int		implement_input(istream& i);
 
+//Implementacja zapisu stanu symulacji w formacie NET lub NET2 (z atrybutami)
+virtual
+void dump_net_file(const char* core_name,unsigned long Step);
 
 //DEFINICJE KLAS POMOCNICZYCH DO BIASU
 //////////////////////////////////////////////
 public:
-	
+
     class _no_bias_information:public _bias_information_base
     {
     public:
         _no_bias_information(short* ini):_bias_information_base(ini){}
-        int read_one_bias_item(istream& i){ return EOF;} //Atrapa wczytywania danych
+		int read_one_bias_item(istream& i){ return EOF;} //Atrapa wczytywania danych
     };
     
     class _simple_bias_information:public _bias_information_base
@@ -203,18 +206,14 @@ public:
         short	UncdBias[3][8];//Tablica bezwarunkowych biasow addytywnych
         
         _simple_bias_information(short* ini):_bias_information_base(ini)
-        {
-            _simple_bias_information::clean();
-        }
-        
-        ~_simple_bias_information()//Czyszczenie lub usuwanie
-        {}
-        
-        void clean() //Czyszczenie zawartosci definicji biasu - tu puste 
-        {
-            memset(UncdBias,0,sizeof(UncdBias));//Kompletne zerowanie
-        }
-        
+		{ _simple_bias_information::clean();}
+
+		~_simple_bias_information()//Czyszczenie lub usuwanie
+		{}
+
+		void clean() //Czyszczenie zawartosci definicji biasu - tu puste
+		{ memset(UncdBias,0,sizeof(UncdBias));}//Kompletne zerowanie
+
         int read_one_bias_item(istream& i);//Wczytanie elementarnej definicji bias'u
     };
     
@@ -224,17 +223,15 @@ public:
         float	Biases[9][9][9];//Tablica bias'ow warunkowych - pozycja 9 oznacza dowolnosc w tej wspolrzednej /*short	CnsrBias[9][9][9];//Tablica warunkowych bias'ow konserwatywnych - analogiczna do poprzedniej */
         
         _conditional_bias_information(short* ini):_bias_information_base(ini)
-        {
-            _conditional_bias_information::clean();
-        }
+		{_conditional_bias_information::clean();}
         
         ~_conditional_bias_information()
         {}
         
         void clean() //Czyszczenie zawartosci definicji biasu - tu puste 
         {
-            for(int a=0;a<sizeof(Biases)/sizeof(Biases[0][0][0]);a++)
-                ((float*)(&Biases))[a]=0.0;//If additive bias
+			for(int a=0;a<sizeof(Biases)/sizeof(Biases[0][0][0]);a++)
+				((float*)(&Biases))[a]=0.0;//If additive bias
         }
         
         int read_one_bias_item(istream& i);//Wczytanie elementarnej definicji bias'u	
@@ -294,7 +291,7 @@ public:
         }
         
         void clean() //Czyszczenie zawartosci definicji biasu - tu puste 
-        {
+		{
             for(int a=0;a<for_use;a++)
                 SeqBiases[a].clean();
         }
@@ -310,6 +307,23 @@ public:
     };
 	
 };
+
+inline
+bool	jworld::_xy_of_far_link_of(	unsigned aa,
+									unsigned bb,
+									unsigned& x,
+									unsigned& y)
+//Jak zwraca false to nie wolno sprawdzaæ dalej
+{
+	 if( ( FarLinks.get(aa,bb).a ) !=  UINT_MAX  )
+	 {             					//assert(FarLinks.get(a,b).b!=UINT_MAX);
+	  x=FarLinks.get(aa,bb).a;
+	  y=FarLinks.get(aa,bb).b;
+	  return true;
+	 }
+	 else return false;
+}
+
 
 inline
 void	jworld::_connect_flink_to(	unsigned a,
@@ -328,18 +342,4 @@ void	jworld::_connect_flink_to(	unsigned a,
   FarLinks.get(target_a,target_b).count++;//Doliczamy do nowego targetu
 }
 
-bool	jworld::_xy_of_far_link_of(	unsigned a,
-									unsigned b,
-									unsigned& x,
-									unsigned& y)
-//Jak zwraca false to nie wolno sprawdzaæ dalej
-{
-	 if((FarLinks.get(a,b).a)!=UINT_MAX)
-	 {             	assert(FarLinks.get(a,b).b!=UINT_MAX);
-	  x=FarLinks.get(a,b).a;
-	  y=FarLinks.get(a,b).b;
-	  return true;
-	 }
-	 else return false;
-}
 
