@@ -18,7 +18,8 @@ class jagent:public agent_base
 	
 	// SKLADOWE DLA SYMULACJI
 	short Power;	//Sila agenta
-    unsigned long  Age;      //Wiek pogladu agenta
+	unsigned long  Age;      //Wiek pogladu agenta
+	unsigned long  Politics; //Przynale¿noœæ polityczna
     
     union{
     struct{
@@ -29,15 +30,8 @@ class jagent:public agent_base
     short FST[3];   //Widziane jako tablica short-ów
     };
 
-	void _clean()
-	{
-		First=-1;
-		Second=-1;
-		Third=-1;
-		Power=-1;
-        Age=0;
-	}
-	
+	void _clean();
+
 	// TO CO MUSI byc zdefiniowane
 	///////////////////////////////////
 public:
@@ -119,17 +113,17 @@ public:
 	ostream& operator << (ostream& o,const jagent& a)
 	{
 		o<<'{';
-		o<<' '<<a.Power<<' '<<a.First<<' '<<a.Second<<' '<<a.Third<<' '<<a.Age<<' ';	
+		o<<' '<<a.Power<<' '<<a.First<<' '<<a.Second<<' '<<a.Third<<' '<<a.Age<<' '<<a.Politics<<' ';
 		o<<'}';
 		return o;
 	}
-	
+
 	friend
 	istream& operator >> (istream& i,jagent& a)
 	{
 		char pom;
 		i>>pom;		//ignoruje {
-		i>>a.Power>>a.First>>a.Second>>a.Third>>a.Age;
+		i>>a.Power>>a.First>>a.Second>>a.Third>>a.Age>>a.Politics;
 		i>>pom;		//ignoruje }
 		return i;
 	}

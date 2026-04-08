@@ -942,8 +942,13 @@ void    jworld::_one_step_conditional_bias()
 			//--------------------------------------------------
 			for(int i=0,width=(BIAS_FOR_ANY+1)*(BIAS_FOR_ANY+1)*(BIAS_FOR_ANY+1);i<width;i++)
 			{
-				((int*)Wplywy)[i]+=long(DRAND()*Noise*(4.5*MaxSila))+
-									((float*)BiasData->Biases)[i];//cast!!! - sztuczka zeby uniknac potrojnie zagniezdzonej petli
+				if(Noise>0)
+				{
+					double Rnd=DRAND();
+					if(Rnd>0)
+					((int*)Wplywy)[i]+=long(Rnd*Noise*(4.5*MaxSila));
+				}
+				((int*)Wplywy)[i]+=((float*)BiasData->Biases)[i];//cast!!! - sztuczka zeby uniknac potrojnie zagniezdzonej petli
 			}
 
 			//Szukanie maksimow - niebanalne (?)

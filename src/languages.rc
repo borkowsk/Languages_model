@@ -1,6 +1,6 @@
 //Microsoft Developer Studio generated resource script.
 //
-#include "resource.h"
+#include "lang_res.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -97,13 +97,25 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 NFORC_NEW MENU DISCARDABLE 
 BEGIN
+    MENUITEM "Start/Stop",                  SSH_STARTSTOP
+    MENUITEM ">>",                          SSH_STARTSTOP
+    MENUITEM "One step",                    SSH_ONESTEP
+    MENUITEM ">",                           SSH_ONESTEP
     POPUP "File"
     BEGIN
         MENUITEM "Dump screen",                 SSH_FILE_DUMPSCREEN
+        MENUITEM "Dump scr. continously" ,      ID_VIEWOPT_DUMPCO
         MENUITEM "Exit",                        SSH_FILE_EXIT
     END
-    MENUITEM "Start/Stop",                  SSH_STARTSTOP
-    MENUITEM "One step",                    SSH_ONESTEP
+    POPUP "View options"
+    BEGIN
+        MENUITEM "Less frequent",               ID_VIEWOPT_LESSOFT
+        MENUITEM "More frequent",               ID_VIEWOPT_MOREOFT
+        MENUITEM "Every step"                   ID_VIEWOPT_EVERY1
+        MENUITEM "Every 10 steps"               ID_VIEWOPT_EVERY10
+        MENUITEM "Every 100 steps"              ID_VIEWOPT_EVERY100
+        MENUITEM "Every 1000 steps"             ID_VIEWOPT_EVERY1000
+    END
     POPUP "Window"
     BEGIN
         MENUITEM "Tile all",                    SSH_WINDOWS_TILE_ALL
@@ -124,7 +136,7 @@ BEGIN
     END
 END
 
-NEED4CLOS MENU DISCARDABLE 
+NEED4CLOS MENU DISCARDABLE
 BEGIN
     POPUP "FILE"
     BEGIN

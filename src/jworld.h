@@ -12,6 +12,7 @@ class jworld:public world	//Caly swiat symulacji
 //--------------------------------------------------
 {
 public:
+
 //Informacje niezbedne do efektywnej implementacji róznych trybów biasu
 ////////////////////////////////////////////////////////////////////////////////
 enum SymulMode {NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,INVALID_BIAS_MODE=4};
@@ -42,10 +43,10 @@ enum SymulMode {NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,I
 		{}
 		friend
 		ostream& operator<<(ostream& s,const _far_link& l)
-		{ s<<l.a<<' '<<l.b<<l.count;}
+		{ s<<l.a<<' '<<l.b<<l.count; return s;}
 		friend
-		ostream& operator>>(istream& s,_far_link& l)
-		{ s>>l.a>>l.b>>l.count;}
+		istream& operator>>(istream& s,_far_link& l)
+		{ s>>l.a>>l.b>>l.count; return s;}
 	};
 
 	friend struct jworld::_far_link;
@@ -108,6 +109,7 @@ ptr_to_struct_matrix_source<jagent,short>		*Seconds;//=Agenci.make_source("Secon
 ptr_to_struct_matrix_source<jagent,short>		*Thirds;//=Agenci.make_source("Third mem",&jagent::Third);
 ptr_to_struct_matrix_source<jagent,short>		*Powers;//=Agenci.make_source("Power",&jagent::Power);
 ptr_to_struct_matrix_source<jagent,unsigned long>  *Age;//=Agenci.make_source("Lang age",&jagent::age);
+ptr_to_struct_matrix_source<jagent,unsigned long>  *Politics;//=Agenci.make_source("Polit. affil.",&jagent::Politics);
 method_by_ptr_matrix_source<jagent,long>		*Classif;//=Agenci.make_source("Classification",&jagent::Classif);
 struct_matrix_source<_far_link,unsigned>		*FarA;//=FarLinks.make_source("f.links A",&_far_link::a)
 struct_matrix_source<_far_link,unsigned>		*FarB;//=FarLinks.make_source("f.links B",&_far_link::b)
@@ -230,7 +232,7 @@ public:
         
         void clean() //Czyszczenie zawartosci definicji biasu - tu puste 
         {
-			for(int a=0;a<sizeof(Biases)/sizeof(Biases[0][0][0]);a++)
+			for(unsigned a=0;a<sizeof(Biases)/sizeof(Biases[0][0][0]);a++)
 				((float*)(&Biases))[a]=0.0;//If additive bias
         }
         
@@ -340,6 +342,10 @@ void	jworld::_connect_flink_to(	unsigned a,
   FarLinks.get(a,b).a=target_a;//Nowe po³¹czenie
   FarLinks.get(a,b).b=target_b;//c.d.
   FarLinks.get(target_a,target_b).count++;//Doliczamy do nowego targetu
+
+  unsigned long politofprot=Agenci.get(target_a,target_b).Politics;
+  Agenci.get(a,b).Politics=politofprot;
+//		   Agenci.get(a,b).Politics=RANDOM(0xffffff);
 }
 
 

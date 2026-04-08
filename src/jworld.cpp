@@ -26,9 +26,21 @@
 #include "SYMSHELL/coincsou.hpp"
 #include "SYMSHELL/gadgets.hpp" 
 
+//Embarcadero g³upieje w setce miejsc ¿e code has no effect mimo ¿e a pewno ma
+#pragma warn -8019
 
 //Konstrukcja agentow
 ///////////////////////////////////
+void jagent::_clean()
+	{
+		First=-1;
+		Second=-1;
+		Third=-1;
+		Power=-1;
+		Age=0;
+		Politics=RANDOM(0xffffff);
+	}
+
 jagent::jagent(const jagent& ini)
 	{
 		if(&ini!=NULL)
@@ -37,7 +49,8 @@ jagent::jagent(const jagent& ini)
 			Second=ini.Second;
 			Third=ini.Third;
 			Power=RANDOM(max_sila+1);
-            Age=0;
+			Age=0;
+			Politics=RANDOM(0xffffff);
 		}
 		else
 			_clean();
@@ -59,10 +72,10 @@ jagent::jagent()
         }
         else
         {
-            double Power=0;
+			double Power=0;
             for(int i=0;i<(-Distribution);i++)
 		        Power+=DRAND();
-            Power/=-Distribution;
+			Power/=-Distribution;
             this->Power=Power*(max_sila+1);
         }
 	}
@@ -82,6 +95,7 @@ short jagent::Distribution=1;//Stopien rozkladu. 0->n rozklady z *, -1->-n rozkl
 extern unsigned internal_log;
 extern unsigned spatial_correlation_mode;
 extern bool UseSpatialCorr;
+
 
 jworld::jworld(size_t Width,		//Szerokosc torusa macierzy agentow
 	  char* log_name,	//Nazwa pliku do zapisywania histori
@@ -125,6 +139,7 @@ jworld::jworld(size_t Width,		//Szerokosc torusa macierzy agentow
 		Thirds(NULL),
 		Powers(NULL),
 		Classif(NULL),
+		Politics(NULL),
 		BiasMode(NO_BIAS),
 		spontanic(ispontanic),
 		use_SW_links(i_use_SW_links),//Czy u¿ywamy dalekich linków
@@ -164,6 +179,7 @@ if(Thirds)
 
 Powers=Agenci.make_source("Power",&jagent::Power);
 Age=Agenci.make_source("Lang. age",&jagent::Age);
+Politics=Agenci.make_source("Polit. affil.",&jagent::Politics);
 
 Classif=Agenci.make_source("Classification",&jagent::Classif);
 if(Classif)
@@ -187,6 +203,7 @@ WhatSourMen.insert(Seconds);
 WhatSourMen.insert(Thirds);
 WhatSourMen.insert(Powers);
 WhatSourMen.insert(Age);
+WhatSourMen.insert(Politics);
 WhatSourMen.insert(Classif);
 WhatSourMen.insert(FarA);
 WhatSourMen.insert(FarB);
@@ -401,7 +418,7 @@ graph* pom1=new sequence_graph(szer/2-1,wyso/4,szer-50,wyso/2-1,
 							   );
 if(!pom1) goto ERROR;
 pom1->setframe(128);
-pom1->settitle("HISTORY OF CLASS");
+pom1->settitle("History of classes");
 Menager.insert(pom1);
 
 pom1=new sequence_graph(szer/2-1,1,szer-50,wyso/4-1,
@@ -414,7 +431,7 @@ pom1=new sequence_graph(szer/2-1,1,szer-50,wyso/4-1,
 							   1/*Wspolne minimum/maximum*/);
 if(!pom1) goto ERROR;
 pom1->setframe(128);
-pom1->settitle("HISTORY OF ENTROPY OF COINCIDENTION");
+pom1->settitle("History of ENTROPY of coincidention");
 Menager.insert(pom1);
 
 graph* pom=new true_color_carpet_graph(1,wyso/2,szer/2-1,wyso-1,//domyslne wspolrzedne,
@@ -426,20 +443,62 @@ graph* pom=new true_color_carpet_graph(1,wyso/2,szer/2-1,wyso-1,//domyslne wspol
 pom->settitle("RGB map of languages");
 Menager.insert(pom);
 
-
-pom=new scatter_graph(szer/2-1,wyso/2,szer-50,wyso-1,//domyœlne wspolrzedne
-						FarA,0,
-						FarB,0,
-						FCount,0,
-						FCount,0);
-pom->settitle("Sources of far influence");
-pom->setbackground(256+100);
+//pom=new fast_carpet_graph<ptr_to_struct_matrix_source<jagent,unsigned long> ,true>(szer/2-1,wyso/2,szer-50,wyso-1,//domyslne wspolrzedne,
+pom=new carpet_graph(szer/2-1,wyso/2,szer-50,wyso-1,//domyslne wspolrzedne,
+			 Politics,0, //Przynale¿noœæ polityczna
+			 true);//Nadrzêdni s¹siedzi jako zrodlo danych o kolorach
+pom->settitle("POLITICAL MAP");
 Menager.insert(pom);
 
 //Boczne menu dodatkowych wizualizacji
 /////////////////////////////////////////////////////////
 unsigned int MLeft=szer-49;      //Lewy bok bocznego menu
 unsigned int MStep=char_height('X')+2;//WYsokoœæ jednego paska bocznego
+
+//Historia dalekich po³¹czeñ Small Worlds
+pom=new sequence_graph(MLeft,5*MStep,szer,6*MStep,	//domyslne wspolrzedne
+								3,Sources.make_series_info(
+										iFarLinksMeans,
+										iFarLinksMaxs,
+								//		iFarLinksDynam,
+											-1
+										).get_ptr_val(),
+								//0// Z reskalowaniem
+							   1);//Wspolne minimum/maximum
+if(!pom) goto ERROR;
+pom->setframe(128);
+pom->settitle("History of far links");
+Menager.insert(pom);
+
+//Historia stresu
+pom=new sequence_graph(MLeft,12*MStep,szer,13*MStep,	//domyslne wspolrzedne
+								3,Sources.make_series_info(
+										iSFirst,
+										iSSecond,
+										iSThird,
+											-1
+										).get_ptr_val(),
+								//0// Z reskalowaniem
+							   1);//Wspolne minimum/maximum
+if(!pom) goto ERROR;
+pom->setframe(128);
+pom->settitle("History of stress");
+Menager.insert(pom);
+
+pom=new sequence_graph(MLeft,13*MStep,szer,14*MStep,
+								3,Sources.make_series_info(
+										iCorrFSR,//iCorrFS,
+										iCorrSTR,//iCorrST,
+										iCorrTFR,//iCorrTF,
+											-1
+										).get_ptr_val(),
+								1
+							   );
+if(!pom) goto ERROR;
+pom->setframe(128);
+pom->settitle("History of correlations");
+Menager.insert(pom);
+
 
 pom=new true_color_manhattan_graph(MLeft,4*MStep,szer,5*MStep,//domyslne wspolrzedne
 						Powers,0,//I zrodlo danych o wysokosciach, niezazadzane
@@ -453,21 +512,6 @@ pom=new true_color_manhattan_graph(MLeft,4*MStep,szer,5*MStep,//domyslne wspolrz
 						);//I zrodlo danych
 pom->setdatacolors(0,255);
 pom->settitle("Strength of agents versus RGB view of languages");
-Menager.insert(pom);
-
-//Historia dalekich po³¹czeñ Small Worlds
-pom=new sequence_graph(MLeft,5*MStep,szer,6*MStep,	//domyslne wspolrzedne
-								3,Sources.make_series_info(
-										iFarLinksMeans,
-										iFarLinksMaxs,
-								//		iFarLinksDynam,
-											-1
-										).get_ptr_val(),
-								//0// Z reskalowaniem 
-							   1);//Wspolne minimum/maximum
-if(!pom) goto ERROR;
-pom->setframe(128);
-pom->settitle("Far links - History");
 Menager.insert(pom);
 
 if(IleKate*IleKate*IleKate<=256)//Dla wiekszej liczby jezyków taka wizualizacja nie ma sensu
@@ -583,35 +627,6 @@ pom->settextcolors(0);
 pom->settitle("Third & First coincidention");
 Menager.insert(pom); 
 
-//Historia stresu
-pom=new sequence_graph(MLeft,12*MStep,szer,13*MStep,	//domyslne wspolrzedne
-								3,Sources.make_series_info(
-										iSFirst,
-										iSSecond,
-										iSThird,
-											-1
-										).get_ptr_val(),
-								//0// Z reskalowaniem 
-							   1);//Wspolne minimum/maximum
-if(!pom) goto ERROR;
-pom->setframe(128);
-pom->settitle("Stress - History");
-Menager.insert(pom);
-
-pom=new sequence_graph(MLeft,13*MStep,szer,14*MStep,
-								3,Sources.make_series_info(
-										iCorrFSR,//iCorrFS,
-										iCorrSTR,//iCorrST,
-										iCorrTFR,//iCorrTF,									
-											-1
-										).get_ptr_val(),
-								1
-							   );
-if(!pom) goto ERROR;
-pom->setframe(128);
-pom->settitle("Correlations - History");
-Menager.insert(pom);
-
 //Mapy poszczegolnych memow
 pom=new carpet_graph(MLeft,15*MStep,szer,16*MStep,
 						Firsts);//I zrodlo danych
@@ -652,21 +667,30 @@ pom->setdatacolors(0,255);
 pom->settitle("Blue map of THIRDs");
 Menager.insert(pom);
 
+pom=new scatter_graph(MLeft,18*MStep,szer,19*MStep,//domyœlne wspolrzedne
+						FarA,0,
+						FarB,0,
+						FCount,0,
+						FCount,0);
+pom->settitle("Sources of far influence");
+pom->setbackground(256+100);
+Menager.insert(pom);
+
 //Optional visualisation of Spatial Correlation, and its logs
 if(UseSpatialCorr)
 {
 	generic_spatial_correlation_source* SpatialCorr1=new generic_spatial_correlation_source(Firsts,-1,spatial_correlation_mode);
 	if(!SpatialCorr1) goto ERROR;
 	int iSpatialCorr1=Sources.insert(SpatialCorr1);
-	
+
 	generic_spatial_correlation_source* SpatialCorr2=new generic_spatial_correlation_source(Seconds,-1,spatial_correlation_mode);
 	if(!SpatialCorr2) goto ERROR;
 	int iSpatialCorr2=Sources.insert(SpatialCorr2);
-	
+
 	generic_spatial_correlation_source* SpatialCorr3=new generic_spatial_correlation_source(Thirds,-1,spatial_correlation_mode);
 	if(!SpatialCorr3) goto ERROR;
 	int iSpatialCorr3=Sources.insert(SpatialCorr3);
-	
+
 	fifo_source<double>* ClusterSize1Log=new fifo_source<double>(SpatialCorr1->ApproximatedClusterSize(),internal_log);//Fifo z rozmiaru klastra
 	if(!ClusterSize1Log) goto ERROR;
 	int iClusterSize1=Sources.insert(ClusterSize1Log);
@@ -674,7 +698,7 @@ if(UseSpatialCorr)
 	fifo_source<double>* ClusterSize2Log=new fifo_source<double>(SpatialCorr2->ApproximatedClusterSize(),internal_log);//Fifo z rozmiaru klastra
 	if(!ClusterSize2Log) goto ERROR;
 	int iClusterSize2=Sources.insert(ClusterSize2Log);
-	
+
 	fifo_source<double>* ClusterSize3Log=new fifo_source<double>(SpatialCorr3->ApproximatedClusterSize(),internal_log);//Fifo z rozmiaru klastra
 	if(!ClusterSize3Log) goto ERROR;
 	int iClusterSize3=Sources.insert(ClusterSize3Log);
@@ -689,13 +713,13 @@ if(UseSpatialCorr)
 		iSpatialCorr3,
 		-1
 		).get_ptr_val(),
-		0);  
+		0);
 	
 	if(!pom1) goto ERROR;
 	pom1->setframe(128);
 	pom1->settitle("SPATIAL CORRELATION");
 	Menager.insert(pom1);
-	
+
 	pom=new sequence_graph(MLeft,14*MStep,szer,15*MStep,//domyslne wspolrzedne
 		3,Sources.make_series_info(
 		iClusterSize1,//iCorrFS,
@@ -707,14 +731,14 @@ if(UseSpatialCorr)
 								);
 	if(!pom) goto ERROR;
 	pom->setframe(128);
-	pom->settitle("Approximated cluster size- History");
+	pom->settitle("History of approximated cluster size");
 	Menager.insert(pom);
 }
 
 //Wstawianie histogramu log-log do pliku logu - tak ¿eby by³ w ostatnich kolumnach)
 {
 	for(int i=0;i<LogLogHistClassStat->get_size();i++)
-		Log.insert(LogLogHistClassStat->Class(i,"Log<%g,%g)(%s)"));
+		Log.insert( LogLogHistClassStat->Class(i,"Log<%g,%g)(%s)")  );
 }
 
 //Tworzenie obszaru sterujacego
@@ -808,7 +832,8 @@ void jworld::initialize_layers()
 	//			USTALANIE STANÓW AGENTÓW
 	//Wczytuje uzywajac konstruktora lub klonowania gdy niema, wiec inicjuje reszte pól.
 	int from1=0,from2=0;
-	char *pos=NULL,*old=NULL;
+	char *pos=NULL;
+	char *old=NULL;
 
 	from1= Agenci.init_from_bitmap(MappName.get_ptr_val(),&jagent::assignPow); //Inicjowanie sily z pliku sil
 	
@@ -817,7 +842,7 @@ void jworld::initialize_layers()
 		from2= Agenci.init_from_bitmap(MaplName.get_ptr_val(),&jagent::assign123); //Inicjowanie przekonan z jednego pliku
 	}
 	else
-	{   
+	{
 		*pos='\0';
 		from2= Agenci.init_from_bitmap(MaplName.get_ptr_val(),&jagent::assign1); //Inicjowanie przekonan 1. z pierwszego pliku
 		
@@ -875,7 +900,7 @@ void jworld::simulate_one_step()
 	case INVALID_BIAS_MODE:
 	default:
 		assert("This code should never be reached.\nPROBABLY INVALID BIAS MODE!"==0);
-		break;}  
+		break;}
 }
 
 //Probuje prze³¹czyc pewien procent dalekich linków
@@ -958,7 +983,20 @@ void    jworld::_connect_far_links(double Percent)
 			}
 		}
 	}
-	
+
+	//Tylko ze wzglêdu na kolorowanie!
+	for(int a=0;a<N;a++)
+	for(int b=0;b<N;b++)
+	if(Agenci.filled(a,b))//Uwaga na puste komórki!
+	{
+	   _far_link pom=FarLinks.get(a,b);
+	   if(pom.a!=UINT_MAX)//Jest jakiœ protektor
+	   {
+		   unsigned long politofprot=Agenci.get(pom.a,pom.b).Politics;
+		   Agenci.get(a,b).Politics=politofprot;
+	   }
+	}
+
 	//Statystyka bezpoœrednia
 	if(N>0)
 		SW_dynamic_perc=Counter/double(N);
@@ -969,7 +1007,8 @@ void    jworld::_connect_far_links(double Percent)
 
 unsigned jworld::_far_link::get_target_count()
 {
-	if(0<=a && a<MyWorld->MyWidth && 0<=b && b<MyWorld->MyWidth)
+	if(/*0<=a &&*/ a<MyWorld->MyWidth
+		&& /*0<=b &&*/ b<MyWorld->MyWidth)
 		return MyWorld->FarLinks.get(a,b).count;
 	else
 		return 0;
@@ -995,7 +1034,8 @@ void jworld::dump_net_file(const char* core_name,unsigned long Step)
 		 for(col=0;col<MyWidth;col++)//Po kolumnach we wierszu
 		 {
 			_far_link& lnk=FarLinks.get(col,wer);
-			if(0<=lnk.a && lnk.a<MyWidth && 0<=lnk.b && lnk.b<MyWidth)
+			if(/*0<=lnk.a &&*/ lnk.a<MyWidth
+			&& /*0<=lnk.b &&*/ lnk.b<MyWidth)
 			 Out<<(wer*MyWidth)+col<<'\t'<<(lnk.b*MyWidth)+lnk.a<<'\t'<<1<<endl;
 		 }
 	}
