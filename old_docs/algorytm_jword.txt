@@ -1,0 +1,19 @@
+W ka¿dym kroku symulacji:
+Dla ka¿dego agenta z losowego zbioru o liczebnoœci równej ca³kowitej liczbie pozycji (mog¹ byæ puste miejsca niedostêpne do zasiedlenia (bariery). Jest to krok monte-carlo. Pewna iloœæ agentów unika wylosowania, a pewna jest w tym zbiorze wiêcej ni¿ raz:
+Sprawdzamy: Jeœli pozycja jest pusta (NULL), pomijamy oczywiœcie. 
+Sprawdzamy: Czy si³a agenta nie jest wiêksza ni¿ treshold si³y, jeœli tak to agent jest odporny na zmiany.
+W przeciwnym wypadku obliczany zmianê dla agenta:
+1.Wybieramy zbiór N s¹siednich pozycji odleg³ych nie dalej ni¿ K komórek od badanego agenta (mog¹ siê powtórzyæ).
+[Tu jest haczyk. Wplyw postawy dziala niezale¿nie, ale losowanie jest wspolne dla kazdej warstwy-mem, czyli w kazdym kroku ten sam najsilniejszy agent mo¿e narzucic swoj¹ postawe we wszystkich trzech mem'ach]
+2.Dla ka¿dego faktycznie istniej¹cego s¹siada:
+Dodajemy jego si³ê do odpowiednich (wyznaczonych przez "postawê jêzykow¹" agenta-s¹siada) "s³upków" trzech niezale¿nych histogramów postaw. 
+//Dodawanie sil sasiadow do licznikow w tablicach; Firsts[PeryfAgent.First]+=PeryfAgent.Power;
+Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
+Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
+3.Jeœli w³¹czone jest branie pod uwagê siebie to t¹ sam¹ operacje powtarzamy dla "Si³y" i "Postaw" centralnego agenta (czyli tego dla którego zmiane liczymy).
+4.Do ka¿dego "s³upka" histogramów dodajemy niezale¿nie szum wg wzoru: V=RAND(0. do 0.99999...)*PoziomSzumu(0 do 1)*MaxSi³a*4.5;
+5.Losujemy offset w histogramach od którego zaczniemy poszukiwanie najwiêkszych wartoœci. To poprawka usuwaj¹ca preferencje wyboru postawy o ni¿szym indeksie w wypadku równoœci wp³ywu.
+6.Dla ka¿dego z trzech histogramów postaw jêzykowych odnajdujemy postawê dominuj¹c¹.
+7.Wpisujemy znalezione dominuj¹ce postawy jako postawy badanego agenta.
+Jeœli w³¹czone jest starzenie to inkrementujemy licznik si³y i dzielimy go modulo MaxSi³a, co powoduje ze po przekroczeniu MaxSi³y si³a siê zeruje i w nastêpnym kroku symulacji agent jest ca³kowicie podatny na zewnêtrzne wp³ywy.
+
