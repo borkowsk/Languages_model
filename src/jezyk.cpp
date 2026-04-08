@@ -1,15 +1,27 @@
-//	JEZYK	version 1.01b - poprawiony default dla tresholdu sily
+//	JEZYK	
+//          version 1.34a - usuniecie asercji zabezpieczajacych przed agentami o zerowej sile i wprowadzenie minimalnej sily (def. = 1)
+//          version 1.33a - rekompilacja do nowej biblioteki i dodanie menu
+//          version 1.32a - rekompilacja z nowa wersja biblioteki wizualizacji i wprowadzenie pliku "about_labguages.cpp" z kontrola czasu dla DEBUG
+//          version 1.31a - wprowadzono inicjalizacje jezykow (pogladow) z trzech plikow graficznych w odcieniach szarosci
+//          version 1.3a - wprowadzony podwojny baias w wersji nastepczej, rownolegly dziala zle - wymaga inteligentnego przewazenia licznikow        
+//          version 1.2a - przygotowanie do wprowadzenia "podwojnego biasu"
+//			version 1.01b - poprawiony default dla tresholdu sily
 //			version 1.05b - wbudowana obsluga pracy w batch'u i powtarzania eksperymentu
+//			version 1.10b - wprowadzenie "biasu" dla parametrow jezyka
 ///////////////////////////////////////////////////////////////////////////////////////
 //THIS PROGRAMM IS DESIGNED FOR CFCS OF ISS UW
 /////////////////////////////////////////////////////////////////////
 // Symulacja rozprzestrzeniania sie zachowan jezykowych
 // metoda wielowarstwowego przekazywania przekonan
 //
-const char* WINDOW_HEADER="LANGUAGES version 1.05b";
+const char* WINDOW_HEADER="LANGUAGES version 1.35b, compilation "__DATE__ ", " __TIME__ ;
+const char* Authors="(programed by W.Borkowski for ISS UW & Ohio State Univ.)";
+const char* SCREENDUMPNAME="LANGUAGES";
 
 #include <stdlib.h>
 #include <iostream.h>
+#include <time.h>
+
 #include "wbminmax.hpp"
 #include "jrand.h"
 #include "jworld.h"
@@ -18,6 +30,7 @@ unsigned SWIDTH=750;
 unsigned SHEIGHT=550;
 
 unsigned internal_log=7000; //Nieobiektowo przekazywane do metody inicializacji zrodel 
+unsigned spatial_correlation_mode=20;  //-------------//------------------//---------------------
 char  LogName[512]="language.log\0-------------------+--";
 char HistName[512]="\0--+---------language.otx----------";
 char MapLName[512]="\0--+---------language.gif----------";
@@ -25,12 +38,13 @@ char MapPName[512]="\0--+---------powers.gif------------";
 char MaskName[512]="\0--+---------mask.gif--------------";
 unsigned iWidth=50;
 unsigned iMaxIterations=0xffffffff;
-unsigned iLogRatio=1;
+unsigned iLogRatio=10;
 unsigned iViewRatio=1;
 
 int  RuchomaSila=0;			//Czy sila ma sie powiekrzac "z wiekiem"
 int  MaksymalnaSila=100;	//Jaka najwieksza sila
-char TresProcent=100;		//Powyzej jakiej sily zmiany "pogladu" sa juz niemozliwe
+int  MinimalnaSila=1;       //Jaka najmniejsza sila
+int  TresProcent=100;		//Powyzej jakiej sily zmiany "pogladu" sa juz niemozliwe
 
 int  IloscKlas=4;
 int  ProcentSzumu=0;
@@ -40,11 +54,120 @@ int  BranieSiebie=1;
 int  iWychodzenie=0;
 int  Replay=0;
 int	 AUTOSTART=0;
+const char* BIAS_STR="";		//Zapis biasu zebrany z lini parametrow
+
+int parse_options(const int argc,const char* argv[]);//Zapowiedz
+
+
+/*  OGOLNA FUNKCJA MAIN */
+/************************/
+
+int main(const int argc,const char* argv[])
+{
+cout<<WINDOW_HEADER<<endl;
+cout<<Authors<<endl;			assert((cerr<<"All assertions are active!"<<endl));
+cout<<endl<<flush;
+
+if(!parse_options(argc,argv))
+        exit(1);
+
+main_area_menager Lufciki(24,SWIDTH,SHEIGHT,28);
+if(!Lufciki.start(WINDOW_HEADER,argc,argv,1))
+	{
+	cerr<<"Can't initialize graphics"<<endl;
+	exit(1);
+	}
+
+//Utworzenie sensownej nazwy pliku(-ów) do zrzutow ekranu
+{
+wb_pchar buf(strlen(SCREENDUMPNAME)+20);
+buf.prn("%s_%ld",SCREENDUMPNAME,time(NULL));
+Lufciki.set_dump_name(buf.get());
+}
+
+//INICJALIZACJA SYMULACJI
+jworld& tenSwiat=*new jworld(iWidth,
+						   LogName,
+						   MapLName,
+						   MapPName,
+						   MaskName,
+						   ProcentSzumu/100.0,//Szum od 0-1
+						   MaksymalnaSila,//Zeby byla w przedziale
+                           MinimalnaSila,
+						   IloscKlas,
+						   RozmiarSasiedztwa,
+						   IleSasiadow,
+						   BranieSiebie,
+						   RuchomaSila,
+						   (MaksymalnaSila*TresProcent)/100.0
+						   );
+
+if(&tenSwiat==NULL)
+    {
+    cerr<<"Can't allocate simulation world!\n"<<endl;
+    exit(1);
+    }
+
+//INICJALIZACJA
+RANDOMIZE(); //inicjalizacja globalnego randomizera 
+tenSwiat.set_max_iteration(iMaxIterations);//Ile najwiecej krokow
+tenSwiat.set_input_ratio(iViewRatio);
+tenSwiat.set_log_ratio(iLogRatio);
+tenSwiat.set_bias_from_str(BIAS_STR);
+cout<<WINDOW_HEADER<<": LOADED."<<endl;
+tenSwiat.set_history_stream(HistName);
+
+if(Replay)
+{	
+	tenSwiat.initialize(&Lufciki,1);//inicjalizacja wizualizacji
+	cout<<WINDOW_HEADER<<": PREPARED FOR READING. WAITING!"<<endl;
+	Lufciki.process_input();//Pierwsze zdazenia. Koncza sie po ctrl-B
+	tenSwiat.read_loop(iWychodzenie);
+}
+else
+{
+	tenSwiat.initialize(&Lufciki);//inicjalizacja wizualizacji i warst symulacji
+	cout<<WINDOW_HEADER<<": INITIALISED."<<endl;
+	if(!AUTOSTART)
+	{
+		Lufciki.process_input();//Pierwsze zdazenia. Koncza sie po ctrl-B	
+		//GLOWNA PETLA SYMULACJI
+		cout<<WINDOW_HEADER<<": STARTED."<<endl;
+		tenSwiat.simulation_loop(iWychodzenie);
+	}
+	else
+	{
+		int statusWin=Lufciki.search("STATUS");
+		Lufciki.maximize(statusWin);
+		for(int symulacja=0;symulacja<AUTOSTART;symulacja++)
+			{
+			//GLOWNA PETLA SYMULACJI
+			cout<<WINDOW_HEADER<<": SYMULATION "<<symulacja<<" STARTED ."<<endl;
+			tenSwiat.simulation_loop(1);
+			cout<<WINDOW_HEADER<<": SYMULATION "<<symulacja<<" DONE ."<<endl;
+			if(symulacja<AUTOSTART-1)
+				{
+				//Reinicjalizacja
+				tenSwiat.restart();
+				}
+			}
+	}
+	
+}
+
+cout<<WINDOW_HEADER<<": CLOSING."<<endl;
+
+cout.flush();
+
+delete &tenSwiat;//Dealokacja swiata wraz ze wszystkimi skladowymi
+cout<<"----------> See you later!!! <--------------\n"<<endl<<flush;
+return 0;
+}
 
 
 int parse_options(const int argc,const char* argv[])
 {
-	char*    pom=NULL;
+   	char*    pom=NULL;
 	
 	for(int i=1;i<argc;i++)
     {
@@ -52,7 +175,7 @@ int parse_options(const int argc,const char* argv[])
 		continue;
 
 	//Make modifable 
-	wb_pchar hand=clone_str(argv[i]);
+	wb_pchar hand(clone_str(argv[i]));
 	char*    rob=hand.get_ptr_val();
 	
 	if(strcmp(rob,"HELP")==0)
@@ -65,13 +188,18 @@ int parse_options(const int argc,const char* argv[])
 	*pom='\0';
 	strupr(rob);
 	*pom='=';
+
 	if((pom=strstr(rob,"NOIP="))!=NULL) //Nie NULL czyli jest
 	{
 	ProcentSzumu=atol(pom+5);
     if(ProcentSzumu<0 || ProcentSzumu>100)
 		{
-		cerr<<"Bad NOIP ="<<ProcentSzumu<<" (must be in <0,100> )"<<endl;
-		return 0;
+			cerr<<"Bad NOIP ="<<ProcentSzumu<<" (must be in <0,100> )"<<endl;
+			return 0;
+		}
+		else
+		{
+			cerr<<"Noise = "<<ProcentSzumu<<"%"<<endl;
 		}
 	}
     else
@@ -80,9 +208,25 @@ int parse_options(const int argc,const char* argv[])
 	IloscKlas=atol(pom+5);
     if(IloscKlas<2)
 		{
-		cerr<<"Bad CLSS ="<<IloscKlas<<" (must be >2 )"<<endl;
+		cerr<<"Bad CLSS ="<<IloscKlas<<" (must be greater than 2 )"<<endl;
 		return 0;
 		}
+	if(IloscKlas>8)
+		{
+		cerr<<"Bad CLSS ="<<IloscKlas<<" (must be less or equal to 8 )"<<endl;
+		return 0;
+		}
+	}
+    else
+	if((pom=strstr(rob,"MIPO="))!=NULL) //Nie NULL czyli jest
+	{
+	MinimalnaSila=atol(pom+5);
+    if(MinimalnaSila<0)//0 czy 1???
+		{
+		cerr<<"Bad MIPO ="<<MinimalnaSila<<" (must be >=1 )"<<endl;
+		return 0;
+		}
+    cerr<<"MIPO (Minimal strenght) = "<<MinimalnaSila<<endl;
 	}
     else
 	if((pom=strstr(rob,"MPOW="))!=NULL) //Nie NULL czyli jest
@@ -93,6 +237,7 @@ int parse_options(const int argc,const char* argv[])
 		cerr<<"Bad MPOW ="<<MaksymalnaSila<<" (must be >=1 )"<<endl;
 		return 0;
 		}
+    cerr<<"MPOW (Max strenght) = "<<MaksymalnaSila<<endl;
 	}
     else
 	if((pom=strstr(rob,"WPOW="))!=NULL) //Nie NULL czyli jest
@@ -198,7 +343,8 @@ int parse_options(const int argc,const char* argv[])
 	if((pom=strstr(rob,"INDI="))!=NULL) //Nie NULL czyli jest
     {
     RozmiarSasiedztwa=atol(pom+5);
-    if(RozmiarSasiedztwa>=1 && RozmiarSasiedztwa<iWidth/2-1)
+    if( RozmiarSasiedztwa>=1U && 
+		RozmiarSasiedztwa<(iWidth/2-1))
 		{
 		cerr<<"INDI="<<RozmiarSasiedztwa<<endl;;
 		}
@@ -233,6 +379,14 @@ int parse_options(const int argc,const char* argv[])
 		iWychodzenie=1;
 		cerr<<"STOP="<<(iWychodzenie?"Yes":"No")<<endl;
 		}
+    }
+	else
+	if((pom=strstr(rob,"BIAS="))!=NULL) //Nie NULL czyli jest
+    {
+    BIAS_STR=rob+5;
+	cerr<<"BIAS = "<<BIAS_STR<<endl;
+	static wb_pchar taker;
+	taker=hand.give();//Zabiera zarzad. Zwolnienie na koncu programu.
     }
 	else
 	if((pom=strstr(rob,"STOP="))!=NULL) //Nie NULL czyli jest
@@ -285,28 +439,47 @@ int parse_options(const int argc,const char* argv[])
 	Replay=1;
 	cerr<<"The symulation will be replayed from \""<<HistName<<"\"\n";
     }
+    else
+    if((pom=strstr(rob,"RSPC="))!=NULL) 
+    {
+    const char* lpom=pom+5;
+    if(toupper(*lpom)=='N')
+        spatial_correlation_mode=0;
+    else
+    if(toupper(*lpom)=='Y')
+        spatial_correlation_mode=16;
+    else
+        spatial_correlation_mode=atoi(lpom);
+    cerr<<"Random calculation of spatial correlation is "<<(spatial_correlation_mode==0?"d i s a b l e d":"e n a b l e d")<<". Multiplication="<<spatial_correlation_mode<<"\n";
+    }
 	else
 	if((pom=strstr(rob,"HELP"))!=NULL) //Nie NULL czyli jest
 	{
 HELPPRINT:
-		cerr<<"PARAMETERS:\n";
+		cerr<<"Unknown parameter \""<<argv[i]<<"\"\n";
+		cerr<<"YOU CAN USE:\n";
 		cerr<<"\tREPL=hist.otx - not symulate but replay symulation history file.\n";
-		cerr<<"\tMAPL=initL.gif (or BMP)- file with initialization map of languages (RANDOM)\n";
+		cerr<<"\tMAPL=initL.gif (or BMP)- file with initialization map of languages or \n";
+        cerr<<"\t    =\"init1.gif;init2.gif;init3.gif\" (or BMP)- 3. separate init file (RANDOM)\n";
 		cerr<<"\tMAPP=initP.gif (or BMP)- file with initialization map of powers (RANDOM)\n";
 		cerr<<"\tMASK=mask.gif	(or BMP)- mask file for alive (not black) agents (ALL ALIVE)\n";
 		cerr<<"\tWIDTH=NN - matrix size ("<<iWidth<<")\n";
+		cerr<<"\tBIAS=item item ... - setting bias by items string (NO BIAS)\n"<<
+			  "\t\tan item string example: \"A1:1 A2:4 B2:2 C2:4 A4&C3:10 A5&B5&C5:12\"\n"; 
 		cerr<<"\tCLSS=NN - number of class. Must be power of 2. ("<<IloscKlas<<")\n";
 		cerr<<"\tMPOW=NN - max strength for initilization ("<<MaksymalnaSila<<")\n"	;
+        cerr<<"\tMIPO=NN - min strength for initilization ("<<MinimalnaSila<<")\n"	;
 		cerr<<"\tWPOW=N	- walking step of strenght	("<<RuchomaSila<<")\n";
 		cerr<<"\tTRSP=N - % of treshold of strenght ("<<TresProcent<<")\n";
 		cerr<<"\tPRTR=2..WIDTH^2-1 - number of interaction partners ("<<IleSasiadow<<")\n";
 		cerr<<"\tINDI=1..WIDTH/2-1 - interaction distance ("<<RozmiarSasiedztwa<<")\n";
 		cerr<<"\tSELF=N/Y -use self for calculations ("<<(BranieSiebie?"Yes":"No")<<")\n";
-		cerr<<"\tNOIP=NN - percent of noise ("<<ProcentSzumu<<")\n\n";
+		cerr<<"\tNOIP=NN - percent of noise ("<<ProcentSzumu<<")\n";		
 		cerr<<"\tMAX=NNNN - max simulation step ("<<iMaxIterations<<")\n";
-		cerr<<"\tILOG=NNNN - lenght of internal statistic logs ("<<internal_log<<")\n";
+		cerr<<"\tILOG=NNNN - lenght of internal statistic logs  ("<<internal_log<<")\n";
 		cerr<<"\tSTOP=N/Y - exit after MAX steps ("<<(iWychodzenie?"Yes":"No")<<")\n";
 		cerr<<"\tVIEV=N - visualisation frequency ("<<iViewRatio<<")\n";
+        cerr<<"\tRSPC=N/Y or 1..WIDTH - Random calculation of spatial correlation ("<<(spatial_correlation_mode?"N":"Y")<<")\n";
 		cerr<<"\tLOGC=N - log file saving frequency ("<<iLogRatio<<")\n";
 		cerr<<"\tLOGF=name.log - file for simulation log ("<<LogName<<")\n";
 		cerr<<"\tHIST=hist.otx - file for full history of symulation.\n";
@@ -326,100 +499,6 @@ HELPPRINT:
 return 1;
 }
 
-
-/*  OGOLNA FUNKCJA MAIN */
-/************************/
-
-int main(const int argc,const char* argv[])
-{
-cout<<WINDOW_HEADER<<", compilation: "<<__DATE__<<' '<<__TIME__<<endl;
-
-if(!parse_options(argc,argv))
-        exit(1);
-
-main_area_menager Lufciki(24,SWIDTH,SHEIGHT,28);
-if(!Lufciki.start(WINDOW_HEADER,argc,argv,1))
-	{
-	cerr<<"Can't initialize graphics"<<endl;
-	exit(1);
-	}
-
-//INICJALIZACJA SYMULACJI
-jworld& tenSwiat=*new jworld(iWidth,
-						   LogName,
-						   MapLName,
-						   MapPName,
-						   MaskName,
-						   ProcentSzumu/100.0,//Szum od 0-1
-						   MaksymalnaSila,//Zeby byla w przedziale
-						   IloscKlas,
-						   RozmiarSasiedztwa,
-						   IleSasiadow,
-						   BranieSiebie,
-						   RuchomaSila,
-						   MaksymalnaSila*TresProcent/100.0
-						   );
-
-if(&tenSwiat==NULL)
-    {
-    cerr<<"Can't allocate simulation world!\n"<<endl;
-    exit(1);
-    }
-
-//INICJALIZACJA
-RANDOMIZE(); //inicjalizacja globalnego randomizera 
-tenSwiat.set_max_iteration(iMaxIterations);//Ile najwiecej krokow
-tenSwiat.set_input_ratio(iViewRatio);
-tenSwiat.set_log_ratio(iLogRatio);
-cout<<WINDOW_HEADER<<": LOADED."<<endl;
-tenSwiat.set_history_stream(HistName);
-
-if(Replay)
-{	
-	tenSwiat.initialize(&Lufciki,1);//inicjalizacja wizualizacji
-	cout<<WINDOW_HEADER<<": PREPARED FOR READING. WAITING!"<<endl;
-	Lufciki.process_input();//Pierwsze zdazenia. Koncza sie po ctrl-B
-	tenSwiat.read_loop(iWychodzenie);
-}
-else
-{
-	tenSwiat.initialize(&Lufciki);//inicjalizacja wizualizacji i warst symulacji
-	cout<<WINDOW_HEADER<<": INITIALISED."<<endl;
-	if(!AUTOSTART)
-	{
-		Lufciki.process_input();//Pierwsze zdazenia. Koncza sie po ctrl-B	
-		//GLOWNA PETLA SYMULACJI
-		cout<<WINDOW_HEADER<<": STARTED."<<endl;
-		tenSwiat.simulation_loop(iWychodzenie);
-	}
-	else
-	{
-		int statusWin=Lufciki.search("STATUS");
-		Lufciki.maximize(statusWin);
-		for(int symulacja=0;symulacja<AUTOSTART;symulacja++)
-			{
-			//GLOWNA PETLA SYMULACJI
-			cout<<WINDOW_HEADER<<": SYMULATION "<<symulacja<<" STARTED ."<<endl;
-			tenSwiat.simulation_loop(1);
-			cout<<WINDOW_HEADER<<": SYMULATION "<<symulacja<<" DONE ."<<endl;
-			if(symulacja<AUTOSTART-1)
-				{
-				//Reinicjalizacja
-				tenSwiat.restart();
-				}
-			}
-	}
-	
-}
-
-cout<<WINDOW_HEADER<<": CLOSING."<<endl;
-
-cout.flush();
-
-delete &tenSwiat;//Dealokacja swiata wraz ze wszystkimi skladowymi
-cout<<"----------> See you later!!! <--------------\n"<<endl<<flush;
-return 0;
-}
 
 
 /* STATIC ALLOCATION */
