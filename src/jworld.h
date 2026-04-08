@@ -8,8 +8,8 @@
 #include "layer.hpp"
 #include "jagent.h" //Definicja agenta
 
-extern bool     Console;	//=false;  //Wskaźnik pracy w trybie konsolowym - bez grafiki
-extern const int BIAS_FOR_ANY;	//=8;	//wartośc oznaczajaca "wszystko jedno" w bias'ach warunkowych - wieksza niz najwieksza wartosc w warstwie
+extern bool			Console;	//=false;	//Wskaźnik pracy w trybie konsolowym - bez grafiki
+extern const int	BIAS_FOR_ANY;	//=8;	//wartośc oznaczajaca "wszystko jedno" w bias'ach warunkowych - wieksza niz najwieksza wartosc w warstwie
 
 class jworld:public world	//Caly swiat symulacji
 //--------------------------------------------------
@@ -17,7 +17,7 @@ class jworld:public world	//Caly swiat symulacji
 public:
 
     //Informacje niezbedne do efektywnej implementacji róznych trybów biasu
-    ////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////
     enum SymulMode {NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,INVALID_BIAS_MODE=4};
 
     class _bias_information_base //Klasy potomne sluza do przechowywania roznych informacji biasowych
@@ -56,7 +56,8 @@ public:
 
 private:
     //Rozne implementacje kroku modelu
-    ////////////////////////////////////////
+    // //////////////////////////////////////
+
     //Pomocnicze metody
     void	_update_age();
     bool	_xy_of_far_link_of(size_t aa, size_t bb, unsigned& x, unsigned& y);	//Jak zwraca false to nie wolno sprawdzać dalej
@@ -70,13 +71,14 @@ private:
     void	_one_step_sequentional_bias();
 
     //Bezpośrednie stastyki symulacji w krokach
-    double SW_dynamic_perc;
-    public:
+    double	SW_dynamic_perc;
+
+public:
     double get_last_SW_dynamic() { return SW_dynamic_perc;}
 
 private:
     //Parametry jednowartosciowe
-    /////////////////////////////////
+    // ///////////////////////////////
 
     size_t				MyWidth;	//Obwod torusa
     short				MaxSila;	//Maksymalna sila agenta
@@ -96,17 +98,18 @@ private:
     wb_pchar			MaskName;	//nazwa pliku inicjujacej bitmapy
 
     //KWESTIA BIASU
-    SymulMode			            BiasMode/*=0*/;		//Czy uzywac bias i jaki (0-Nie 1-zwykly 2-warunkowy
-    wb_ptr<_bias_information_base>  BiasDefinition;     //"Skompilowane" informacje o bias'ie wlasciwe dla trybu
+    SymulMode						BiasMode/*=0*/;		//Czy uzywac bias i jaki (0-Nie 1-zwykly 2-warunkowy
+    wb_ptr<_bias_information_base>	BiasDefinition;		//"Skompilowane" informacje o bias'ie wlasciwe dla trybu
 
     //Warstwy symulacji (sa torusami)
-    /////////////////////////////////
+    // ///////////////////////////////
+
     //rectangle_unilayer<unsigned char> zdatnosc;	//Warstwa definiujaca zdatnosc do zasiedlenia
     rectangle_layer_of_ptr_to_agents<jagent> Agenci;  //Wlaściwa warstwa agentow zasiedlajacych
     rectangle_layer_of_struct<_far_link> FarLinks; //Warstwa dalekich połączeń. Nie w agentach bo może być stała mimo ruchu agentów
 
     //Glowne serie - wygodniej miec wskazniki niz odszukiwac z Sources po nazwach
-    ////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////
     ptr_to_struct_matrix_source<jagent,short>		*Firsts;	//=Agenci.make_source("First mem",&jagent::First);
     ptr_to_struct_matrix_source<jagent,short>		*Seconds;	//=Agenci.make_source("Second mem",&jagent::Second);
     ptr_to_struct_matrix_source<jagent,short>		*Thirds;	//=Agenci.make_source("Third mem",&jagent::Third);
@@ -195,7 +198,7 @@ public:
     void dump_net_file(const char* core_name,unsigned long Step);
 
     //DEFINICJE KLAS POMOCNICZYCH DO BIASU
-    //////////////////////////////////////////////
+    // ////////////////////////////////////////////
     public:
 
         class _no_bias_information:public _bias_information_base
@@ -301,7 +304,7 @@ public:
                     SeqBiases[a].clean();
             }
 
-            int read_one_bias_item(istream& i);//Wczytanie elementarnej definicji bias'u
+            int read_one_bias_item(istream& i);	//Wczytanie elementarnej definicji bias'u
 
             void UseBiasForAgent(       //Implementacja uzycia biasu - tu dosyc skomplikowana, przypomina wykonanie programu
                                     int FirstVal,int SecondVal,int ThirdVal,
@@ -320,7 +323,7 @@ bool	jworld::_xy_of_far_link_of(	size_t aa,
 //Jak zwraca false to nie wolno sprawdzać dalej
 {
      if( ( FarLinks.get(aa,bb).a ) !=  UINT_MAX  )
-     {             					//assert(FarLinks.get(a,b).b!=UINT_MAX);
+     {																			//assert(FarLinks.get(a,b).b!=UINT_MAX);
       x=FarLinks.get(aa,bb).a;
       y=FarLinks.get(aa,bb).b;
       return true;
@@ -336,19 +339,19 @@ void	jworld::_connect_flink_to(	unsigned a,
                                     unsigned target_b)
 //Realizuje zadane połaczenie do (w załozeniu silniejszego) agenta target_a,target_b
 {
-    if((FarLinks.get(a,b).a)!=UINT_MAX) //Trzeba odliczyć od starego targetu
+    if((FarLinks.get(a,b).a)!=UINT_MAX)	//Trzeba odliczyć od starego targetu
     { 		assert(FarLinks.get(a,b).b!=UINT_MAX);
     (FarLinks.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).count)--;
             assert(FarLinks.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).count!=UINT_MAX);
     }
 
-    FarLinks.get(a,b).a=target_a;//Nowe połączenie
-    FarLinks.get(a,b).b=target_b;//c.d.
-    FarLinks.get(target_a,target_b).count++;//Doliczamy do nowego targetu
+    FarLinks.get(a,b).a=target_a;	//Nowe połączenie
+    FarLinks.get(a,b).b=target_b;	//c.d.
+    FarLinks.get(target_a,target_b).count++;	//Doliczamy do nowego targetu
 
     unsigned long politofprot=Agenci.get(target_a,target_b).Politics;
     Agenci.get(a,b).Politics=politofprot;
-    //		   Agenci.get(a,b).Politics=RANDOM(0xffffff);
+    //			Agenci.get(a,b).Politics=RANDOM(0xffffff);
 }
 
 /* **************************************************************** */

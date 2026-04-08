@@ -8,33 +8,33 @@ class jagent:public agent_base
     friend class jworld;	//Na razie tak - zeby uproscic dostep do skladowych.
 
     // STATYCZNE SKLADOWE - PARAMETRY INICJOWANIA AGENTÓW
-    static short ruchsily;	//Czy sila sie zmienia (rosnie) z wiekiem
-    static short max_sila;	//Maksymalna sila agenta
-    static short min_sila;	//i minimalna
-    static short ile_kate;	//Ilosc kategori w mapach
-    static short kate_shift;	//Przesuniecie dla wczytywania gifa
-    static short Distribution;	//Stopien rozkladu. 0->n rozklady z *, -1->-n rozklady z +
-    static double MutationLevel;	//Prawd. spontanicznej zmiany memu
+    static short	ruchsily;	//Czy sila sie zmienia (rosnie) z wiekiem
+    static short	max_sila;	//Maksymalna sila agenta
+    static short	min_sila;	//i minimalna
+    static short	ile_kate;	//Ilosc kategori w mapach
+    static short	kate_shift;	//Przesuniecie dla wczytywania gifa
+    static short	Distribution;	//Stopien rozkladu. 0->n rozklady z *, -1->-n rozklady z +
+    static double	MutationLevel;	//Prawd. spontanicznej zmiany memu
 
 
     // SKLADOWE DLA SYMULACJI
-    short Power;	//Sila agenta
-    unsigned long  Age;      //Wiek pogladu agenta
-    unsigned long  Politics; //Przynależność polityczna
+    short	Power;	//Sila agenta
+    unsigned long	Age;		//Wiek pogladu agenta
+    unsigned long	Politics;	//Przynależność polityczna
     
     union{
         struct{
-            short First;	//Pierwsze przekonanie
-            short Second;	//Drugie przekonanie
-            short Third;	//Trzecie przekonanie
+            short	First;	//Pierwsze przekonanie
+            short	Second;	//Drugie przekonanie
+            short	Third;	//Trzecie przekonanie
         };
-        short FST[3];   //Widziane jako tablica short-ów
+        short	FST[3];	//Widziane jako tablica short-ów
     };
 
     void _clean();
 
     // TO CO MUSI byc zdefiniowane
-    ///////////////////////////////////
+    // /////////////////////////////////
 public:
     int IsOK()
     {

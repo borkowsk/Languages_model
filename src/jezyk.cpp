@@ -1,14 +1,16 @@
 // //////////////////////////////////////////////////////////////////////////////
-//  THIS PROGRAMM IS DESIGNED FOR CFCS OF ISS UW
+//  THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW
 // //////////////////////////////////////////////////////////////////////////////
 #include "compatyb.h"
-const char* WINDOW_HEADER="LANGUAGES version SW 2.20a, compilation " __DATE__ ", " __TIME__ ;
+const char* WINDOW_HEADER="LANGUAGES version SW 2.20b, compilation " __DATE__ ", " __TIME__ ;
 const char* Authors="(programed by W.Borkowski for ISS UW & Ohio State Univ.)";
 const char* SCREENDUMPNAME="LANGUAGES";
 // Symulacja rozprzestrzeniania sie zachowan jezykowych
 // metoda wielowarstwowego przekazywania przekonan
 //
 //	JEZYK czyli LANGUAGES
+//			versja  2.20b - ADAPTACJA DO NOWYCH WARUNKOW KOMPILACJI W clion W ROKU 2026
+//			...[kilkanaście lat odstępu]...
 //			versja  2.20 - Wprowadzenie 16 klas do LogLog histogramu dodanego w wersji 1.401
 //						   Zmiana kolejności serii w pliku log.
 //						   Wprowadzenie  konsolowego/bacgroundowego trybu pracy
@@ -82,47 +84,47 @@ using namespace std;
 #include "jworld.h"
 #include "lang_res.h"
 
-unsigned SWIDTH=1440*0.6666;	//720;	//1440;
-unsigned SHEIGHT=1080*0.6666;/*na typowy rozmiar menu*/;	//540;	//1080;
-bool     Console=false;  //Wskaźnik pracy w trybie konsolowym - bez grafiki
+unsigned	SWIDTH=1440*0.6666;	//720;	//1440;
+unsigned	SHEIGHT=1080*0.6666;	/*na typowy rozmiar menu*/;	//540;	//1080;
+bool		Console=false;			//Wskaźnik pracy w trybie konsolowym - bez grafiki
 
 //Nieobiektowo przekazywane do metody inicializacji zrodel 
-unsigned internal_log=10000;	//Domyslna dlugosc wewnetrznych logów
-bool UseSpatialCorr=false;		//Uzywanie korelacji przestrzennej (kosztownej w liczeniu)
-unsigned spatial_correlation_mode=50;	//Liczba przebiegow losowan w ekonomiczniejszym trybie liczenia korelacji przestrzennej
+unsigned	internal_log=10000;	//Domyslna dlugosc wewnetrznych logów
+bool		UseSpatialCorr=false;		//Uzywanie korelacji przestrzennej (kosztownej w liczeniu)
+unsigned	spatial_correlation_mode=50;	//Liczba przebiegow losowan w ekonomiczniejszym trybie liczenia korelacji przestrzennej
 
-char  LogName[512]="languagesSW2.log\0-------------------+--";
-char NetCName[512]="languagesSW_\0---------------------+--";
-char HistName[512]="\0--+---------languagesSW2.otx----------";
-char MapLName[512]="\0--+---------languagesSW2.gif----------";
-char MapPName[512]="\0--+---------powersSW2.gif------------";
-char MaskName[512]="\0--+---------maskSW2.gif--------------";
+char	 LogName[512]="languagesSW2.log\0-------------------+--";
+char	NetCName[512]="languagesSW_\0---------------------+--";
+char	HistName[512]="\0--+---------languagesSW2.otx----------";
+char	MapLName[512]="\0--+---------languagesSW2.gif----------";
+char	MapPName[512]="\0--+---------powersSW2.gif------------";
+char	MaskName[512]="\0--+---------maskSW2.gif--------------";
 
-unsigned iWidth=100;
-unsigned iMaxIterations=0xffffffff;
-unsigned iLogRatio=10;
-unsigned iViewRatio=1;
+unsigned	iWidth=100;
+unsigned	iMaxIterations=0xffffffff;
+unsigned	iLogRatio=10;
+unsigned	iViewRatio=1;
 
-bool ZrzucajNET=false;      //Czy zrzucać pliki sieci?
-int  RuchomaSila=0;			//Czy sila ma sie powiekrzac "z wiekiem"
-int  MaksymalnaSila=10000;		//Jaka najwieksza sila
-int  MinimalnaSila=10;      //Jaka najmniejsza sila - jak takie same to ta sama wartosc wszedzie
-int  TresProcent=10000;		//Powyzej jakiej sily zmiany "pogladu" sa juz niemozliwe
+bool	ZrzucajNET=false;		//Czy zrzucać pliki sieci?
+int		RuchomaSila=0;			//Czy sila ma sie powiekrzac "z wiekiem"
+int		MaksymalnaSila=10000;	//Jaka najwieksza sila
+int		MinimalnaSila=10;		//Jaka najmniejsza sila - jak takie same to ta sama wartosc wszedzie
+int		TresProcent=10000;		//Powyzej jakiej sily zmiany "pogladu" sa juz niemozliwe
 
-int  IloscKlas=128;
-double ProcentSzumu=0;
-double MutacjeSpon=0;
-int  RozmiarSasiedztwa=1;
-int  IleSasiadow=8;
-int  BranieSiebie=1;
-int  iWychodzenie=0;
-int  Replay=0;
-int	 AUTOSTART=0;
-int  DistributionLevel=6;      //Rodzaj i stopien rozkladu sil
-const char* BIAS_STR="";		//Zapis biasu zebrany z linii parametrow
-double SW_start_perc=0;	//Sterowanie procesem hierarchizacjia świata
-double SW_step_perc=0;	//c.d.
-bool SW_links=false;
+int		IloscKlas=128;
+double	ProcentSzumu=0;
+double	MutacjeSpon=0;
+int		RozmiarSasiedztwa=1;
+int		IleSasiadow=8;
+int		BranieSiebie=1;
+int		iWychodzenie=0;
+int		Replay=0;
+int		AUTOSTART=0;
+int		DistributionLevel=6;	//Rodzaj i stopien rozkladu sil
+const char*	BIAS_STR="";		//Zapis biasu zebrany z linii parametrow
+double	SW_start_perc=0;		//Sterowanie procesem hierarchizacjia świata
+double	SW_step_perc=0;			//c.d.
+bool	SW_links=false;
 /*
 //int parse_options(const int argc,const char* argv[]);	//Zapowiedz!
 OptionalParameterBase* Parameters[]={ //sizeof(Parameters)/sizeof(Parameters[])
@@ -186,7 +188,7 @@ cerr<<"YOU CAN USE:\n";
         cerr<<"\tDSTB=N - level and kind of strength distribution ("<<DistributionLevel<<")\n";
         cerr<<"\nSWST=PP/PP - percent of SW links created at every step, and at the beginingg (0)\n";
         cerr<<"\nNETD=N/Y - dumping net files paralelly to statistics (N)\n";
-//		cerr<<"\tWPOW=N	- walking step of strenght	("<<RuchomaSila<<")\n";
+//      cerr<<"\tWPOW=N	- walking step of strenght	("<<RuchomaSila<<")\n";
         cerr<<"\tTRSP=N - % of treshold of strenght ("<<TresProcent<<")\n";
         cerr<<"\tPRTR=2..WIDTH^2-1 - number of interaction partners ("<<IleSasiadow<<")\n";
         cerr<<"\tINDI=1..WIDTH/2-1 - interaction distance ("<<RozmiarSasiedztwa<<")\n";
