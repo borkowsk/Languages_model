@@ -48,15 +48,15 @@ BEGIN
         BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "Warsaw University\0"
-            VALUE "FileDescription", "languages 1.33\0"
-            VALUE "FileVersion", "1, 33, 0, 1\0"
+            VALUE "FileDescription", "languages 2.20\0"
+            VALUE "FileVersion", "2, 20, 0, 1\0"
             VALUE "InternalName", "languages\0"
-            VALUE "LegalCopyright", "Copyright © 1999, 2003\0"
+            VALUE "LegalCopyright", "Copyright © 1999, 2013\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "languages.exe\0"
             VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Warsaw University languages\0"
-            VALUE "ProductVersion", "1,33, 0, 1\0"
+            VALUE "ProductName", "Warsaw University - Languages\0"
+            VALUE "ProductVersion", "2,20, 0, 1\0"
             VALUE "SpecialBuild", "\0"
         END
     END

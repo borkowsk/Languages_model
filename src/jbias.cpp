@@ -24,6 +24,8 @@
 #include "jrand.h"
 #include "jworld.h"
 
+const int BIAS_FOR_ANY=8;//Zapowiedziny w nag³ówku
+
 void jworld::set_bias_from_str(const char* lst)
 //Ustawianie dodatkowych parametrow symulacji z tekstu - NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,INVALID_BIAS_MODE=4
 {

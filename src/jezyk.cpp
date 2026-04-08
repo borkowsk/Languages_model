@@ -2,14 +2,17 @@
 //  THIS PROGRAMM IS DESIGNED FOR CFCS OF ISS UW
 ////////////////////////////////////////////////////////////////////////////////
 #define NEW_FASHION_CPP (1)
-const char* WINDOW_HEADER="LANGUAGES version SW 2.11a, compilation "__DATE__ ", " __TIME__ ;
+const char* WINDOW_HEADER="LANGUAGES version SW 2.20a, compilation "__DATE__ ", " __TIME__ ;
 const char* Authors="(programed by W.Borkowski for ISS UW & Ohio State Univ.)";
 const char* SCREENDUMPNAME="LANGUAGES";
 // Symulacja rozprzestrzeniania sie zachowan jezykowych
 // metoda wielowarstwowego przekazywania przekonan
 //
 //	JEZYK czyli LANGUAGES
-//			versja  2.11 - pocz¹tki u¿ycia klas OptionalParametrs do obs³ugi parametrów wywo³ania
+//			versja  2.20 - Wprowadzenie 16 klas do LogLog histogramu dodanego w wersji 1.401
+//						   Zmiana kolejnoœci serii w pliku log.
+//						   Wprowadzenie  konsolowego/bacgroundowego trybu pracy
+//			versja  2.11 - pocz¹tki u¿ycia klas OptionalParameters do obs³ugi parametrów wywo³ania
 //			versja  2.10 - implementacja procesu zaci¹gania w³adzy i wyœwietlanie mapy politycznej
 //			versja  2.06 - dzia³aj¹ce sterowanie czêstoœci¹ wyœwietlania i my_area_menager zadeklarowany
 //			versja  2.05 - rozbudowane menu, zw³aszcza nowe opcje wizualizacji, parametr SRND i DUMP
@@ -34,8 +37,8 @@ const char* SCREENDUMPNAME="LANGUAGES";
 //                          na wykresie logarytmicznym
 //          
 //          version 1.402a
-//                        - Wprowadzenie 12 klas do LogLog histogramu dodanego w wersji 1.401  
-//          version 1.401b              
+//                        - Wprowadzenie 12 klas do LogLog histogramu dodanego w wersji 1.401
+//          version 1.401b
 //                        - zmiana histogramu LogLog rozmiaru jezyków na typ fix o 6 klasach
 //                          czyli efekt wizualny bardzo podobny, ale inaczej oznakowane klasy
 //                        - dodanie fix-histogramu klas rozmiaru jezyków 
@@ -86,6 +89,7 @@ using namespace std;
 
 unsigned SWIDTH=1440*0.6666;//720;//1440;
 unsigned SHEIGHT=1080*0.6666;/*na typowy rozmiar menu*/;//540;//1080;
+bool     Console=false;  //WskaŸnik pracy w trybie konsolowym - bez grafiki
 
 //Nieobiektowo przekazywane do metody inicializacji zrodel 
 unsigned internal_log=10000;	//Domyslna dlugosc wewnetrznych logów
@@ -255,11 +259,11 @@ int parse_options(const int argc,const char* argv[])
 			cerr<<"* Noise in decision in %: NOIP= "<<ProcentSzumu<<"%"<<endl;
 		}
 	}
-    else
+	else
 	if((pom=strstr(rob,"CLSS="))!=NULL) //Nie NULL czyli jest
 	{
 	IloscKlas=atol(pom+5);
-    if(IloscKlas<2)
+	if(IloscKlas<2)
 		{
 		cerr<<"!!! Bad CLSS ="<<IloscKlas<<" (must be greater than 2 )"<<endl;
 		return 0;
@@ -269,20 +273,20 @@ int parse_options(const int argc,const char* argv[])
 		cerr<<"!!! Bad CLSS ="<<IloscKlas<<" (must be less or equal to 8 )"<<endl;
 		return 0;
 		}
-    cerr<<"* Number of classes in each mem: CLSS= "<<IloscKlas<<endl;
+	cerr<<"* Number of classes in each mem: CLSS= "<<IloscKlas<<endl;
 	}
-    else
+	else
 	if((pom=strstr(rob,"MIPO="))!=NULL) //Nie NULL czyli jest
 	{
 	MinimalnaSila=atol(pom+5);
-    if(MinimalnaSila<0)//0 czy 1???
+	if(MinimalnaSila<0)//0 czy 1???
 		{
 		cerr<<"!!! Bad MIPO ="<<MinimalnaSila<<" (must be >=1 )"<<endl;
 		return 0;
 		}
-    cerr<<"* Minimal strenght: MIPO= "<<MinimalnaSila<<endl;
+	cerr<<"* Minimal strenght: MIPO= "<<MinimalnaSila<<endl;
 	}
-    else
+	else
 	if((pom=strstr(rob,"MPOW="))!=NULL) //Nie NULL czyli jest
 	{
 	MaksymalnaSila=atol(pom+5);
@@ -291,13 +295,13 @@ int parse_options(const int argc,const char* argv[])
 		cerr<<"!!! Bad MPOW ="<<MaksymalnaSila<<" (must be >=1 )"<<endl;
 		return 0;
 		}
-    cerr<<"* Max strenght: MPOW= "<<MaksymalnaSila<<endl;
+	cerr<<"* Max strenght: MPOW= "<<MaksymalnaSila<<endl;
 	}
-    else
+	else
 	if((pom=strstr(rob,"WPOW="))!=NULL) //Nie NULL czyli jest
 	{
 	RuchomaSila=atol(pom+5);
-    if(RuchomaSila<0)
+	if(RuchomaSila<0)
 		{
 		cerr<<"!!! Bad WPOW ="<<RuchomaSila<<" (must be >=0 )"<<endl;
 		return 0;
@@ -323,7 +327,7 @@ int parse_options(const int argc,const char* argv[])
 	if((pom=strstr(rob,"NETD="))!=NULL) //Nie NULL czyli jest
 	{
 		ZrzucajNET=(toupper(pom[5])=='Y');
-		cerr<<"NETD="<<(ZrzucajNET?"Yes":"No")<<endl;
+		cerr<<"* NETD="<<(ZrzucajNET?"Yes":"No")<<endl;
 	}
 	else
 	if((pom=strstr(rob,"TRSP="))!=NULL) //Nie NULL czyli jest
@@ -476,6 +480,20 @@ int parse_options(const int argc,const char* argv[])
 		cerr<<"** STOP="<<(iWychodzenie?"Yes":"No")<<endl;
 		}
 	}
+	else 	//Console
+	if((pom=strstr(rob,"CONS="))!=NULL) //Nie NULL czyli jest
+	{
+	Console=(atol(pom+5)!=0) || pom[5]=='Y' || pom[5]=='y' || pom[5]=='T' || pom[5]=='t';
+	cerr<<"* CONSole="<<Console<<"!!!"<<endl;
+	if(Console)
+		{
+		cerr<<"No graphics window will appear and you can also use 'nohup' unix command for this program"<<endl;
+		iWychodzenie=1;
+		AUTOSTART=1;
+		cerr<<"** AUTO="<<AUTOSTART<<endl;
+		cerr<<"** STOP="<<(iWychodzenie?"Yes":"No")<<endl;
+		}
+	}
 	else
 	if((pom=strstr(rob,"BIAS="))!=NULL) //Nie NULL czyli jest
 	{
@@ -618,6 +636,7 @@ HELPPRINT:
 		cerr<<"\tHIST=hist.otx - file for full history of simulation.\n";
 		cerr<<"\tWIDTHWIN,HEIGHTWIN=XXX - initial window size.("<<SWIDTH<<'x'<<SHEIGHT<<"\n";
 		cerr<<"\nAUTO=XXX - number of auto-repetition of simulation.("<<AUTOSTART<<")\n";
+		cerr<<"\nCONS=N/Y - switch on/off console mode.("<<Console<<")\n";
 	return 0;
 	}
 	else
@@ -716,19 +735,20 @@ if(My_Rand_seed==0)
 	{SRAND(My_Rand_seed);}
 
 //INICJALIZACJA systemu sub-okienek
-my_area_menager Lufciki(24,SWIDTH,SHEIGHT,28);
+my_area_menager Lufciki(24,SWIDTH,SHEIGHT,28);  //Ewentualnie tylko atrapa, gdy nie chcemy grafiki
 
-if(!Lufciki.start(WINDOW_HEADER,argc,argv,1))
+if( Console || !Lufciki.start(WINDOW_HEADER,argc,argv,1) )
 	{
-	cerr<<"Can't initialize graphics"<<endl;
-	exit(1);
+	cerr<<"Graphic output not initialized"<<endl;
+	if(!Console) exit(1);
 	}
 
 //Utworzenie sensownej nazwy pliku(-ów) do zrzutow ekranu
+if(!Console)
 {
-wb_pchar buf(strlen(SCREENDUMPNAME)+20);
-buf.prn("%s_%ld",SCREENDUMPNAME,time(NULL));
-Lufciki.set_dump_name(buf.get());
+	wb_pchar buf(strlen(SCREENDUMPNAME)+20);
+	buf.prn("%s_%ld",SCREENDUMPNAME,time(NULL));
+	Lufciki.set_dump_name(buf.get());
 }
 
 //INICJALIZACJA MODELU SYMULACYJNEGO
@@ -759,7 +779,8 @@ if(&tenSwiat==NULL)//Jakby siê coœ nie uda³o
 	exit(1);
 	}
 
-Lufciki.ConnectWorld(&tenSwiat); //Menager musi mieæ dostêp do zmiennych steruj¹cych symulacj¹
+if(!Console)
+	Lufciki.ConnectWorld(&tenSwiat); //Menager musi mieæ dostêp do zmiennych steruj¹cych symulacj¹
 
 tenSwiat.set_max_iteration(iMaxIterations);//Ile najwiecej krokow
 tenSwiat.set_input_ratio(iViewRatio);
@@ -767,11 +788,17 @@ tenSwiat.set_log_ratio(iLogRatio);
 tenSwiat.set_bias_from_str(BIAS_STR);
 cout<<WINDOW_HEADER<<": LOADED."<<endl;
 tenSwiat.set_history_stream(HistName);
+
 if(ZrzucajNET && NetCName && *NetCName!='\0')
 	tenSwiat.DumpNetName=NetCName;
 
 if(Replay)
 {
+	if(Console)
+	{
+		cerr<<"You can not replay in console mode!"<<endl;
+		exit(2);
+	}
 	tenSwiat.initialize(&Lufciki,1);//inicjalizacja wizualizacji
 	cout<<WINDOW_HEADER<<": PREPARED FOR READING. WAIT!"<<endl;
 	Lufciki.restore(0);
@@ -782,21 +809,28 @@ if(Replay)
 else
 {
 	tenSwiat.initialize(&Lufciki);//inicjalizacja wizualizacji i warst symulacji
+
 	cout<<WINDOW_HEADER<<": INITIALISED."<<endl;
 	if(!AUTOSTART)
 	{
 		//Lufciki.process_input();//Pierwsze zdazenia. Koncza sie po ctrl-B
 		//GLOWNA PETLA SYMULACJI
 		cout<<WINDOW_HEADER<<": STARTED."<<endl;
+
 		Lufciki.restore(0);
 		Lufciki.replot(0);
+
 		tenSwiat.simulation_loop(iWychodzenie);
 	}
 	else
-	{
-		int statusWin=Lufciki.search("STATUS");
-		Lufciki.maximize(statusWin);
-		set_char('\02');//ctrl-B ?
+	{                                                        assert(AUTOSTART);
+	    if(!Console)
+		{
+			int statusWin=Lufciki.search("STATUS");
+			Lufciki.maximize(statusWin);
+			set_char('\02');//ctrl-B ?
+		}
+
 		for(int symulacja=0;symulacja<AUTOSTART;symulacja++)
 			{
 			//GLOWNA PETLA SYMULACJI
