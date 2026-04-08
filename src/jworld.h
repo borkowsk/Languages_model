@@ -15,7 +15,7 @@ public:
 //Informacje niezbedne do efektywnej implementacji róznych trybów biasu
 ////////////////////////////////////////////////////////////////////////////////
 enum SymulMode {NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,INVALID_BIAS_MODE=4};
-    
+	
     class _bias_information_base //Klasy potomne sluza do przechowywania roznych informacji biasowych
     {
     protected:
@@ -24,25 +24,56 @@ enum SymulMode {NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,I
         short  IleKate() { return *PtrIleKate;} //Zabezpiecza przed przypadkowym zapisaniem
         _bias_information_base(short* ini):PtrIleKate(ini){}//Nie ma nic do roboty
         virtual ~_bias_information_base(){} //Wirtualny destruktor dla zapewnienia wlasciwej dealokacji
-        virtual void clean() {}             //Czyszczenie zawartosci definicji biasu - tu puste
+		virtual void clean() {}             //Czyszczenie zawartosci definicji biasu - tu puste
 		virtual int read_one_bias_item(istream& i)//=0//Wczytanie elementarnej definicji bias'u - tu atrapa
 		{
             assert("Pure virtual _bias_information_base::read_one_bias_item() was called"==0);
             return EOF;
         }	
-    };
+	};
+		
+	struct _far_link
+	{
+	static jworld* MyWorld;//=NULL;
+		unsigned int a,b;
+		unsigned int count;
+		unsigned get_target_count();
+		_far_link():a(UINT_MAX),b(UINT_MAX),count(0)
+		{}
+		friend
+		ostream& operator<<(ostream& s,const _far_link& l)
+		{ s<<l.a<<' '<<l.b<<l.count;}
+		friend
+		ostream& operator>>(istream& s,_far_link& l)
+		{ s>>l.a>>l.b>>l.count;}
+	};
+
+	friend struct jworld::_far_link;
 
 private:
 //Rozne implementacje kroku modelu
 ////////////////////////////////////////
-void    _update_age();//Pomocnicze
+//Pomocnicze metody
+void	_update_age();
+bool	_xy_of_far_link_of(unsigned a,unsigned b,unsigned& x,unsigned& y);//Jak zwraca false to nie wolno sprawdzaæ dalej
+void	_connect_flink_to(unsigned a,unsigned b,unsigned target_a,unsigned target_b);//Realizuje zadane po³aczenie do (w za³ozeniu silniejszego) agenta target_a,target_b
+void	_connect_far_links(double Percent);//Probuje prze³¹czyc pewien procent dalekich linków
+
+//W³aœciwe kroki ró¿nych typów zaleznych od implementacji biasu
 void	_one_step_no_bias();
 void	_one_step_simple_bias();
 void	_one_step_conditional_bias();
 void	_one_step_sequentional_bias();
 
+//Bezpoœrednie stastyki symulacji w krokach
+double SW_dynamic_perc;
+public:
+double get_last_SW_dynamic() { return SW_dynamic_perc;}
+
+
 //Parametry jednowartosciowe
 /////////////////////////////////
+private:
 size_t				MyWidth;	//Obwod torusa
 short				MaxSila;	//Maksymalna sila agenta
 short				MinSila;	//Minimalna sila agenta
@@ -52,11 +83,15 @@ short				IleSasiad;	//8==Gestosc sasiedztwa
 short				OdlSasiad;	//Rozmiar sasiedztwa
 short				UseSelf;	//Czy ma brac siebie pod uwage
 double				Noise;		//Szum informacyjny na stykach
-double              spontanic;  //Spontaniczne mutacje
+double              spontanic;	//Spontaniczne mutacje
+bool 				use_SW_links;//Czy u¿ywamy dalekich linków
+double				SW_startconnect_percent;//Ile procent prób SW przed startem
+double				SW_reconect_percent;//Procent zmian dalekich linków na krok
 wb_pchar			MappName;	//nazwa pliku inicjujacej bitmapy
 wb_pchar			MaplName;	//nazwa pliku inicjujacej bitmapy
 wb_pchar			MaskName;	//nazwa pliku inicjujacej bitmapy
 
+//KWESTIA BIASU
 SymulMode			            BiasMode/*=0*/;		//Czy uzywac bias i jaki (0-Nie 1-zwykly 2-warunkowy
 wb_ptr<_bias_information_base>  BiasDefinition;     //"Skompilowane" informacje o bias'ie wlasciwe dla trybu
 
@@ -64,6 +99,7 @@ wb_ptr<_bias_information_base>  BiasDefinition;     //"Skompilowane" informacje 
 /////////////////////////////////
 //rectangle_unilayer<unsigned char> zdatnosc;//Warstwa definiujaca zdatnosc do zasiedlenia
 rectangle_layer_of_ptr_to_agents<jagent> Agenci;  //Wlaœciwa warstwa agentow zasiedlajacych
+rectangle_layer_of_struct<_far_link> FarLinks; //Warstwa dalekich po³¹czeñ. Nie w agentach bo mo¿e byæ sta³a mimo ruchu agentów
 
 //Glowne serie - wygodniej miec wskazniki niz odszukiwac z Sources po nazwach
 ////////////////////////////////////////////////////////////////////////////////
@@ -73,6 +109,9 @@ ptr_to_struct_matrix_source<jagent,short>		*Thirds;//=Agenci.make_source("Third 
 ptr_to_struct_matrix_source<jagent,short>		*Powers;//=Agenci.make_source("Power",&jagent::Power);
 ptr_to_struct_matrix_source<jagent,unsigned long>  *Age;//=Agenci.make_source("Lang age",&jagent::age);
 method_by_ptr_matrix_source<jagent,long>		*Classif;//=Agenci.make_source("Classification",&jagent::Classif);
+struct_matrix_source<_far_link,unsigned>		*FarA;//=FarLinks.make_source("f.links A",&_far_link::a)
+struct_matrix_source<_far_link,unsigned>		*FarB;//=FarLinks.make_source("f.links B",&_far_link::b)
+method_matrix_source<_far_link,unsigned>		*FCount;//=FarLinks.make_source("far counters",&_far_link::getcount)
 
 public:
 //KONSTRUKCJA DESTRUKCJA
@@ -81,17 +120,20 @@ jworld(size_t Width,	//Szerokosc torusa macierzy agentow
 	  char* mapl_name,	//Nazwa (bit)mapy inicjujacej "skladowe"
 	  char* mapp_name,	//Nazwa (bit)mapy inicjujacej "sily"
 	  char* live_mask,	//Czarne w tej mapie sa kasowane
-      short Distribution,//Rodzaj i stopien rozkladu sil
+	  short Distribution,//Rodzaj i stopien rozkladu sil
 	  double Noise=0,
 	  short	max_sila=255,//Maksymalna sila agenta
-      short min_sila=1,  //Minimalna sila agenta
+	  short min_sila=1,  //Minimalna sila agenta
 	  short	ile_kate=256,//Ilosc kategori w mapach	
 	  short	odl_sasiad=1,//Rozmiar sasiedztwa
 	  short	ile_sasiad=8, //8==Gestosc sasiedztwa		
 	  short need_use_self=0,
 	  short walkpower=0,	//Czy sila rosnie z wiekiem agenta 
 	  short trespower=SHRT_MAX,  //Sila powyzej ktorej agent jest odporny na wplyw
-      double spontanic=0    //Prawdopodobienstwo (?) spontanicznych mutacji
+	  double spontanic=0,    //Prawdopodobienstwo (?) spontanicznych mutacji
+	  bool i_use_SW_links=true,//Czy u¿ywamy dalekich linków
+	  double i_SW_startconnect_percent=0,
+	  double i_SW_reconect_percent=0//Procent zmian dalekich linków na krok
 	  );	
 
 ~jworld(){}
@@ -99,6 +141,8 @@ jworld(size_t Width,	//Szerokosc torusa macierzy agentow
 void	print_experiment_info(ostream& out,const char separ)
 		//...wydruk wartosci parametrow symulacji
 	{
+		char bufor1[100];
+		char bufor2[100];
 		out
 		<<"\nNum of Kl="<<separ<<IleKate
 		<<"\n"<<this->MyWidth<<separ<<"x"<<separ<<MyWidth<<separ<<"="<<separ<<MyWidth*MyWidth
@@ -107,7 +151,11 @@ void	print_experiment_info(ostream& out,const char separ)
 		<<"\nTresh of Power="<<separ<<TrsSila		
 		<<"\nNoise %="<<separ<<Noise*100<<separ<<" Spontanic %="<<separ<<spontanic
 		<<"\nSelf="<<separ<<UseSelf
-		<<"\nNaighborhood="<<separ<<IleSasiad<<"/("<<(1+2*OdlSasiad)<<"*"<<(1+2*OdlSasiad)<<")\n";
+		<<"\nNeighborhood="<<separ<<IleSasiad<<"/("<<(1+2*OdlSasiad)<<"*"<<(1+2*OdlSasiad)<<")"
+		<<"\nSmall World:"<<separ<<(!use_SW_links?"NO":ltoa(SW_reconect_percent,bufor1,10))
+						  <<separ<<(!use_SW_links?"NO":ltoa(SW_startconnect_percent,bufor2,10))
+				<<endl;
+		cout<<"SW: "<<bufor1<<'/'<<bufor2<<endl;
 	}
 
 
@@ -141,7 +189,7 @@ int		implement_input(istream& i);
 //DEFINICJE KLAS POMOCNICZYCH DO BIASU
 //////////////////////////////////////////////
 public:
-    
+	
     class _no_bias_information:public _bias_information_base
     {
     public:
@@ -228,7 +276,7 @@ public:
 
             friend 
                 ostream& operator << (ostream& o,const IfBias& b);
-        };        
+		};        
         
         
         wb_dynarray<IfBias> SeqBiases;  //Rozmiar domyslny ustawiany w konstruktorze
@@ -260,5 +308,38 @@ public:
                                 wb_dynarray<int>& Thirds
                              );
     };
-    
+	
 };
+
+inline
+void	jworld::_connect_flink_to(	unsigned a,
+									unsigned b,
+									unsigned target_a,
+									unsigned target_b)
+//Realizuje zadane po³aczenie do (w za³ozeniu silniejszego) agenta target_a,target_b
+{
+  if((FarLinks.get(a,b).a)!=UINT_MAX) //Trzeba odliczyæ od starego targetu
+  { 		assert(FarLinks.get(a,b).b!=UINT_MAX);
+	(FarLinks.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).count)--;
+			assert(FarLinks.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).count!=UINT_MAX);
+  }
+  FarLinks.get(a,b).a=target_a;//Nowe po³¹czenie
+  FarLinks.get(a,b).b=target_b;//c.d.
+  FarLinks.get(target_a,target_b).count++;//Doliczamy do nowego targetu
+}
+
+bool	jworld::_xy_of_far_link_of(	unsigned a,
+									unsigned b,
+									unsigned& x,
+									unsigned& y)
+//Jak zwraca false to nie wolno sprawdzaæ dalej
+{
+	 if((FarLinks.get(a,b).a)!=UINT_MAX)
+	 {             	assert(FarLinks.get(a,b).b!=UINT_MAX);
+	  x=FarLinks.get(a,b).a;
+	  y=FarLinks.get(a,b).b;
+	  return true;
+	 }
+	 else return false;
+}
+
