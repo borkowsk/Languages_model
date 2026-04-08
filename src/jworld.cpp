@@ -2,32 +2,26 @@
 //#include <assert.h>
 //#include <string.h>
 //#include <math.h>
-#include <string.h>  
-#include <math.h>
-#include "INCLUDE/platform.hpp"
-
-#ifdef NEW_FASHION_CPP
+#include <cstring>
+#include <cmath>
 #include <strstream>
-#elif defined(unix)
-#include <strstream.h>
-#	else
-#include <strstrea.h>
-#endif
 
-#include "INCLUDE/wb_ptrio.h"
+#include "wb_ptrio.h"
+
+#include "clstsour.hpp" //Jest tez statsour
+#include "spatcors.hpp"
+#include "coincsou.hpp"
+#include "gadgets.hpp"
+
+//#include "SYMSHELL/ohistosou.hpp" //Stary histogram z ruchoma liczba klas
+#include "dhistosou.hpp" //Dyskretny histogram ze stala liczba klas
+#include "fhistosou.hpp" //Histogram z ustalona arbitralnie liczba klas
 
 #include "jrand.h"
 #include "jworld.h"
-//#include "SYMSHELL/ohistosou.hpp" //Stary histogram z ruchoma liczba klas
-#include "SYMSHELL/dhistosou.hpp" //Dyskretny histogram ze stala liczba klas
-#include "SYMSHELL/fhistosou.hpp" //Histogram z ustalona arbitralnie liczba klas
-#include "SYMSHELL/clstsour.hpp" //Jest tez statsour
-#include "SYMSHELL/spatcors.hpp"
-#include "SYMSHELL/coincsou.hpp"
-#include "SYMSHELL/gadgets.hpp" 
 
-//Embarcadero g≥upieje w setce miejsc øe code has no effect mimo øe a pewno ma
-#pragma warn -8019
+//Embarcadero g≈Çupieje w setce miejsc ≈ºe code has no effect mimo ≈ºe a pewno ma
+//#pragma warn -8019
 
 //Konstrukcja agentow
 ///////////////////////////////////
@@ -113,9 +107,9 @@ jworld::jworld(size_t Width,		//Szerokosc torusa macierzy agentow
 	  short walkpower,
 	  short trespower,
 	  double ispontanic,	//Ogolny szum informacyjny
-	  bool i_use_SW_links,//Czy uøywamy dalekich linkÛw
+	  bool i_use_SW_links,//Czy u≈ºywamy dalekich link√≥w
 	  double i_SW_startconnect_percent,
-	  double i_SW_reconect_percent//Procent zmian dalekich linkÛw na krok
+	  double i_SW_reconect_percent//Procent zmian dalekich link√≥w na krok
 		):	
 		world(log_name,50),		
 		MaplName(clone_str(mapl_name)),//Nazwa (bit)mapy 1. inicjujacej agentow					
@@ -142,18 +136,18 @@ jworld::jworld(size_t Width,		//Szerokosc torusa macierzy agentow
 		Politics(NULL),
 		BiasMode(NO_BIAS),
 		spontanic(ispontanic),
-		use_SW_links(i_use_SW_links),//Czy uøywamy dalekich linkÛw
-		SW_startconnect_percent(i_SW_startconnect_percent), //Startowy procent dalekich linkÛw
-		SW_reconect_percent(i_SW_reconect_percent)//Procent zmian dalekich linkÛw na krok
+		use_SW_links(i_use_SW_links),//Czy u≈ºywamy dalekich link√≥w
+		SW_startconnect_percent(i_SW_startconnect_percent), //Startowy procent dalekich link√≥w
+		SW_reconect_percent(i_SW_reconect_percent)//Procent zmian dalekich link√≥w na krok
 {//!!!Niewiele mozna zrobic bo nie mozna tu jeszcze polegac na wirtualnych metodach klasy swiat
 			jagent::ruchsily=walkpower;
 			jagent::Distribution=Distribution;
 			set_simulation_name("Languages_v2 SW");
 			set_bias_from_str("");
 			jagent::MutationLevel=spontanic;
-			_far_link::MyWorld=this;//Pod≥πczenie do celu odczytywania counterÛw przez tablice
-				assert(Agenci.get_rect_geometry()->is_torus());//ZAWSZE TORUS. ZA£OØONE W ALGORYTMIE DALEKICH LINK”W itd
-			//Inicjowanie bezpoúrednich statystyk
+			_far_link::MyWorld=this;//Pod≈ÇƒÖczenie do celu odczytywania counter√≥w przez tablice
+				assert(Agenci.get_rect_geometry()->is_torus());//ZAWSZE TORUS. ZA≈ÅO≈ªONE W ALGORYTMIE DALEKICH LINK√ìW itd
+			//Inicjowanie bezpo≈õrednich statystyk
 			SW_dynamic_perc=0;
 		}
 
@@ -216,19 +210,19 @@ Sources.insert(FCount);
 #define ON_ERROR_MAKE {cerr<<"Error occurred during 'make_default_visualisation'"<<endl; return; }
 
 void jworld::make_default_visualisation()
-//Tworzy z≥oøone serie (ürÛd≥a) danych i definiuje log a potem
-//O ILE JEST DOST PNY Manager obszarÛw/lufcikÛw
+//Tworzy z≈Ço≈ºone serie (≈∫r√≥d≈Ça) danych i definiuje log a potem
+//O ILE JEST DOSTƒòPNY Manager obszar√≥w/lufcik√≥w
 //umieszcza w nim domyslne wizualizacje - grafy
 {
-	//Metoda klasy bazowej - moøe nic nie robiÊ, ale na wszelki wypadek
-	world::make_default_visualisation(); //Obszar domyúlne - np obszar STATUSU
-	bool WithGr=this->HasAreaMenager(); //Czy bÍdzie tworzone wyjúcie graficzne?
+	//Metoda klasy bazowej - mo≈ºe nic nie robiƒá, ale na wszelki wypadek
+	world::make_default_visualisation(); //Obszar domy≈õlne - np obszar STATUSU
+	bool WithGr=this->HasAreaMenager(); //Czy bƒôdzie tworzone wyj≈õcie graficzne?
 
-//Indeksy serii potrzebne dalej dla grafÛw
+//Indeksy serii potrzebne dalej dla graf√≥w
 //////////////////////////////////////////////
-//Indeksy g≥Ûwnych serii
+//Indeksy g≈Ç√≥wnych serii
 int iFirst=0,iSecond=0,iThird=0,iPower=0,iClassif=0;
-//RÛøne inne serie
+//R√≥≈ºne inne serie
 int iFarLinksMeans=-1,iFarLinksMaxs=-1,iEntropyFS=-1,iCorrFSR=-1,
 	iEntropyST=-1,iCorrSTR=-1,iEntropyTF=-1,iCorrTFR=-1,
 	iSFirst=-1,iSSecond=-1,iSThird=-1,
@@ -263,24 +257,24 @@ if(!ThirdStat) ON_ERROR_MAKE
 	else	Sources.insert(ThirdStat);
 
 //UWAGA:
-//Jesli IleKate > 16 to sie robiπ bardzo duze tablice spowalniajace program!!!
+//Jesli IleKate > 16 to sie robiƒÖ bardzo duze tablice spowalniajace program!!!
 generic_discrete_histogram_source*  ClassStat=new generic_discrete_histogram_source(0,IleKate*IleKate*IleKate,Classif,"DistrOf(%s[%d..%d])");//histogram z klasyfikacji jezykow
 if(!ClassStat) ON_ERROR_MAKE
 	else	Sources.insert(ClassStat);
 
-generic_fix_histogram_source* HistClass=new generic_fix_histogram_source(100,1,MyWidth*MyWidth,ClassStat,"Distr_%dcl(%s[%g..%g])",true);//histogram jezykÛw
+generic_fix_histogram_source* HistClass=new generic_fix_histogram_source(100,1,MyWidth*MyWidth,ClassStat,"Distr_%dcl(%s[%g..%g])",true);//histogram jezyk√≥w
 if(!HistClass) ON_ERROR_MAKE
 	else	Sources.insert(HistClass);
     
-generic_log_F_filter*  LogHistClass=new generic_log_F_filter(ClassStat);//Zlogarytmowany histogram jezykÛw
+generic_log_F_filter*  LogHistClass=new generic_log_F_filter(ClassStat);//Zlogarytmowany histogram jezyk√≥w
 if(!LogHistClass)ON_ERROR_MAKE
 	else	Sources.insert(LogHistClass);
 
-generic_fix_histogram_source*  LogLogHistClassStat=new generic_fix_histogram_source(16,0,8,LogHistClass,"LogDistr_%dcl(%s[%g..%g])");//Histogram zlogarytmowanych jezykÛw
+generic_fix_histogram_source*  LogLogHistClassStat=new generic_fix_histogram_source(16,0,8,LogHistClass,"LogDistr_%dcl(%s[%g..%g])");//Histogram zlogarytmowanych jezyk√≥w
 if(!LogLogHistClassStat) ON_ERROR_MAKE
 	else	Sources.insert(LogLogHistClassStat);
 
-//Statystyki do badania dalekich linkÛw
+//Statystyki do badania dalekich link√≥w
 generic_basic_statistics_source* FarLinksStat=new generic_basic_statistics_source(this->FCount);
 if(!FarLinksStat) ON_ERROR_MAKE
 	else	Sources.insert(FarLinksStat);
@@ -409,7 +403,7 @@ Log.insert(CorrTF->Tau_a_Goodman_Kruskal());
 Log.insert(FarLinksStat->Mean());
 Log.insert(FarLinksStat->Max());
 
-//Wstawianie histogramu log-log do pliku logu - tak øeby by≥ w ostatnich kolumnach)
+//Wstawianie histogramu log-log do pliku logu - tak ≈ºeby by≈Ç w ostatnich kolumnach)
 for(int i=0;i<LogLogHistClassStat->get_size();i++)
 		Log.insert( LogLogHistClassStat->Class(i,"Log<%g,%g)(%s)")  );
 
@@ -449,7 +443,7 @@ if(UseSpatialCorr)
 //PODSTAWOWA WIZUALIZACJA SERII DANYCH
 if(WithGr)
 {
-	area_menager&	Menager=MyAreaMenager(); //SkrÛt do Menagera obszarÛw
+	area_menager&	Menager=MyAreaMenager(); //Skr√≥t do Menagera obszar√≥w
 
 	//WYMIARY DOMYSLNEGO OKNA
 	unsigned szer=Menager.getwidth();
@@ -489,7 +483,7 @@ if(WithGr)
 	Menager.insert(pom1);
 
 	graph* pom=new true_color_carpet_graph(1,wyso/2,szer/2-1,wyso-1,//domyslne wspolrzedne,
-	//Kombinowana mapa memÛw - w tym samym miejscu co klasyfikacja wiec albo/albo
+	//Kombinowana mapa mem√≥w - w tym samym miejscu co klasyfikacja wiec albo/albo
 				 Firsts,0,
 				 Seconds,0,
 				 Thirds,0
@@ -499,17 +493,17 @@ if(WithGr)
 
 	//pom=new fast_carpet_graph<ptr_to_struct_matrix_source<jagent,unsigned long> ,true>(szer/2-1,wyso/2,szer-50,wyso-1,//domyslne wspolrzedne,
 	pom=new carpet_graph(szer/2-1,wyso/2,szer-50,wyso-1,//domyslne wspolrzedne,
-				 Politics,0, //PrzynaleønoúÊ polityczna
-				 true);//NadrzÍdni sπsiedzi jako zrodlo danych o kolorach
+				 Politics,0, //Przynale≈ºno≈õƒá polityczna
+				 true);//Nadrzƒôdni sƒÖsiedzi jako zrodlo danych o kolorach
 	pom->settitle("POLITICAL MAP");
 	Menager.insert(pom);
 
 	//Boczne menu dodatkowych wizualizacji
 	/////////////////////////////////////////////////////////
 	unsigned int MLeft=szer-49;      //Lewy bok bocznego menu
-	unsigned int MStep=char_height('X')+2;//WYsokoúÊ jednego paska bocznego
+	unsigned int MStep=char_height('X')+2;//WYsoko≈õƒá jednego paska bocznego
 
-	//Historia dalekich po≥πczeÒ Small Worlds
+	//Historia dalekich po≈ÇƒÖcze≈Ñ Small Worlds
 	pom=new sequence_graph(MLeft,5*MStep,szer,6*MStep,	//domyslne wspolrzedne
 									3,Sources.make_series_info(
 											iFarLinksMeans,
@@ -568,7 +562,7 @@ if(WithGr)
 	pom->settitle("Strength of agents versus RGB view of languages");
 	Menager.insert(pom);
 
-	if(IleKate*IleKate*IleKate<=256)//Dla wiekszej liczby jezykÛw taka wizualizacja nie ma sensu
+	if(IleKate*IleKate*IleKate<=256)//Dla wiekszej liczby jezyk√≥w taka wizualizacja nie ma sensu
 	{
 	pom=new manhattan_graph(MLeft,5*MStep,szer,6*MStep,//domyslne wspolrzedne
 							Powers,0,//I zrodlo danych o wysokosciach, niezazadzane
@@ -594,7 +588,7 @@ if(WithGr)
 	pom->settitle("Age of agent's language");
 	Menager.insert(pom);
 
-	if(IleKate*IleKate*IleKate<=256)//Dla wiekszej liczby jezykÛw taka wizualizacja nie ma sensu
+	if(IleKate*IleKate*IleKate<=256)//Dla wiekszej liczby jezyk√≥w taka wizualizacja nie ma sensu
 	{
 		pom=new carpet_graph(MLeft,6*MStep,szer,7*MStep,//domyslne wspolrzedne
 			Classif);//I zrodlo danych
@@ -614,7 +608,7 @@ if(WithGr)
 		Menager.minimize(ipom);
 	}
 
-	//LogLog histogram jezykÛw - ile jest jezykÛw w poszczegolnych klasach wielkosci (10,100,1000,10000 uzytkownikow)
+	//LogLog histogram jezyk√≥w - ile jest jezyk√≥w w poszczegolnych klasach wielkosci (10,100,1000,10000 uzytkownikow)
 	pom=new bars_graph(MLeft,7*MStep,szer,8*MStep,
 							LogLogHistClassStat);
 	if(!pom) ON_ERROR_MAKE
@@ -721,7 +715,7 @@ if(WithGr)
 	pom->settitle("Blue map of THIRDs");
 	Menager.insert(pom);
 
-	pom=new scatter_graph(MLeft,18*MStep,szer,19*MStep,//domyúlne wspolrzedne
+	pom=new scatter_graph(MLeft,18*MStep,szer,19*MStep,//domy≈õlne wspolrzedne
 							FarA,0,
 							FarB,0,
 							FCount,0,
@@ -778,7 +772,7 @@ if(WithGr)
 	}
 }
 
-//JUØ GOTOWE - MOØNA EWENTUALNIE ODRYSOWA∆
+//JU≈ª GOTOWE - MO≈ªNA EWENTUALNIE ODRYSOWAƒÜ
 Sources.new_data_version(1,1);//Oznajmia seriom ze dane sie uaktualnily	(po inicjacji)
 if(WithGr)
 	this->MyAreaMenager().maximize(0);
@@ -853,8 +847,8 @@ void jworld::initialize_layers()
 	  
 	print_experiment_info(Log.GetStream(),Log.separator());//...wydruk wartosci parametrow symulacji
 
-	//			USTALANIE STAN”W AGENT”W
-	//Wczytuje uzywajac konstruktora lub klonowania gdy niema, wiec inicjuje reszte pÛl.
+	//			USTALANIE STAN√ìW AGENT√ìW
+	//Wczytuje uzywajac konstruktora lub klonowania gdy niema, wiec inicjuje reszte p√≥l.
 	int from1=0,from2=0;
 	char *pos=NULL;
 	char *old=NULL;
@@ -901,9 +895,9 @@ void jworld::initialize_layers()
 		Agenci.deallocate_not_OK();
 		
 	if(use_SW_links)
-		_connect_far_links(SW_startconnect_percent);//Probuje przy≥πczyc jakiú procent dalekich linkÛw przed startem
+		_connect_far_links(SW_startconnect_percent);//Probuje przy≈ÇƒÖczyc jaki≈õ procent dalekich link√≥w przed startem
 		
-	first=0;//Koniec pierwszego wywolania //TYMCZASOWO!!! ???? HAHA!!! Nie mam pojÍcia dlaczego...
+	first=0;//Koniec pierwszego wywolania //TYMCZASOWO!!! ???? HAHA!!! Nie mam pojƒôcia dlaczego...
 }
 
 
@@ -914,7 +908,7 @@ void jworld::simulate_one_step()
 	_update_age();//Pomocnicza
 	if(use_SW_links)
 	{
-		_connect_far_links(SW_reconect_percent);//Probuje przy≥πczyc N% procent dalekich linkÛw
+		_connect_far_links(SW_reconect_percent);//Probuje przy≈ÇƒÖczyc N% procent dalekich link√≥w
 	}
 	switch(BiasMode){
 	case NO_BIAS:	        _one_step_no_bias();       break;
@@ -927,22 +921,22 @@ void jworld::simulate_one_step()
 		break;}
 }
 
-//Probuje prze≥πczyc pewien procent dalekich linkÛw
+//Probuje prze≈ÇƒÖczyc pewien procent dalekich link√≥w
 void    jworld::_connect_far_links(double Percent)
 {
 	unsigned N=(double(MyWidth)*double(MyWidth)*Percent)/100;
 	unsigned Counter=0;
-	for(unsigned i=0;i<N;i++)//N prÛb - choÊ czasem moøe byÊ podwÛjnie albo i wiEcej
+	for(unsigned i=0;i<N;i++)//N pr√≥b - choƒá czasem mo≈ºe byƒá podw√≥jnie albo i wiEcej
 	{
 		unsigned const a=RANDOM(MyWidth);
 		unsigned const b=RANDOM(MyWidth);
-		//Losowo - proporcjonalnie do zasiÍgu
-		if(Agenci.filled(a,b))//Uwaga na puste komÛrki!
+		//Losowo - proporcjonalnie do zasiƒôgu
+		if(Agenci.filled(a,b))//Uwaga na puste kom√≥rki!
 		{
 			const jagent& on=Agenci.get(a,b);
 			double r=on.Power/double(jagent::max_sila)*MyWidth/2;
- //			r=OdlSasiad+r*DRAND();//Zwykle losowanie w obrÍbie promienia ale nie mniej niø OdlSasiad
-			r=OdlSasiad+r*DRAND()*DRAND()*DRAND();//ZagÍszczone blisko losowanie w obrÍbie promienia
+ //			r=OdlSasiad+r*DRAND();//Zwykle losowanie w obrƒôbie promienia ale nie mniej ni≈º OdlSasiad
+			r=OdlSasiad+r*DRAND()*DRAND()*DRAND();//Zagƒôszczone blisko losowanie w obrƒôbie promienia
 			double Angle=DRAND()*2*M_PI;
 			int ta=a+r*sin(Angle);//Target a
 			int tb=b+r*cos(Angle);//Target b
@@ -950,26 +944,26 @@ void    jworld::_connect_far_links(double Percent)
 			tb=(tb+MyWidth)%MyWidth;
 									assert(0<=ta && ta<MyWidth);
 									assert(0<=tb && tb<MyWidth);
-			if((a!=ta || b!=tb) && Agenci.filled(ta,tb)) //Nie ma sensu po≥aczenie ze sobπ i z pustym polem
+			if((a!=ta || b!=tb) && Agenci.filled(ta,tb)) //Nie ma sensu po≈Çaczenie ze sobƒÖ i z pustym polem
 			{
 				//ALGORYTM BEZ LOSOWOSCI
 #if 0
-				if(Agenci.get(ta,tb).Power>=on.Power) //dobrowolne oddanie siÍ w protekcje lub czasem sojusz.
-				{									 //Pomijajπc ingerencje zewnÍtrzne po≥πczenie dπøy do 
-													 //najsilniejszym agenta w zasiÍgu r
+				if(Agenci.get(ta,tb).Power>=on.Power) //dobrowolne oddanie siƒô w protekcje lub czasem sojusz.
+				{									 //PomijajƒÖc ingerencje zewnƒôtrzne po≈ÇƒÖczenie dƒÖ≈ºy do 
+													 //najsilniejszym agenta w zasiƒôgu r
 													 
 					double power_of_protector=0;
-					if(FarLinks.get(a,b).a!=UINT_MAX)//Jest juø jakiú protektor
+					if(FarLinks.get(a,b).a!=UINT_MAX)//Jest ju≈º jaki≈õ protektor
 						power_of_protector=Agenci.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).Power;
 					if(Agenci.get(ta,tb).Power+on.Power>power_of_protector)//W sojuszu z nowym, trzeba pokonac starego protektora
 					{
 						_connect_flink_to(a,b,ta,tb); Counter++;
 					}
 				}
-				else //PrÛba przy≥πczenia - trzeba wysiudaÊ aktualnego protektora
+				else //Pr√≥ba przy≈ÇƒÖczenia - trzeba wysiudaƒá aktualnego protektora
 				{
 					double power_of_protector=0;
-					if(FarLinks.get(ta,tb).a!=UINT_MAX)//Jest jakiú protektor
+					if(FarLinks.get(ta,tb).a!=UINT_MAX)//Jest jaki≈õ protektor
 						power_of_protector=Agenci.get(FarLinks.get(ta,tb).a,FarLinks.get(ta,tb).b).Power;
 					if(on.Power>power_of_protector+Agenci.get(ta,tb).Power)//Trzeba pokonac sojusz najechanego i jego portektora
 					{
@@ -977,14 +971,14 @@ void    jworld::_connect_far_links(double Percent)
 					}
 				}
 #else
-				//ALGORYTM Z PROSTYM SZUMEM - SI£A ZREALIZOWANA MOØE WYNOSI∆ OD 50 do 150% NOMINALNEJ
-				if(Agenci.get(ta,tb).Power>=on.Power) //dobrowolne oddanie siÍ "on-ego" w protekcje 
-													 //lub czasem zawarcie sojuszu (gdy si≥y zblizone)
-				{									 //Pomijajπc ingerencje zewnÍtrzne  dπøy do po≥πczenia z
-													 //najsilniejszym agenta w zasiÍgu r
+				//ALGORYTM Z PROSTYM SZUMEM - SI≈ÅA ZREALIZOWANA MO≈ªE WYNOSIƒÜ OD 50 do 150% NOMINALNEJ
+				if(Agenci.get(ta,tb).Power>=on.Power) //dobrowolne oddanie siƒô "on-ego" w protekcje 
+													 //lub czasem zawarcie sojuszu (gdy si≈Çy zblizone)
+				{									 //PomijajƒÖc ingerencje zewnƒôtrzne  dƒÖ≈ºy do po≈ÇƒÖczenia z
+													 //najsilniejszym agenta w zasiƒôgu r
 													 
 					double power_of_protector=0;
-					if(FarLinks.get(a,b).a!=UINT_MAX)//Gdy "on" ma juø jakiegoú protektora
+					if(FarLinks.get(a,b).a!=UINT_MAX)//Gdy "on" ma ju≈º jakiego≈õ protektora
 						power_of_protector=Agenci.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).Power;
 					//W sojuszu z nowym, trzeba pokonac starego protektora
 					if((0.5+DRAND())*(Agenci.get(ta,tb).Power+on.Power)>power_of_protector)
@@ -992,10 +986,10 @@ void    jworld::_connect_far_links(double Percent)
 						_connect_flink_to(a,b,ta,tb); Counter++;
 					}
 				}
-				else //PrÛba przy≥πczenia sobie wasala - trzeba wysiudaÊ aktualnego protektora
+				else //Pr√≥ba przy≈ÇƒÖczenia sobie wasala - trzeba wysiudaƒá aktualnego protektora
 				{
 					double power_of_protector=0;
-					if(FarLinks.get(ta,tb).a!=UINT_MAX)//Jest jakiú protektor
+					if(FarLinks.get(ta,tb).a!=UINT_MAX)//Jest jaki≈õ protektor
 						power_of_protector=Agenci.get(FarLinks.get(ta,tb).a,FarLinks.get(ta,tb).b).Power;
 					//Trzeba pokonac sojusz najechanego i jego protektora
 					if((0.5+DRAND())*on.Power>power_of_protector+Agenci.get(ta,tb).Power)
@@ -1008,20 +1002,20 @@ void    jworld::_connect_far_links(double Percent)
 		}
 	}
 
-	//Tylko ze wzglÍdu na kolorowanie!
+	//Tylko ze wzglƒôdu na kolorowanie!
 	for(int a=0;a<N;a++)
 	for(int b=0;b<N;b++)
-	if(Agenci.filled(a,b))//Uwaga na puste komÛrki!
+	if(Agenci.filled(a,b))//Uwaga na puste kom√≥rki!
 	{
 	   _far_link pom=FarLinks.get(a,b);
-	   if(pom.a!=UINT_MAX)//Jest jakiú protektor
+	   if(pom.a!=UINT_MAX)//Jest jaki≈õ protektor
 	   {
 		   unsigned long politofprot=Agenci.get(pom.a,pom.b).Politics;
 		   Agenci.get(a,b).Politics=politofprot;
 	   }
 	}
 
-	//Statystyka bezpoúrednia
+	//Statystyka bezpo≈õrednia
 	if(N>0)
 		SW_dynamic_perc=Counter/double(N);
 		else

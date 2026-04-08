@@ -1,8 +1,11 @@
-#include <windows.h> 
-#include <time.h>
-#include <stdio.h>
-#include "SYMSHELL/src/Windows/symshwin.h"
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 
+#ifdef USE_WINDOWS
+#include "../WIN/symshwin.h"
+#include <windows.h>
+#endif
 //WIDTH=100 DSTB=-8 CLSS=8 MIPO=3 RSPC=1 VIEW=50 LOGF=10 LOGF=testW100.log
 
 const int ILE_SEC=30; //Ile sekund czeka na OK
@@ -17,14 +20,14 @@ class time_checker
 	
 public:
 
-	time_checker()
+	time_checker():newtime(nullptr),aclock(0)
 	{
 		
 		time( &aclock );                 /* Get time in seconds */
 		
 		newtime = localtime( &aclock );  /* Convert time to struct */
 		/* tm form */
-		if(newtime->tm_year>114)         //TIME LIMIT   !!!
+		if(newtime->tm_year>200)         //TIME LIMIT   !!!
 		{
 			fprintf(stderr,"%s",blebleblebleble);
 			abort();
@@ -78,7 +81,7 @@ extern "C" {
 extern "C"
 int wb_about(char* window_name)
 {
-static char WB_date[]="#LANGUAGES  © 2002,2003\n Compiled "__DATE__;
+static char WB_date[]="#LANGUAGES  Â© 2002,2003\n Compiled "__DATE__;
 char bufor[256];
 
 HICON hIcon=0;

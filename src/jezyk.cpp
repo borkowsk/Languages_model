@@ -2,7 +2,8 @@
 //  THIS PROGRAMM IS DESIGNED FOR CFCS OF ISS UW
 ////////////////////////////////////////////////////////////////////////////////
 #define NEW_FASHION_CPP (1)
-const char* WINDOW_HEADER="LANGUAGES version SW 2.20a, compilation "__DATE__ ", " __TIME__ ;
+#include "compatyb.h"
+const char* WINDOW_HEADER="LANGUAGES version SW 2.20a, compilation " __DATE__ ", " __TIME__ ;
 const char* Authors="(programed by W.Borkowski for ISS UW & Ohio State Univ.)";
 const char* SCREENDUMPNAME="LANGUAGES";
 // Symulacja rozprzestrzeniania sie zachowan jezykowych
@@ -10,28 +11,28 @@ const char* SCREENDUMPNAME="LANGUAGES";
 //
 //	JEZYK czyli LANGUAGES
 //			versja  2.20 - Wprowadzenie 16 klas do LogLog histogramu dodanego w wersji 1.401
-//						   Zmiana kolejnoœci serii w pliku log.
+//						   Zmiana kolejnoÅ›ci serii w pliku log.
 //						   Wprowadzenie  konsolowego/bacgroundowego trybu pracy
-//			versja  2.11 - pocz¹tki u¿ycia klas OptionalParameters do obs³ugi parametrów wywo³ania
-//			versja  2.10 - implementacja procesu zaci¹gania w³adzy i wyœwietlanie mapy politycznej
-//			versja  2.06 - dzia³aj¹ce sterowanie czêstoœci¹ wyœwietlania i my_area_menager zadeklarowany
-//			versja  2.05 - rozbudowane menu, zw³aszcza nowe opcje wizualizacji, parametr SRND i DUMP
-//			versja  2.04 - Ciag³e zrzucanie sieci jako parametr
-//			versja  2.03a - Implementacja zrzutu sieci SW w postaci plików NET
+//			versja  2.11 - poczÄ…tki uÅ¼ycia klas OptionalParameters do obsÅ‚ugi parametrÃ³w wywoÅ‚ania
+//			versja  2.10 - implementacja procesu zaciÄ…gania wÅ‚adzy i wyÅ›wietlanie mapy politycznej
+//			versja  2.06 - dziaÅ‚ajÄ…ce sterowanie czÄ™stoÅ›ciÄ… wyÅ›wietlania i my_area_menager zadeklarowany
+//			versja  2.05 - rozbudowane menu, zwÅ‚aszcza nowe opcje wizualizacji, parametr SRND i DUMP
+//			versja  2.04 - CiagÅ‚e zrzucanie sieci jako parametr
+//			versja  2.03a - Implementacja zrzutu sieci SW w postaci plikÃ³w NET
 //			vrsja   2.01-2 - Uruchomienie modelu Small Worlds
-//			versja  1.99b - przejœcie do modelu Small Worlds:
-//							Przygotowanie nowego uk³adu wizualizacji
-//							Przygotowanie ¿róde³ danych i grafu dla dalekich po³¹czeñ
-//							Implemetcja algorytmu dynamicznych dalekich po³¹czeñ "politycznych"
-//							W³¹czenie wplywów z dalekich polaczeñ do implementacji modeli wp³ywu
-//							(nie przetestowane dla skomplikowanych biasów)
+//			versja  1.99b - przejÅ›cie do modelu Small Worlds:
+//							Przygotowanie nowego ukÅ‚adu wizualizacji
+//							Przygotowanie Å¼rÃ³deÅ‚ danych i grafu dla dalekich poÅ‚Ä…czeÅ„
+//							Implemetcja algorytmu dynamicznych dalekich poÅ‚Ä…czeÅ„ "politycznych"
+//							WÅ‚Ä…czenie wplywÃ³w z dalekich polaczeÅ„ do implementacji modeli wpÅ‚ywu
+//							(nie przetestowane dla skomplikowanych biasÃ³w)
 //
 //			versja  1.53a - drobne zmiany konieczne do uruchomienia komplacji pod BDS 2006
 //
 //			versja  1.51-2 - drobne zmiany kosmetyczne.
 //
-//			version 1.5 - dodanie mapy jezyków TrueColor, i map skladowych w kolorach skladowych RGB. 			
-//							Zmiana domyslnych parametrów startowych
+//			version 1.5 - dodanie mapy jezykÃ³w TrueColor, i map skladowych w kolorach skladowych RGB. 			
+//							Zmiana domyslnych parametrÃ³w startowych
 //          version 1.41a                                                                      
 //                        - dodanie wieku jezyka danego agenta i seri danych to przedstawiajacej 
 //                          na wykresie logarytmicznym
@@ -39,14 +40,14 @@ const char* SCREENDUMPNAME="LANGUAGES";
 //          version 1.402a
 //                        - Wprowadzenie 12 klas do LogLog histogramu dodanego w wersji 1.401
 //          version 1.401b
-//                        - zmiana histogramu LogLog rozmiaru jezyków na typ fix o 6 klasach
+//                        - zmiana histogramu LogLog rozmiaru jezykÃ³w na typ fix o 6 klasach
 //                          czyli efekt wizualny bardzo podobny, ale inaczej oznakowane klasy
-//                        - dodanie fix-histogramu klas rozmiaru jezyków 
+//                        - dodanie fix-histogramu klas rozmiaru jezykÃ³w 
 //          version 1.4 - dodanie mutacji spontanicznych we wszystkich wersjach bajasiowania,
 //                      - wprowadzenie mozliwosci wylaczenia korelacji przestrzennej (UseSpatialCorr) z KODU!!!
-//                      - wprowadzenie wykresu log-log rozkladu rozmiarów jêzyków (dhistosou.h),
+//                      - wprowadzenie wykresu log-log rozkladu rozmiarÃ³w jÄ™zykÃ³w (dhistosou.h),
 //                      - wprowadzenie wpisywania tego histogramu do logu 
-//                      - uzupelnienie czesci komunikatów o ustawieniach parametrów (ale czesc zostalo bez)
+//                      - uzupelnienie czesci komunikatÃ³w o ustawieniach parametrÃ³w (ale czesc zostalo bez)
 //                      - wprowadzenie parametru DSTB ostalajace rodzaj i stopien rozkladu sil (uzyskiwany przez * lub +)
 //          TEST:
 //          .........WIDTH=100 DSTB=-8 CLSS=8 MIPO=3 RSPC=1 VIEW=50 LOGF=10 LOGF=testW100.log
@@ -67,21 +68,16 @@ const char* SCREENDUMPNAME="LANGUAGES";
 
 int My_Rand_seed=0; //Jak 0 to RANDOMIZE jak inny to SRAND(My_Rand_seed)
 
-#include "INCLUDE/platform.hpp"
-
-#ifdef NEW_FASHION_CPP
 #include <iostream>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
+
 using namespace std;
-#else
-#include <iostream.h>
-#endif
 
 #define HIDE_WB_PTR_IO 0
-#include "INCLUDE/wb_ptr.hpp"
-#include "INCLUDE/OptParam.hpp"
-#include "INCLUDE/wbminmax.hpp"
+#include "wb_ptr.hpp"
+#include "optParam.hpp"
 
 #include "jrand.h"
 #include "jworld.h"
@@ -89,10 +85,10 @@ using namespace std;
 
 unsigned SWIDTH=1440*0.6666;//720;//1440;
 unsigned SHEIGHT=1080*0.6666;/*na typowy rozmiar menu*/;//540;//1080;
-bool     Console=false;  //WskaŸnik pracy w trybie konsolowym - bez grafiki
+bool     Console=false;  //WskaÅºnik pracy w trybie konsolowym - bez grafiki
 
 //Nieobiektowo przekazywane do metody inicializacji zrodel 
-unsigned internal_log=10000;	//Domyslna dlugosc wewnetrznych logów
+unsigned internal_log=10000;	//Domyslna dlugosc wewnetrznych logÃ³w
 bool UseSpatialCorr=false;		//Uzywanie korelacji przestrzennej (kosztownej w liczeniu)
 unsigned spatial_correlation_mode=50;	//Liczba przebiegow losowan w ekonomiczniejszym trybie liczenia korelacji przestrzennej
 
@@ -108,7 +104,7 @@ unsigned iMaxIterations=0xffffffff;
 unsigned iLogRatio=10;
 unsigned iViewRatio=1;
 
-bool ZrzucajNET=false;      //Czy zrzucaæ pliki sieci?
+bool ZrzucajNET=false;      //Czy zrzucaÄ‡ pliki sieci?
 int  RuchomaSila=0;			//Czy sila ma sie powiekrzac "z wiekiem"
 int  MaksymalnaSila=10000;		//Jaka najwieksza sila
 int  MinimalnaSila=10;      //Jaka najmniejsza sila - jak takie same to ta sama wartosc wszedzie
@@ -125,7 +121,7 @@ int  Replay=0;
 int	 AUTOSTART=0;
 int  DistributionLevel=6;      //Rodzaj i stopien rozkladu sil
 const char* BIAS_STR="";		//Zapis biasu zebrany z linii parametrow
-double SW_start_perc=0;	//Sterowanie procesem hierarchizacjia œwiata
+double SW_start_perc=0;	//Sterowanie procesem hierarchizacjia Å›wiata
 double SW_step_perc=0;	//c.d.
 bool SW_links=false;
 /*
@@ -161,13 +157,13 @@ new OptionalParameter<long>(IleSasiadow,2,sqr(RozmiarSasiedztwa*2+1)-1,"PRTR","H
 new OptionalParameter<bool>(AUTOSTART,false,true,"AUTO","Automatically start the simulation"),
 new OptionalParameter<bool>(iWychodzenie,false,true,"STOP","Automatic exit when done"),
 new OptionalParameter<long>(internal_log,50,iMaxIterations,"ILOG","yyy"),
-new OptionalParameter<int>(DistributionLevel,-100,100,"DSTB","Distribution Level/Kind"),//Ale te¿ nie powinno byæ 0!
+new OptionalParameter<int>(DistributionLevel,-100,100,"DSTB","Distribution Level/Kind"),//Ale teÅ¼ nie powinno byÄ‡ 0!
 new OptionalParameter<wb_pchar>(LogName,"*.log","*.txt","LOGF","name for log file"),
 new OptionalParameter<wb_pchar>(MapLName,"*.jpg","*.gif","MAPL","Map of languages from file"),
 new OptionalParameter<wb_pchar>(MapPName,"*.jpg","*.gif","MAPP","Map of individual power from file"),
 new OptionalParameter<wb_pchar>(MaskName,"*.jpg","*.gif","MASK","Mask for alive agents from file"),
 new OptionalParameter<wb_pchar>(HistName,"*.hist","*.txt","HIST","name of simulation history file"),
-//new OptionalParameter<TYPE>(HistName,"*.hist","*.txt","REPL","yyy"),//Replay=1; jeszcze musi jakoœ byæ ustawione
+//new OptionalParameter<TYPE>(HistName,"*.hist","*.txt","REPL","yyy"),//Replay=1; jeszcze musi jakoÅ› byÄ‡ ustawione
 new OptionalParameter<wb_pchar>(SpatialCorrMode,"N/Y/+/-","1..WIDTH","RSPC","mode of spatial correlation"),
 new OptionalCheckFunction(SpatialCorrCheck(),"Parsing spatial correlation mode string"),
 //new OptionalParameter<TYPE>(,,,"xxx","yyy"),
@@ -227,7 +223,7 @@ int parse_options(const int argc,const char* argv[])
 	if(pom==NULL)
 			goto ERROR; //NA PEWNO ZLE
 
-	*pom='\0';strupr(rob);*pom='=';//Czêœæ do znaku =
+	*pom='\0';strupr(rob);*pom='=';//CzÄ™Å›Ä‡ do znaku =
 
 	if(strcmp(rob,"HELP")==0)
 	{
@@ -743,7 +739,7 @@ if( Console || !Lufciki.start(WINDOW_HEADER,argc,argv,1) )
 	if(!Console) exit(1);
 	}
 
-//Utworzenie sensownej nazwy pliku(-ów) do zrzutow ekranu
+//Utworzenie sensownej nazwy pliku(-Ã³w) do zrzutow ekranu
 if(!Console)
 {
 	wb_pchar buf(strlen(SCREENDUMPNAME)+20);
@@ -773,14 +769,14 @@ jworld& tenSwiat=*new jworld(iWidth,
 							SW_step_perc
 						   );
 
-if(&tenSwiat==NULL)//Jakby siê coœ nie uda³o
+if(&tenSwiat==NULL)//Jakby siÄ™ coÅ› nie udaÅ‚o
 	{
 	cerr<<"Can't allocate simulation world!\n"<<endl;
 	exit(1);
 	}
 
 if(!Console)
-	Lufciki.ConnectWorld(&tenSwiat); //Menager musi mieæ dostêp do zmiennych steruj¹cych symulacj¹
+	Lufciki.ConnectWorld(&tenSwiat); //Menager musi mieÄ‡ dostÄ™p do zmiennych sterujÄ…cych symulacjÄ…
 
 tenSwiat.set_max_iteration(iMaxIterations);//Ile najwiecej krokow
 tenSwiat.set_input_ratio(iViewRatio);

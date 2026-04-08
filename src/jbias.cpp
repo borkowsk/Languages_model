@@ -2,29 +2,22 @@
 //#include <assert.h>
 //#include <string.h>
 //#include <math.h>
-#include <string.h>  
-#include <math.h>
-#include "INCLUDE/platform.hpp"
-#include "INCLUDE/compatyb.h"
-
-#ifdef NEW_FASHION_CPP
+#include <cstring>
+#include <cmath>
 #include <strstream>
-#elif defined(unix)
-#include <strstream.h>
-#	else
-#include <strstrea.h>
-#endif
 
-#include "SYMSHELL/histosou.hpp"
-#include "SYMSHELL/clstsour.hpp" //Jest tez statsour
-#include "SYMSHELL/coincsou.hpp"
-#include "SYMSHELL/gadgets.hpp" 
-#include "INCLUDE/wb_ptrio.h"
+#include "compatyb.h"
+#include "histosou.hpp"
+#include "clstsour.hpp" //Jest tez statsour
+#include "coincsou.hpp"
+#include "compatyb.hpp"
+#include "gadgets.hpp"
+#include "wb_ptrio.h"
 
 #include "jrand.h"
 #include "jworld.h"
 
-const int BIAS_FOR_ANY=8;//Zapowiedziny w nag≥Ûwku
+const int BIAS_FOR_ANY=8;//Zapowiedziny w nag≈Ç√≥wku
 
 void jworld::set_bias_from_str(const char* lst)
 //Ustawianie dodatkowych parametrow symulacji z tekstu - NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,INVALID_BIAS_MODE=4
@@ -538,8 +531,8 @@ void    jworld::_update_age()
         size_t index=MyGeom->get_next(Iter);//Uzyskujemy index agenta 
                                             assert(index!=MyGeom->FULL); //... tutaj nie powinno sie zdarzyc
         jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());// Uzyskujemy referencje do agenta omijajac asercje na NULL
-        if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta komÛrka (NULL)
-            continue;                   // bo wtedy robic dalej by≥oby bez sensu.
+        if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta kom√≥rka (NULL)
+            continue;                   // bo wtedy robic dalej by≈Çoby bez sensu.
         CenterAgent.Age++;
      }
 }
@@ -557,7 +550,7 @@ void    jworld::_one_step_no_bias()
     //Alokujemy iterator Monte-Carlo
     iteratorh Monte=MyGeom->make_random_global_iterator();
     
-    //Idziemy po agentach iteratorem Monte-Carlo. NiektÛrzy moga sie powtÛrzyc
+    //Idziemy po agentach iteratorem Monte-Carlo. Niekt√≥rzy moga sie powt√≥rzyc
     while(Monte)
     {   
         size_t index=MyGeom->get_next(Monte);//Uzyskujemy index losowo wybranego agenta 
@@ -565,8 +558,8 @@ void    jworld::_one_step_no_bias()
         //      continue;                        
         assert(index!=MyGeom->FULL);               //... tutaj nie powinno sie zdarzyc
         jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());// Uzyskujemy referencje do agenta omijajac asercje na NULL
-        if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta komÛrka (NULL)
-            continue;                   // bo wtedy robic dalej by≥oby bez sensu.
+        if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta kom√≥rka (NULL)
+            continue;                   // bo wtedy robic dalej by≈Çoby bez sensu.
         
         if(
             (CenterAgent.Power>TrsSila)   // Czy nie ma juz immunitetu na zmiany
@@ -580,7 +573,7 @@ void    jworld::_one_step_no_bias()
             // Alokujemy iterator sasiedztwa
 			iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad);
             //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,OdlSasiad);
-            unsigned zliczanie=0;//Zliczanie sasiadÛw
+            unsigned zliczanie=0;//Zliczanie sasiad√≥w
             
             //Czyszczenie licznikow
             fill(Firsts,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*IleKate);
@@ -588,19 +581,21 @@ void    jworld::_one_step_no_bias()
 			fill(Thirds,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*IleKate);
 
 			if(use_SW_links)
-			{//REJESTROWANIE WP£YWU OD PROTEKTORA
-			unsigned a,b,x,y;
+			{//REJESTROWANIE WP≈ÅYWU OD PROTEKTORA
+			size_t a,b;
+			unsigned x,y;
 			dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b);//Odzyskac  x i y z indeksu agenta
-			if(_xy_of_far_link_of(a,b,x,y)) //PobraÊ indeks "protektora" tego agenta  o ile go ma
-				{
-													assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-				jagent& PeryfAgent=Agenci.get(x,y);//Uzyskujemy referencje do "protektora" 
-													assert(!Agenci.is_empty(PeryfAgent));//nie powinna to byÊ pusta komÛrka (NULL) ale...
-				Firsts[PeryfAgent.First]+=PeryfAgent.Power;
-				Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
-				Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
-				zliczanie++;
-				}
+				assert("NOT TESTED AFTER PORTING!"==nullptr);
+			// if(_xy_of_far_link_of(a,b,x,y)) //Pobraƒá indeks "protektora" tego agenta  o ile go ma
+			// 	{
+			// 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
+			// 	jagent& PeryfAgent=Agenci.get(x,y);//Uzyskujemy referencje do "protektora"
+			// 										assert(!Agenci.is_empty(PeryfAgent));//nie powinna to byƒá pusta kom√≥rka (NULL) ale...
+			// 	Firsts[PeryfAgent.First]+=PeryfAgent.Power;
+			// 	Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
+			// 	Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
+			// 	zliczanie++;
+			// 	}
 			}
 			
 			while(Neigh)
@@ -610,8 +605,8 @@ void    jworld::_one_step_no_bias()
                     continue;               //centrum obszaru to dalej byloby bez sensu.
 				
 				jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val());//Uzyskujemy referencje do sasiada omijajac asercje na NULL
-				if(Agenci.is_empty(PeryfAgent))     //Sprawdzamy czy nie jest to pusta komÛrka (NULL)
-					continue;                      // bo wtedy robic dalej by≥oby bez sensu.
+				if(Agenci.is_empty(PeryfAgent))     //Sprawdzamy czy nie jest to pusta kom√≥rka (NULL)
+					continue;                      // bo wtedy robic dalej by≈Çoby bez sensu.
 				
 				zliczanie++;
                 //Dodawanie sil sasiadow do licznikow w tablicach
@@ -636,9 +631,9 @@ void    jworld::_one_step_no_bias()
             int maxF=0,indF=-1;
             int maxS=0,indS=-1;
             int maxT=0,indT=-1;
-			int offset=RANDOM(IleKate);							assert(0<=offset && offset<IleKate);//Jak IleKate==2 to 0 albo 1 itd..
-        
-            
+			int offset=RANDOM(IleKate);							//Jak IleKate==2 to 0 albo 1 itd...
+        														assert(0<=offset);
+        														assert(offset<IleKate);
             //W petli dodawanie szumu i szukanie maksimow
             //------------------------------------------------
             for(int g=0;g<IleKate;g++)
@@ -701,7 +696,7 @@ void    jworld::_one_step_simple_bias()
     int testowanie=0;
     iteratorh Monte=MyGeom->make_random_global_iterator();//Alokujemy iterator Monte-Carlo
     
-    //Idziemy po agentach iteratorem Monte-Carlo. NiektÛrzy moga sie powtÛrzyc
+    //Idziemy po agentach iteratorem Monte-Carlo. Niekt√≥rzy moga sie powt√≥rzyc
     while(Monte)
     {   
         size_t index=MyGeom->get_next(Monte);//Uzyskujemy index losowo wybranego agenta 
@@ -709,8 +704,8 @@ void    jworld::_one_step_simple_bias()
 		//      continue;                        
 		assert(index!=MyGeom->FULL);                //... tutaj nie powinno sie zdarzyc
 		jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());// Uzyskujemy referencje do agenta omijajac asercje na NULL
-		if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta komÛrka (NULL)
-			continue;                   // bo wtedy robic dalej by≥oby bez sensu.
+		if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta kom√≥rka (NULL)
+			continue;                   // bo wtedy robic dalej by≈Çoby bez sensu.
 		
 		 if(
 			(CenterAgent.Power>TrsSila)   // Czy nie ma juz immunitetu na zmiany
@@ -724,7 +719,7 @@ void    jworld::_one_step_simple_bias()
 			// Alokujemy iterator sasiedztwa
 			iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad);
 			//iteratorh Neigh=MyGeom->make_neighbour_iterator(index,OdlSasiad);
-			unsigned zliczanie=0;//Zliczanie sasiadÛw
+			unsigned zliczanie=0;//Zliczanie sasiad√≥w
 			
 			//Czyszczenie licznikow
 			fill(Firsts,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*IleKate);
@@ -732,14 +727,15 @@ void    jworld::_one_step_simple_bias()
 			fill(Thirds,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*IleKate);
 
 			if(use_SW_links)
-			{//REJESTROWANIE WP£YWU OD PROTEKTORA
-			unsigned a,b,x,y;
+			{//REJESTROWANIE WP≈ÅYWU OD PROTEKTORA
+			size_t a,b;
+			unsigned x,y;
 			dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b);//Odzyskac  x i y z indeksu agenta
-			if(_xy_of_far_link_of(a,b,x,y)) //PobraÊ indeks "protektora" tego agenta  o ile go ma
+			if(_xy_of_far_link_of(a,b,x,y)) //Pobraƒá indeks "protektora" tego agenta  o ile go ma
 				{
 													assert((y!=UINT_MAX)&&(x!=UINT_MAX));
 				jagent& PeryfAgent=Agenci.get(x,y);//Uzyskujemy referencje do "protektora" 
-													assert(!Agenci.is_empty(PeryfAgent));//nie powinna to byÊ pusta komÛrka (NULL) ale...
+													assert(!Agenci.is_empty(PeryfAgent));//nie powinna to byƒá pusta kom√≥rka (NULL) ale...
 				Firsts[PeryfAgent.First]+=PeryfAgent.Power;
 				Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
 				Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
@@ -754,8 +750,8 @@ void    jworld::_one_step_simple_bias()
 					continue;               //centrum obszaru to dalej byloby bez sensu.
 				
 				jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val());//Uzyskujemy referencje do sasiada omijajac asercje na NULL
-				if(Agenci.is_empty(PeryfAgent))     //Sprawdzamy czy nie jest to pusta komÛrka (NULL)
-					continue;                      // bo wtedy robic dalej by≥oby bez sensu.
+				if(Agenci.is_empty(PeryfAgent))     //Sprawdzamy czy nie jest to pusta kom√≥rka (NULL)
+					continue;                      // bo wtedy robic dalej by≈Çoby bez sensu.
 				
 				zliczanie++;
 				//Dodawanie sil sasiadow do licznikow w tablicach
@@ -831,7 +827,7 @@ STARZENIE:
 
 void    jworld::_one_step_conditional_bias()
 {
-	
+	// Co≈õ tu by≈Ço???
 																									  assert(BiasDefinition.OK());
 	_conditional_bias_information* BiasData=dynamic_cast<_conditional_bias_information*>
 															(BiasDefinition.get_ptr_val());           assert(BiasData!=NULL);
@@ -846,7 +842,7 @@ void    jworld::_one_step_conditional_bias()
 	iteratorh Monte=MyGeom->make_random_global_iterator();  //Losowanie kolejnego agenta
 	int testowanie=0;
 
-	//Idziemy po agentach iteratorem Monte-Carlo. NiektÛrzy moga sie powtÛrzyc
+	//Idziemy po agentach iteratorem Monte-Carlo. Niekt√≥rzy moga sie powt√≥rzyc
 	while(Monte)
 	{   
 		size_t index=MyGeom->get_next(Monte);       //Uzyskujemy index losowo wybranego agenta  
@@ -855,8 +851,8 @@ void    jworld::_one_step_conditional_bias()
 		
 		jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());// Uzyskujemy referencje do agenta omijajac asercje na NULL
 		
-		if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta komÛrka (NULL)
-				continue;                   // bo wtedy robic dalej by≥oby bez sensu.
+		if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta kom√≥rka (NULL)
+				continue;                   // bo wtedy robic dalej by≈Çoby bez sensu.
 		
 		if(
 			(CenterAgent.Power>TrsSila)   // Czy nie ma juz immunitetu na zmiany
@@ -868,33 +864,35 @@ void    jworld::_one_step_conditional_bias()
 		{   //KOD SZUKANIA WPLYWOW
 			/////////////////////////////////////           
 			iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad);  // Alokujemy iterator sasiedztwa
-			unsigned zliczanie=0;           //Zliczanie sasiadÛw
+			unsigned zliczanie=0;           //Zliczanie sasiad√≥w
 			
 			//Czyszczenie tabeli licznika
 			memset(Wplywy,0,sizeof(Wplywy));//Trzeba zerowac cala, nawet jesli nie cala uzywamy - bo sa kolumny dla BIAS_FOR_ANY
 
 			if(use_SW_links)
-			{//REJESTROWANIE WP£YWU OD PROTEKTORA
-			unsigned a,b,x,y;
+			{//REJESTROWANIE WP≈ÅYWU OD PROTEKTORA
+			size_t a,b;
+			unsigned x,y;
 			dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b);//Odzyskac  x i y z indeksu agenta
-			if(_xy_of_far_link_of(a,b,x,y)) //PobraÊ indeks "protektora" tego agenta  o ile go ma
-				{
-													assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-				jagent& PeryfAgent=Agenci.get(x,y);//Uzyskujemy referencje do "protektora" 
-													assert(!Agenci.is_empty(PeryfAgent));//nie powinna to byÊ pusta komÛrka (NULL) ale...
-													assert("NOT TESTED IPLEMENTATION");
-				Wplywy[PeryfAgent.First][PeryfAgent.Second][PeryfAgent.Third]+=3*PeryfAgent.Power;//"zlicznik" dla koincydencji ABC
-				
-				Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][PeryfAgent.Third]+=2*PeryfAgent.Power;//"zlicznik" histogramu BxC
-				Wplywy[PeryfAgent.First][BIAS_FOR_ANY][PeryfAgent.Third]+=2*PeryfAgent.Power;//"zlicznik" histogramu AxC
-				Wplywy[PeryfAgent.First][PeryfAgent.Second][BIAS_FOR_ANY]+=2*PeryfAgent.Power;//"zlicznik" histogramu AxB
-				
-				Wplywy[PeryfAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=PeryfAgent.Power;//"zlicznik" histogramu dla Axx
-				Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][BIAS_FOR_ANY]+=PeryfAgent.Power;//"zlicznik" histogramu dla xBx
-				Wplywy[BIAS_FOR_ANY][BIAS_FOR_ANY][PeryfAgent.Third]+=PeryfAgent.Power;//"zlicznik" histogramu dla xxC
-			
-				zliczanie++;
-				}
+				assert("Not tested after porting!"==nullptr);
+			// if(_xy_of_far_link_of(0,TODO,x,y)) //Pobraƒá indeks "protektora" tego agenta  o ile go ma
+			// 	{
+			// 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
+			// 	jagent& PeryfAgent=Agenci.get(x,y);//Uzyskujemy referencje do "protektora"
+			// 										assert(!Agenci.is_empty(PeryfAgent));//nie powinna to byƒá pusta kom√≥rka (NULL) ale...
+			// 										assert("NOT TESTED IPLEMENTATION");
+			// 	Wplywy[PeryfAgent.First][PeryfAgent.Second][PeryfAgent.Third]+=3*PeryfAgent.Power;//"zlicznik" dla koincydencji ABC
+			//
+			// 	Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][PeryfAgent.Third]+=2*PeryfAgent.Power;//"zlicznik" histogramu BxC
+			// 	Wplywy[PeryfAgent.First][BIAS_FOR_ANY][PeryfAgent.Third]+=2*PeryfAgent.Power;//"zlicznik" histogramu AxC
+			// 	Wplywy[PeryfAgent.First][PeryfAgent.Second][BIAS_FOR_ANY]+=2*PeryfAgent.Power;//"zlicznik" histogramu AxB
+			//
+			// 	Wplywy[PeryfAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=PeryfAgent.Power;//"zlicznik" histogramu dla Axx
+			// 	Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][BIAS_FOR_ANY]+=PeryfAgent.Power;//"zlicznik" histogramu dla xBx
+			// 	Wplywy[BIAS_FOR_ANY][BIAS_FOR_ANY][PeryfAgent.Third]+=PeryfAgent.Power;//"zlicznik" histogramu dla xxC
+			//
+			// 	zliczanie++;
+			// 	}
 			}
 			
 			while(Neigh)
@@ -904,12 +902,12 @@ void    jworld::_one_step_conditional_bias()
 					continue;               //centrum obszaru to dalej byloby bez sensu.
 				
 				jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val());//Uzyskujemy referencje do sasiada omijajac asercje na NULL
-				if(Agenci.is_empty(PeryfAgent))     //Sprawdzamy czy nie jest to pusta komÛrka (NULL)
-					continue;                      // bo wtedy robic dalej by≥oby bez sensu.
+				if(Agenci.is_empty(PeryfAgent))     //Sprawdzamy czy nie jest to pusta kom√≥rka (NULL)
+					continue;                      // bo wtedy robic dalej by≈Çoby bez sensu.
 				
 				zliczanie++;                        //Zlicza wylosowanych sasiadow
 
-				//Dodawanie sil kaødego z sasiadow do licznikow w tablicach
+				//Dodawanie sil ka≈ºdego z sasiadow do licznikow w tablicach
 				Wplywy[PeryfAgent.First][PeryfAgent.Second][PeryfAgent.Third]+=3*PeryfAgent.Power;//"zlicznik" dla koincydencji ABC
 				
 				Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][PeryfAgent.Third]+=2*PeryfAgent.Power;//"zlicznik" histogramu BxC
@@ -969,7 +967,7 @@ void    jworld::_one_step_conditional_bias()
             int offsetB=RANDOM(IleKate);            assert(0<=offsetB && offsetB<IleKate);//Jak IleKate==2 to 0 albo 1 itd..
             int offsetC=RANDOM(IleKate);            assert(0<=offsetC && offsetC<IleKate);//Jak IleKate==2 to 0 albo 1 itd..            
             int Max=-1,pA=-1,pB=-1,pC=-1;
-            FillStat[0]++; //Ile nawrotÛw
+            FillStat[0]++; //Ile nawrot√≥w
 
             //Szukanie aktualnego maksimum  (nieco rozrzutne, mozna troche przyspieszyc przez jesli BIAS_FOR_ANY bedzie zmienna ==IleKate)
             for(int i=0;i<width;i++)
@@ -1070,7 +1068,7 @@ void    jworld::_one_step_sequentional_bias()
 	int testowanie=0;
 	iteratorh Monte=MyGeom->make_random_global_iterator();//Alokujemy iterator Monte-Carlo
 	
-	//Idziemy po agentach iteratorem Monte-Carlo. NiektÛrzy moga sie powtÛrzyc
+	//Idziemy po agentach iteratorem Monte-Carlo. Niekt√≥rzy moga sie powt√≥rzyc
 	while(Monte)
 	{   
 		size_t index=MyGeom->get_next(Monte);//Uzyskujemy index losowo wybranego agenta 
@@ -1078,8 +1076,8 @@ void    jworld::_one_step_sequentional_bias()
 		//      continue;                        
 		assert(index!=MyGeom->FULL);         //... tutaj nie powinno sie zdarzyc
 		jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());// Uzyskujemy referencje do agenta omijajac asercje na NULL
-		if(Agenci.is_empty(CenterAgent))     // Sprawdzamy czy nie jest to pusta komÛrka (NULL)
-			continue;                        // bo wtedy robic dalej by≥oby bez sensu.
+		if(Agenci.is_empty(CenterAgent))     // Sprawdzamy czy nie jest to pusta kom√≥rka (NULL)
+			continue;                        // bo wtedy robic dalej by≈Çoby bez sensu.
 		
 		 if(
 			(CenterAgent.Power>TrsSila)   // Czy nie ma juz immunitetu na zmiany
@@ -1093,7 +1091,7 @@ void    jworld::_one_step_sequentional_bias()
 			// Alokujemy iterator sasiedztwa
 			iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad);
 			//iteratorh Neigh=MyGeom->make_neighbour_iterator(index,OdlSasiad);
-			unsigned zliczanie=0;//Zliczanie sasiadÛw
+			unsigned zliczanie=0;//Zliczanie sasiad√≥w
 			
 			//Czyszczenie licznikow
 			fill(Firsts,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*IleKate);
@@ -1101,23 +1099,25 @@ void    jworld::_one_step_sequentional_bias()
 			fill(Thirds,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*IleKate);
 
 			if(use_SW_links)
-			{//REJESTROWANIE WP£YWU OD PROTEKTORA
-			unsigned a,b,x,y;
+			{//REJESTROWANIE WP≈ÅYWU OD PROTEKTORA
+			size_t a,b;
+			unsigned x,y;
 			dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b);//Odzyskac  x i y z indeksu agenta
-			if(_xy_of_far_link_of(a,b,x,y)) //PobraÊ indeks "protektora" tego agenta  o ile go ma
-				{
-													assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-				jagent& PeryfAgent=Agenci.get(x,y);//Uzyskujemy referencje do "protektora" 
-													assert(!Agenci.is_empty(PeryfAgent));//nie powinna to byÊ pusta komÛrka (NULL) ale...
-													assert("NOT TESTED IPLEMENTATION");
-
-				//Dodawanie sily protektora do licznikow w tablicach
-				Firsts[PeryfAgent.First]+=PeryfAgent.Power;
-				Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
-				Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
-				
-				zliczanie++;
-				}
+				assert("Not tested after porting!"==nullptr);
+			// if(_xy_of_far_link_of(0,TODO,x,y)) //Pobraƒá indeks "protektora" tego agenta  o ile go ma
+			// 	{
+			// 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
+			// 	jagent& PeryfAgent=Agenci.get(x,y);//Uzyskujemy referencje do "protektora"
+			// 										assert(!Agenci.is_empty(PeryfAgent));//nie powinna to byƒá pusta kom√≥rka (NULL) ale...
+			// 										assert("NOT TESTED IPLEMENTATION");
+			//
+			// 	//Dodawanie sily protektora do licznikow w tablicach
+			// 	Firsts[PeryfAgent.First]+=PeryfAgent.Power;
+			// 	Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
+			// 	Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
+			//
+			// 	zliczanie++;
+			// 	}
 			}
 			
 			while(Neigh)
@@ -1127,8 +1127,8 @@ void    jworld::_one_step_sequentional_bias()
 					continue;               //centrum obszaru to dalej byloby bez sensu.
 				
 				jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val());//Uzyskujemy referencje do sasiada omijajac asercje na NULL
-				if(Agenci.is_empty(PeryfAgent))     //Sprawdzamy czy nie jest to pusta komÛrka (NULL)
-					continue;                      // bo wtedy robic dalej by≥oby bez sensu.
+				if(Agenci.is_empty(PeryfAgent))     //Sprawdzamy czy nie jest to pusta kom√≥rka (NULL)
+					continue;                      // bo wtedy robic dalej by≈Çoby bez sensu.
 				
 				zliczanie++;
 				//Dodawanie sil sasiadow do licznikow w tablicach
@@ -1155,7 +1155,7 @@ void    jworld::_one_step_sequentional_bias()
 			int maxT=INT_MIN,indT=-1;
 			int offset=RANDOM(IleKate);             assert(0<=offset && offset<IleKate);//Jak IleKate==2 to 0 albo 1 itd..
 			
-			//Dodawanie  biasu za pomocπ procedury z BiasData - jesli stan agenta zgadza siÍ z zadanym to do odpowiedniej tablicy jest dodawany bias
+			//Dodawanie  biasu za pomocƒÖ procedury z BiasData - jesli stan agenta zgadza siƒô z zadanym to do odpowiedniej tablicy jest dodawany bias
 			//-----------------------------------------------------------------------------------------------------------------------------------------
 			BiasData->UseBiasForAgent(CenterAgent.First,CenterAgent.Second,CenterAgent.Third,
 										Firsts,Seconds,Thirds);

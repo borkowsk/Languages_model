@@ -1,18 +1,19 @@
-#include <string.h>  
+#include <cstring>
 #include <math.h>
-#include <strstrea.h>
+#include <strstream>
 #include "jrand.h"
 #include "jworld.h"
-#include "SYMSHELL/histosou.hpp"
-#include "SYMSHELL/clstsour.hpp" //Jest tez statsour
-#include "SYMSHELL/coincsou.hpp"
-#include "SYMSHELL/gadgets.hpp" 
-#include "INCLUDE/wb_ptrio.h"
+#include "histosou.hpp"
+#include "clstsour.hpp" //Jest tez statsour
+#include "coincsou.hpp"
+#include "gadgets.hpp"
+#include "wb_ptrio.h"
 
 void	jworld::_one_step_conditional_bias()
 {  
 	int testowanie=0;
 	const geometry_base* MyGeom=Agenci.get_geometry();				assert(MyGeom);//Geometria "swiata" symulacji
+
 	//TROJWYMIAROWA TABLICA NA ZLICZANIE WPLYWOW
 	//Ilosc dopuszczalnych kategori w kazdym memeie + pozycje na pojedyncze biasy i kombinacje podwojne
 	int Wplywy[BIAS_FOR_ANY+1][BIAS_FOR_ANY+1][BIAS_FOR_ANY+1];		assert(IleKate<=BIAS_FOR_ANY);//Czy nie ma za duzo kategori na taka tablice wplywow
@@ -20,7 +21,7 @@ void	jworld::_one_step_conditional_bias()
 	//Alokujemy iterator Monte-Carlo
 	iteratorh Monte=MyGeom->make_random_global_iterator();	//Losowanie kolejnego agenta
 	
-	//Idziemy po agentach iteratorem Monte-Carlo. Niekt髍zy moga sie powt髍zyc
+	//Idziemy po agentach iteratorem Monte-Carlo. Niekt贸rzy moga sie powt贸rzyc
 	while(Monte)
 	{	
 		size_t index=MyGeom->get_next(Monte);		//Uzyskujemy index losowo wybranego agenta	
@@ -29,8 +30,8 @@ void	jworld::_one_step_conditional_bias()
 		
 		jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());// Uzyskujemy referencje do agenta omijajac asercje na NULL
 		
-		if(Agenci.is_empty(CenterAgent))	// Sprawdzamy czy nie jest to pusta kom髍ka (NULL)
-				continue;					// bo wtedy robic dalej by硂by bez sensu.
+		if(Agenci.is_empty(CenterAgent))	// Sprawdzamy czy nie jest to pusta kom贸rka (NULL)
+				continue;					// bo wtedy robic dalej by艂oby bez sensu.
 		
 		if(CenterAgent.Power>TrsSila)		// Czy nie ma juz immunitedu na zmiany
 				goto STARZENIE;				// Ma - nie robimy nic
@@ -38,7 +39,7 @@ void	jworld::_one_step_conditional_bias()
 		{	//KOD SZUKANIA WPLYWOW
 			/////////////////////////////////////			
 			iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad);	// Alokujemy iterator sasiedztwa
-			unsigned zliczanie=0;			//Zliczanie sasiad體
+			unsigned zliczanie=0;			//Zliczanie sasiad贸w
 			
 			//Czyszczenie tabeli licznika
 			memset(Wplywy,0,sizeof(Wplywy));//Trzeba zerowac cala, nawet jesli nie cala uzywamy - bo sa kolumny dla BIAS_FOR_ANY
@@ -50,8 +51,8 @@ void	jworld::_one_step_conditional_bias()
 					continue;				//centrum obszaru to dalej byloby bez sensu.
 				
 				jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val());//Uzyskujemy referencje do sasiada omijajac asercje na NULL
-				if(Agenci.is_empty(PeryfAgent))		//Sprawdzamy czy nie jest to pusta kom髍ka (NULL)
-					continue;					   // bo wtedy robic dalej by硂by bez sensu.
+				if(Agenci.is_empty(PeryfAgent))		//Sprawdzamy czy nie jest to pusta kom贸rka (NULL)
+					continue;					   // bo wtedy robic dalej by艂oby bez sensu.
 				
 				zliczanie++;						//Zlicza wylosowanych sasiadow
 
@@ -90,7 +91,8 @@ void	jworld::_one_step_conditional_bias()
 			//--------------------------------------------------
 			for(int i=0,width=(BIAS_FOR_ANY+1)*(BIAS_FOR_ANY+1)*(BIAS_FOR_ANY+1);i<width;i++)
 			{
-				((int*)Wplywy)[i]+=long(DRAND()*Noise*(4.5*MaxSila))+((float*)BiasData->Biases)[i];//cast!!! - sztuczka zeby uniknac potrojnie zagniezdzonej petli
+				// TODO Nie ma BiasData, nie wiem dlaczego
+				// TODO ((int*)Wplywy)[i]+=long(DRAND()*Noise*(4.5*MaxSila))+((float*)BiasData->Biases)[i];//cast!!! - sztuczka zeby uniknac potrojnie zagniezdzonej petli
 			}
 
 			//Szukanie maksimow - niebanalne (?)
@@ -109,7 +111,7 @@ void	jworld::_one_step_conditional_bias()
 			int offsetB=RANDOM(IleKate);			assert(0<=offsetB && offsetB<IleKate);//Jak IleKate==2 to 0 albo 1 itd..
 			int offsetC=RANDOM(IleKate);			assert(0<=offsetC && offsetC<IleKate);//Jak IleKate==2 to 0 albo 1 itd..			
 			int Max=-1,pA=-1,pB=-1,pC=-1;
-			FillStat[0]++; //Ile nawrot體
+			FillStat[0]++; //Ile nawrot贸w
 
 			//Szukanie aktualnego maksimum  (nieco rozrzutne, mozna troche przyspieszyc przez jesli BIAS_FOR_ANY bedzie zmienna ==IleKate)
 			for(int i=0;i<width;i++)

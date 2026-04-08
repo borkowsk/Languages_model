@@ -1,12 +1,13 @@
 //DECLARATION OF    A G E N T   FOR "LANGUAGES" SIMULATION
 /////////////////////////////////////////////////////////////
-#include "SYMSHELL/layer.hpp"
+#pragma once
+#include "layer.hpp"
     
 class jagent:public agent_base
 {
 	friend class jworld;//Na razie tak - zeby uproscic dostep do skladowych.
 	
-	// STATYCZNE SKLADOWE - PARAMETRY INICJOWANIA AGENTÓW
+	// STATYCZNE SKLADOWE - PARAMETRY INICJOWANIA AGENTÃ“W
 	static short ruchsily;//Czy sila sie zmienia (rosnie) z wiekiem
 	static short max_sila;//Maksymalna sila agenta
     static short min_sila;//i minimalna
@@ -19,7 +20,7 @@ class jagent:public agent_base
 	// SKLADOWE DLA SYMULACJI
 	short Power;	//Sila agenta
 	unsigned long  Age;      //Wiek pogladu agenta
-	unsigned long  Politics; //Przynale¿noœæ polityczna
+	unsigned long  Politics; //PrzynaleÅ¼noÅ›Ä‡ polityczna
     
     union{
     struct{
@@ -27,7 +28,7 @@ class jagent:public agent_base
 	short Second;	//Drugie przekonanie
 	short Third;	//Trzecie przekonanie
     };
-    short FST[3];   //Widziane jako tablica short-ów
+    short FST[3];   //Widziane jako tablica short-Ã³w
     };
 
 	void _clean();

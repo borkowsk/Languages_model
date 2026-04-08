@@ -50,7 +50,7 @@ ENDIF()
 add_executable( languages
                 src/jezyk.cpp
                 src/about_languages.cpp
-                src/conditionalbias.cpp
+                # src/conditionalbias.cpp
                 src/jagent.h
                 src/jbias.cpp
                 src/jrand.h

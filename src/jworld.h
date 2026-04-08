@@ -1,19 +1,22 @@
 //DECLARATION OF   W O R L D  FOR "LANGUAGES" SIMULATION
 /////////////////////////////////////////////////////////
-#include <limits.h> //SHRT_MAX
-#include "SYMSHELL/world.hpp"
-#include "SYMSHELL/layer.hpp"
+#pragma once
+#include <climits> //SHRT_MAX
+
+#include "compatyb.h"
+#include "world.hpp"
+#include "layer.hpp"
 #include "jagent.h" //Definicja agenta
 
-extern bool     Console;//=false;  //Wskaünik pracy w trybie konsolowym - bez grafiki
-extern const int BIAS_FOR_ANY;//=8;//wartoúc oznaczajaca "wszystko jedno" w bias'ach warunkowych - wieksza niz najwieksza wartosc w warstwie
+extern bool     Console;//=false;  //Wska≈∫nik pracy w trybie konsolowym - bez grafiki
+extern const int BIAS_FOR_ANY;//=8;//warto≈õc oznaczajaca "wszystko jedno" w bias'ach warunkowych - wieksza niz najwieksza wartosc w warstwie
 
 class jworld:public world	//Caly swiat symulacji
 //--------------------------------------------------
 {
 public:
 
-//Informacje niezbedne do efektywnej implementacji rÛznych trybÛw biasu
+//Informacje niezbedne do efektywnej implementacji r√≥znych tryb√≥w biasu
 ////////////////////////////////////////////////////////////////////////////////
 enum SymulMode {NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,INVALID_BIAS_MODE=4};
 	
@@ -56,17 +59,17 @@ private:
 ////////////////////////////////////////
 //Pomocnicze metody
 void	_update_age();
-bool	_xy_of_far_link_of(unsigned a,unsigned b,unsigned& x,unsigned& y);//Jak zwraca false to nie wolno sprawdzaÊ dalej
-void	_connect_flink_to(unsigned a,unsigned b,unsigned target_a,unsigned target_b);//Realizuje zadane po≥aczenie do (w za≥ozeniu silniejszego) agenta target_a,target_b
-void	_connect_far_links(double Percent);//Probuje prze≥πczyc pewien procent dalekich linkÛw
+bool	_xy_of_far_link_of(size_t aa, size_t bb, unsigned& x, unsigned& y);//Jak zwraca false to nie wolno sprawdzaƒá dalej
+void	_connect_flink_to(unsigned a,unsigned b,unsigned target_a,unsigned target_b);//Realizuje zadane po≈Çaczenie do (w za≈Çozeniu silniejszego) agenta target_a,target_b
+void	_connect_far_links(double Percent);//Probuje prze≈ÇƒÖczyc pewien procent dalekich link√≥w
 
-//W≥aúciwe kroki rÛønych typÛw zaleznych od implementacji biasu
+//W≈Ça≈õciwe kroki r√≥≈ºnych typ√≥w zaleznych od implementacji biasu
 void	_one_step_no_bias();
 void	_one_step_simple_bias();
 void	_one_step_conditional_bias();
 void	_one_step_sequentional_bias();
 
-//Bezpoúrednie stastyki symulacji w krokach
+//Bezpo≈õrednie stastyki symulacji w krokach
 double SW_dynamic_perc;
 public:
 double get_last_SW_dynamic() { return SW_dynamic_perc;}
@@ -85,9 +88,9 @@ short				OdlSasiad;	//Rozmiar sasiedztwa
 short				UseSelf;	//Czy ma brac siebie pod uwage
 double				Noise;		//Szum informacyjny na stykach
 double              spontanic;	//Spontaniczne mutacje
-bool 				use_SW_links;//Czy uøywamy dalekich linkÛw
-double				SW_startconnect_percent;//Ile procent prÛb SW przed startem
-double				SW_reconect_percent;//Procent zmian dalekich linkÛw na krok
+bool 				use_SW_links;//Czy u≈ºywamy dalekich link√≥w
+double				SW_startconnect_percent;//Ile procent pr√≥b SW przed startem
+double				SW_reconect_percent;//Procent zmian dalekich link√≥w na krok
 wb_pchar			MappName;	//nazwa pliku inicjujacej bitmapy
 wb_pchar			MaplName;	//nazwa pliku inicjujacej bitmapy
 wb_pchar			MaskName;	//nazwa pliku inicjujacej bitmapy
@@ -99,8 +102,8 @@ wb_ptr<_bias_information_base>  BiasDefinition;     //"Skompilowane" informacje 
 //Warstwy symulacji (sa torusami)
 /////////////////////////////////
 //rectangle_unilayer<unsigned char> zdatnosc;//Warstwa definiujaca zdatnosc do zasiedlenia
-rectangle_layer_of_ptr_to_agents<jagent> Agenci;  //Wlaúciwa warstwa agentow zasiedlajacych
-rectangle_layer_of_struct<_far_link> FarLinks; //Warstwa dalekich po≥πczeÒ. Nie w agentach bo moøe byÊ sta≥a mimo ruchu agentÛw
+rectangle_layer_of_ptr_to_agents<jagent> Agenci;  //Wla≈õciwa warstwa agentow zasiedlajacych
+rectangle_layer_of_struct<_far_link> FarLinks; //Warstwa dalekich po≈ÇƒÖcze≈Ñ. Nie w agentach bo mo≈ºe byƒá sta≈Ça mimo ruchu agent√≥w
 
 //Glowne serie - wygodniej miec wskazniki niz odszukiwac z Sources po nazwach
 ////////////////////////////////////////////////////////////////////////////////
@@ -133,9 +136,9 @@ jworld(size_t Width,	//Szerokosc torusa macierzy agentow
 	  short walkpower=0,	//Czy sila rosnie z wiekiem agenta 
 	  short trespower=SHRT_MAX,  //Sila powyzej ktorej agent jest odporny na wplyw
 	  double spontanic=0,    //Prawdopodobienstwo (?) spontanicznych mutacji
-	  bool i_use_SW_links=true,//Czy uøywamy dalekich linkÛw
+	  bool i_use_SW_links=true,//Czy u≈ºywamy dalekich link√≥w
 	  double i_SW_startconnect_percent=0,
-	  double i_SW_reconect_percent=0//Procent zmian dalekich linkÛw na krok
+	  double i_SW_reconect_percent=0//Procent zmian dalekich link√≥w na krok
 	  );	
 
 ~jworld(){}
@@ -175,7 +178,7 @@ void	simulate_one_step();	//Wlasciwa implementacja kroku symulacji
 
 //Wspolpraca z menagerem wyswietlania
 //------------------------------------------------------------------
-void	make_default_visualisation();//Tworzy domyslne "lufciki" i umieszcza w swoim menagerze obszarÛw
+void	make_default_visualisation();//Tworzy domyslne "lufciki" i umieszcza w swoim menagerze obszar√≥w
 //void actualize_out_area(); // aktualizacja zawartosci OutArea po n krokach symulacji
 
 //Generuje podstawowe zrodla dla wbudowanego menagera danych lub innego
@@ -311,11 +314,11 @@ public:
 };
 
 inline
-bool	jworld::_xy_of_far_link_of(	unsigned aa,
-									unsigned bb,
+bool	jworld::_xy_of_far_link_of(	size_t aa,
+									size_t bb,
 									unsigned& x,
 									unsigned& y)
-//Jak zwraca false to nie wolno sprawdzaÊ dalej
+//Jak zwraca false to nie wolno sprawdzaƒá dalej
 {
 	 if( ( FarLinks.get(aa,bb).a ) !=  UINT_MAX  )
 	 {             					//assert(FarLinks.get(a,b).b!=UINT_MAX);
@@ -332,14 +335,14 @@ void	jworld::_connect_flink_to(	unsigned a,
 									unsigned b,
 									unsigned target_a,
 									unsigned target_b)
-//Realizuje zadane po≥aczenie do (w za≥ozeniu silniejszego) agenta target_a,target_b
+//Realizuje zadane po≈Çaczenie do (w za≈Çozeniu silniejszego) agenta target_a,target_b
 {
-  if((FarLinks.get(a,b).a)!=UINT_MAX) //Trzeba odliczyÊ od starego targetu
+  if((FarLinks.get(a,b).a)!=UINT_MAX) //Trzeba odliczyƒá od starego targetu
   { 		assert(FarLinks.get(a,b).b!=UINT_MAX);
 	(FarLinks.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).count)--;
 			assert(FarLinks.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).count!=UINT_MAX);
   }
-  FarLinks.get(a,b).a=target_a;//Nowe po≥πczenie
+  FarLinks.get(a,b).a=target_a;//Nowe po≈ÇƒÖczenie
   FarLinks.get(a,b).b=target_b;//c.d.
   FarLinks.get(target_a,target_b).count++;//Doliczamy do nowego targetu
 
