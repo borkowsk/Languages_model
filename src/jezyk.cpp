@@ -1,9 +1,36 @@
 //	JEZYK	
+//			versja  1.53a - drobne zmiany konieczne do uruchomienia komplacji pod BDS 2006
+//
+//			versja  1.51-2 - drobne zmiany kosmetyczne.
+//
+//			version 1.5 - dodanie mapy jezyków TrueColor, i map skladowych w kolorach skladowych RGB. 			
+//							Zmiana domyslnych parametrów startowych
+//          version 1.41a 
+//                        - dodanie wieku jezyka danego agenta i seri danych to przedstawiajacej 
+//                          na wykresie logarytmicznym
+//          
+//          version 1.402a
+//                        - Wprowadzenie 12 klas do LogLog histogramu dodanego w wersji 1.401  
+//          version 1.401b              
+//                        - zmiana histogramu LogLog rozmiaru jezyków na typ fix o 6 klasach
+//                          czyli efekt wizualny bardzo podobny, ale inaczej oznakowane klasy
+//                        - dodanie fix-histogramu klas rozmiaru jezyków 
+//          version 1.4 - dodanie mutacji spontanicznych we wszystkich wersjach basiowania, 
+//                      - wprowadzenie mozliwosci wylaczenia korelacji przestrzennej (UseSpatialCorr) z KODU!!!
+//                      - wprowadzenie wykresu log-log rozkladu rozmiarów jêzyków (dhistosou.h),
+//                      - wprowadzenie wpisywania tego histogramu do logu 
+//                      - uzupelnienie czesci komunikatów o ustawieniach parametrów (ale czesc zostalo bez)
+//                      - wprowadzenie parametru DSTB ostalajace rodzaj i stopien rozkladu sil (uzyskiwany przez * lub +)
+//          TEST:
+//          .........WIDTH=100 DSTB=-8 CLSS=8 MIPO=3 RSPC=1 VIEW=50 LOGF=10 LOGF=testW100.log
+//
+//          version 1.35a - ???
 //          version 1.34a - usuniecie asercji zabezpieczajacych przed agentami o zerowej sile i wprowadzenie minimalnej sily (def. = 1)
 //          version 1.33a - rekompilacja do nowej biblioteki i dodanie menu
 //          version 1.32a - rekompilacja z nowa wersja biblioteki wizualizacji i wprowadzenie pliku "about_labguages.cpp" z kontrola czasu dla DEBUG
 //          version 1.31a - wprowadzono inicjalizacje jezykow (pogladow) z trzech plikow graficznych w odcieniach szarosci
-//          version 1.3a - wprowadzony podwojny baias w wersji nastepczej, rownolegly dziala zle - wymaga inteligentnego przewazenia licznikow        
+//          version 1.3a - wprowadzony podwojny baias w wersji nastepczej, rownolegly dziala zle - 
+//                              wymaga inteligentnego przewazenia licznikow        
 //          version 1.2a - przygotowanie do wprowadzenia "podwojnego biasu"
 //			version 1.01b - poprawiony default dla tresholdu sily
 //			version 1.05b - wbudowana obsluga pracy w batch'u i powtarzania eksperymentu
@@ -13,48 +40,60 @@
 /////////////////////////////////////////////////////////////////////
 // Symulacja rozprzestrzeniania sie zachowan jezykowych
 // metoda wielowarstwowego przekazywania przekonan
-//
-const char* WINDOW_HEADER="LANGUAGES version 1.35b, compilation "__DATE__ ", " __TIME__ ;
+//  
+const char* WINDOW_HEADER="LANGUAGES version 1.53a, compilation "__DATE__ ", " __TIME__ ;
 const char* Authors="(programed by W.Borkowski for ISS UW & Ohio State Univ.)";
 const char* SCREENDUMPNAME="LANGUAGES";
 
 #include <stdlib.h>
-#include <iostream.h>
 #include <time.h>
 
-#include "wbminmax.hpp"
+#include "INCLUDE/platform.hpp"
+#ifdef NEW_FASHION_CPP
+#include <iostream>
+using namespace std;
+#else
+#include <iostream.h>
+#endif
+
+#include "INCLUDE/wbminmax.hpp"
 #include "jrand.h"
 #include "jworld.h"
 
 unsigned SWIDTH=750;
 unsigned SHEIGHT=550;
 
-unsigned internal_log=7000; //Nieobiektowo przekazywane do metody inicializacji zrodel 
-unsigned spatial_correlation_mode=20;  //-------------//------------------//---------------------
-char  LogName[512]="language.log\0-------------------+--";
-char HistName[512]="\0--+---------language.otx----------";
-char MapLName[512]="\0--+---------language.gif----------";
+//Nieobiektowo przekazywane do metody inicializacji zrodel 
+unsigned internal_log=10000; //Domyslna dlugosc wewnetrznych logów
+bool UseSpatialCorr=false;   //Uzywanie korelacji przestrzennej (kosztownej w liczeniu)
+unsigned spatial_correlation_mode=20;  //Liczba przebiegow losowan w ekonomiczniejszym trybie liczenia korelacji przestrzennej
+
+char  LogName[512]="languages.log\0-------------------+--";
+char HistName[512]="\0--+---------languages.otx----------";
+char MapLName[512]="\0--+---------languages.gif----------";
 char MapPName[512]="\0--+---------powers.gif------------";
 char MaskName[512]="\0--+---------mask.gif--------------";
-unsigned iWidth=50;
+unsigned iWidth=100;
 unsigned iMaxIterations=0xffffffff;
 unsigned iLogRatio=10;
 unsigned iViewRatio=1;
 
 int  RuchomaSila=0;			//Czy sila ma sie powiekrzac "z wiekiem"
-int  MaksymalnaSila=100;	//Jaka najwieksza sila
-int  MinimalnaSila=1;       //Jaka najmniejsza sila
-int  TresProcent=100;		//Powyzej jakiej sily zmiany "pogladu" sa juz niemozliwe
+int  MaksymalnaSila=10000;		//Jaka najwieksza sila
+int  MinimalnaSila=10;      //Jaka najmniejsza sila - jak takie same to ta sama wartosc wszedzie
+int  TresProcent=10000;		//Powyzej jakiej sily zmiany "pogladu" sa juz niemozliwe
 
-int  IloscKlas=4;
-int  ProcentSzumu=0;
+int  IloscKlas=128;
+double ProcentSzumu=0;
+double MutacjeSpon=0;
 int  RozmiarSasiedztwa=1;
 int  IleSasiadow=8;
 int  BranieSiebie=1;
 int  iWychodzenie=0;
 int  Replay=0;
 int	 AUTOSTART=0;
-const char* BIAS_STR="";		//Zapis biasu zebrany z lini parametrow
+int  DistributionLevel=1;      //Rodzaj i stopien rozkladu sil
+const char* BIAS_STR="";		//Zapis biasu zebrany z linii parametrow
 
 int parse_options(const int argc,const char* argv[]);//Zapowiedz
 
@@ -91,6 +130,7 @@ jworld& tenSwiat=*new jworld(iWidth,
 						   MapLName,
 						   MapPName,
 						   MaskName,
+                           DistributionLevel,
 						   ProcentSzumu/100.0,//Szum od 0-1
 						   MaksymalnaSila,//Zeby byla w przedziale
                            MinimalnaSila,
@@ -99,7 +139,8 @@ jworld& tenSwiat=*new jworld(iWidth,
 						   IleSasiadow,
 						   BranieSiebie,
 						   RuchomaSila,
-						   (MaksymalnaSila*TresProcent)/100.0
+						   (MaksymalnaSila*TresProcent)/100.0,
+                            MutacjeSpon
 						   );
 
 if(&tenSwiat==NULL)
@@ -116,11 +157,12 @@ tenSwiat.set_log_ratio(iLogRatio);
 tenSwiat.set_bias_from_str(BIAS_STR);
 cout<<WINDOW_HEADER<<": LOADED."<<endl;
 tenSwiat.set_history_stream(HistName);
-
 if(Replay)
 {	
 	tenSwiat.initialize(&Lufciki,1);//inicjalizacja wizualizacji
 	cout<<WINDOW_HEADER<<": PREPARED FOR READING. WAITING!"<<endl;
+	Lufciki.restore(0);
+	Lufciki.replot(0);
 	Lufciki.process_input();//Pierwsze zdazenia. Koncza sie po ctrl-B
 	tenSwiat.read_loop(iWychodzenie);
 }
@@ -130,9 +172,11 @@ else
 	cout<<WINDOW_HEADER<<": INITIALISED."<<endl;
 	if(!AUTOSTART)
 	{
-		Lufciki.process_input();//Pierwsze zdazenia. Koncza sie po ctrl-B	
+		//Lufciki.process_input();//Pierwsze zdazenia. Koncza sie po ctrl-B	
 		//GLOWNA PETLA SYMULACJI
 		cout<<WINDOW_HEADER<<": STARTED."<<endl;
+		Lufciki.restore(0);
+		Lufciki.replot(0);
 		tenSwiat.simulation_loop(iWychodzenie);
 	}
 	else
@@ -188,18 +232,29 @@ int parse_options(const int argc,const char* argv[])
 	*pom='\0';
 	strupr(rob);
 	*pom='=';
-
+    if((pom=strstr(rob,"SPCH="))!=NULL) //Nie NULL czyli jest
+	{
+	MutacjeSpon=atof(pom+5);
+    if(MutacjeSpon<=0 || MutacjeSpon>100)
+		{
+		cerr<<"!!! Bad SPCH ="<<MutacjeSpon<<" (must be in <0,100> )"<<endl;
+		return 0;
+		}
+	cerr<<"* Spontanic change ratio in %: SPCH= "<<MutacjeSpon<<endl;
+	MutacjeSpon/=100;//Ulamek a nie procent tak naprawde
+	}
+    else
 	if((pom=strstr(rob,"NOIP="))!=NULL) //Nie NULL czyli jest
 	{
-	ProcentSzumu=atol(pom+5);
-    if(ProcentSzumu<0 || ProcentSzumu>100)
+	ProcentSzumu=atof(pom+5);
+    if(ProcentSzumu<=0 || ProcentSzumu>100)
 		{
-			cerr<<"Bad NOIP ="<<ProcentSzumu<<" (must be in <0,100> )"<<endl;
+			cerr<<"!!! Bad NOIP ="<<ProcentSzumu<<" (must be in <0,100> )"<<endl;
 			return 0;
 		}
 		else
 		{
-			cerr<<"Noise = "<<ProcentSzumu<<"%"<<endl;
+			cerr<<"* Noise in decision in %: NOIP= "<<ProcentSzumu<<"%"<<endl;
 		}
 	}
     else
@@ -208,14 +263,15 @@ int parse_options(const int argc,const char* argv[])
 	IloscKlas=atol(pom+5);
     if(IloscKlas<2)
 		{
-		cerr<<"Bad CLSS ="<<IloscKlas<<" (must be greater than 2 )"<<endl;
+		cerr<<"!!! Bad CLSS ="<<IloscKlas<<" (must be greater than 2 )"<<endl;
 		return 0;
 		}
-	if(IloscKlas>8)
+	if(IloscKlas>256)
 		{
-		cerr<<"Bad CLSS ="<<IloscKlas<<" (must be less or equal to 8 )"<<endl;
+		cerr<<"!!! Bad CLSS ="<<IloscKlas<<" (must be less or equal to 8 )"<<endl;
 		return 0;
 		}
+    cerr<<"* Number of classes in each mem: CLSS= "<<IloscKlas<<endl;
 	}
     else
 	if((pom=strstr(rob,"MIPO="))!=NULL) //Nie NULL czyli jest
@@ -223,10 +279,10 @@ int parse_options(const int argc,const char* argv[])
 	MinimalnaSila=atol(pom+5);
     if(MinimalnaSila<0)//0 czy 1???
 		{
-		cerr<<"Bad MIPO ="<<MinimalnaSila<<" (must be >=1 )"<<endl;
+		cerr<<"!!! Bad MIPO ="<<MinimalnaSila<<" (must be >=1 )"<<endl;
 		return 0;
 		}
-    cerr<<"MIPO (Minimal strenght) = "<<MinimalnaSila<<endl;
+    cerr<<"* Minimal strenght: MIPO= "<<MinimalnaSila<<endl;
 	}
     else
 	if((pom=strstr(rob,"MPOW="))!=NULL) //Nie NULL czyli jest
@@ -234,10 +290,10 @@ int parse_options(const int argc,const char* argv[])
 	MaksymalnaSila=atol(pom+5);
     if(MaksymalnaSila<0)//0 czy 1???
 		{
-		cerr<<"Bad MPOW ="<<MaksymalnaSila<<" (must be >=1 )"<<endl;
+		cerr<<"!!! Bad MPOW ="<<MaksymalnaSila<<" (must be >=1 )"<<endl;
 		return 0;
 		}
-    cerr<<"MPOW (Max strenght) = "<<MaksymalnaSila<<endl;
+    cerr<<"* Max strenght: MPOW= "<<MaksymalnaSila<<endl;
 	}
     else
 	if((pom=strstr(rob,"WPOW="))!=NULL) //Nie NULL czyli jest
@@ -245,10 +301,10 @@ int parse_options(const int argc,const char* argv[])
 	RuchomaSila=atol(pom+5);
     if(RuchomaSila<0)
 		{
-		cerr<<"Bad WPOW ="<<RuchomaSila<<" (must be >=0 )"<<endl;
+		cerr<<"!!! Bad WPOW ="<<RuchomaSila<<" (must be >=0 )"<<endl;
 		return 0;
 		}
-	cerr<<"WPOW="<<RuchomaSila<<endl;
+	cerr<<"* Moving strenght: WPOW= "<<RuchomaSila<<endl;
 	}
 	else
     if((pom=strstr(rob,"TRSP="))!=NULL) //Nie NULL czyli jest
@@ -256,16 +312,16 @@ int parse_options(const int argc,const char* argv[])
 	TresProcent=atol(pom+5);
     if(TresProcent<0 || TresProcent>100)
 		{
-		cerr<<"Bad TRSP = "<<int(TresProcent)<<"(must be in <0,100>"<<endl;
+		cerr<<"!!! Bad TRSP = "<<int(TresProcent)<<"(must be in <0,100>"<<endl;
 		return 0;
 		}
 		else
 		{
-		cerr<<"Treshold of strenght for change parameters = "<<int(TresProcent)<<"%"<<endl;
+		cerr<<"* Immunisation strenght treshold : TRSP= "<<int(TresProcent)<<"%"<<endl;
 		if(RuchomaSila==0)//Nie ma sensu TRSP jesli nie jest ruchoma sila
 			{
 			RuchomaSila=1;
-			cerr<<"Automatically set WPOW to "<<RuchomaSila<<endl;
+			cerr<<"** Automatically set WPOW to "<<RuchomaSila<<endl;
 			}
 		}
 	}
@@ -273,11 +329,14 @@ int parse_options(const int argc,const char* argv[])
     if((pom=strstr(rob,"WIDTH="))!=NULL) //Nie NULL czyli jest
 	{
 	iWidth=atol(pom+6);
-    if(iWidth<3 || iWidth>=SWIDTH)
+    if(iWidth<3)
 		{
-		cerr<<"Bad WIDTH = "<<iWidth<<"(must be in <3,"<<SWIDTH<<">"<<endl;
+		cerr<<"!!! Bad WIDTH = "<<iWidth<<"(must be in <3,"<<SWIDTH<<">"<<endl;
 		return 0;
 		}
+	if(iWidth>=SWIDTH)
+		cerr<<"!!! WIDTH ("<<iWidth<<") is realy high!\n Simulation world may be larger than the window or even the screen."<<endl;
+    cerr<<"* World width: WIDTH= "<<iWidth<<'x'<<iWidth<<endl;
 	}
 	else
     if((pom=strstr(rob,"WIDTHWIN="))!=NULL) //Nie NULL czyli jest
@@ -285,7 +344,7 @@ int parse_options(const int argc,const char* argv[])
 	SWIDTH=atol(pom+9);
     if(SWIDTH<50)
 		{
-		cerr<<"Bad WIDTHWIN = "<<SWIDTH<<" (must be >50)"<<endl;
+		cerr<<"!!! Bad WIDTHWIN = "<<SWIDTH<<" (must be >50)"<<endl;
 		return 0;
 		}
 	}
@@ -295,7 +354,7 @@ int parse_options(const int argc,const char* argv[])
 	SHEIGHT=atol(pom+10);
     if(SHEIGHT<50)
 		{
-		cerr<<"Bad HEIGHTWIN = "<<SHEIGHT<<" (must be >50)"<<endl;
+		cerr<<"!!! Bad HEIGHTWIN = "<<SHEIGHT<<" (must be >50)"<<endl;
 		return 0;
 		}
 	}
@@ -305,13 +364,10 @@ int parse_options(const int argc,const char* argv[])
     iMaxIterations=atol(pom+4);
     if(iMaxIterations<=0)
 		{
-		cerr<<"Bad MAX iterations. Must be >0"<<endl;
+		cerr<<"!!! Bad MAX iterations. Must be >0"<<endl;
 		return 0;
         }    
-		else
-		{
-			internal_log=iMaxIterations+1;
-		}
+	cerr<<"Maximal number of steps: MAX= "<<iMaxIterations<<endl;
     }
     else
     if((pom=strstr(rob,"LOGC="))!=NULL) //Nie NULL czyli jest
@@ -319,7 +375,7 @@ int parse_options(const int argc,const char* argv[])
     iLogRatio=atol(pom+5);
     if(iLogRatio<=0)
 		{
-		cerr<<"Bad LOGC (write to log frequency). Must be >0"<<endl;
+		cerr<<"!!! Bad LOGC (write to log frequency). Must be >0"<<endl;
 		return 0;
         }
     }
@@ -329,7 +385,7 @@ int parse_options(const int argc,const char* argv[])
     iViewRatio=atol(pom+5);
     if(iViewRatio<=0)
 		{
-		cerr<<"Bad VIEW (visualisation frequency). Must be >0"<<endl;
+		cerr<<"!!! Bad VIEW (visualisation frequency). Must be >0"<<endl;
 		return 0;
         }
     }    
@@ -346,11 +402,11 @@ int parse_options(const int argc,const char* argv[])
     if( RozmiarSasiedztwa>=1U && 
 		RozmiarSasiedztwa<(iWidth/2-1))
 		{
-		cerr<<"INDI="<<RozmiarSasiedztwa<<endl;;
+		cerr<<"* Radius of neighborhood: INDI="<<RozmiarSasiedztwa<<endl;;
 		}
 		else
 		{
-		cerr<<"Bad INDI="<<RozmiarSasiedztwa<<" Must from 1 to "<<iWidth/2-1<<endl;
+		cerr<<"!!! Bad INDI="<<RozmiarSasiedztwa<<" Must from 1 to "<<iWidth/2-1<<endl;
 		return 0;
         }
     }
@@ -360,12 +416,12 @@ int parse_options(const int argc,const char* argv[])
     IleSasiadow=atol(pom+5);
     if(IleSasiadow>1 && IleSasiadow<=sqr(RozmiarSasiedztwa*2+1)-1)
 		{
-		cerr<<"PRTR="<<IleSasiadow<<endl;
+		cerr<<"* How many real neighbours: PRTR="<<IleSasiadow<<endl;
 		}
 		else
 		{
-		cerr<<"Bad PRTR="<<IleSasiadow
-			<<" Must from 2 to "<<sqr(RozmiarSasiedztwa*2+1)-1<<endl;
+		cerr<<"!!! Bad PRTR="<<IleSasiadow
+			<<"! Must from 2 to "<<sqr(RozmiarSasiedztwa*2+1)-1<<endl;
 		return 0;
         }
     }
@@ -373,18 +429,18 @@ int parse_options(const int argc,const char* argv[])
 	if((pom=strstr(rob,"AUTO="))!=NULL) //Nie NULL czyli jest
     {
     AUTOSTART=atol(pom+5);
-	cerr<<"AUTO="<<AUTOSTART<<endl;
+	cerr<<"* AUTO="<<AUTOSTART<<endl;
 	if(AUTOSTART)
 		{
 		iWychodzenie=1;
-		cerr<<"STOP="<<(iWychodzenie?"Yes":"No")<<endl;
+		cerr<<"** STOP="<<(iWychodzenie?"Yes":"No")<<endl;
 		}
     }
 	else
 	if((pom=strstr(rob,"BIAS="))!=NULL) //Nie NULL czyli jest
     {
     BIAS_STR=rob+5;
-	cerr<<"BIAS = "<<BIAS_STR<<endl;
+	cerr<<"* BIAS = "<<BIAS_STR<<endl;
 	static wb_pchar taker;
 	taker=hand.give();//Zabiera zarzad. Zwolnienie na koncu programu.
     }
@@ -392,7 +448,7 @@ int parse_options(const int argc,const char* argv[])
 	if((pom=strstr(rob,"STOP="))!=NULL) //Nie NULL czyli jest
     {
     iWychodzenie=(toupper(pom[5])=='Y');
-	cerr<<"STOP="<<(iWychodzenie?"Yes":"No")<<endl;
+	cerr<<"* Automatic exit when done: STOP="<<(iWychodzenie?"Yes":"No")<<endl;
     }
     else
 	if((pom=strstr(rob,"ILOG="))!=NULL) //Nie NULL czyli jest
@@ -401,10 +457,22 @@ int parse_options(const int argc,const char* argv[])
 	if(internal_log<50)
 			{
 			internal_log=50;
-			cerr<<"Internal log to short. Reset to default minimum ="<<internal_log<<endl;
+			cerr<<"!!! Internal log to short. Reset to default minimum ="<<internal_log<<endl;
 			}
     }
-	else
+    //cerr<<"\tDSTB=N - level and kind of strength distribution ("<<DistributionLevel<<")\n";
+	 else
+	if((pom=strstr(rob,"DSTB="))!=NULL) //Nie NULL czyli jest
+    {
+    DistributionLevel=atoi(pom+5);
+	if(DistributionLevel==0 || abs(DistributionLevel)>100)
+			{			
+			cerr<<"!!! Invalid value of Distribution Level/Kind ="<<DistributionLevel<<endl;
+			}
+            else
+            cerr<<"* Distribution Level/Kind DSTB="<<DistributionLevel<<endl;
+    }
+    else
 	if((pom=strstr(rob,"LOGF="))!=NULL) //Nie NULL czyli jest
     {
     strcpy(LogName,pom+5);
@@ -412,45 +480,50 @@ int parse_options(const int argc,const char* argv[])
     if((pom=strstr(rob,"MAPL="))!=NULL) //Nie NULL czyli jest
     {
     strcpy(MapLName,pom+5);
-	cerr<<"Map of languages from file \""<<MapLName<<"\"\n";
+	cerr<<"* Map of languages from file \""<<MapLName<<"\"\n";
     }
 	else
 	if((pom=strstr(rob,"MAPP="))!=NULL) //Nie NULL czyli jest
     {
     strcpy(MapPName,pom+5);
-	cerr<<"Map of individual power from file \""<<MapPName<<"\"\n";
+	cerr<<"* Map of individual power from file \""<<MapPName<<"\"\n";
     }
 	else
 	if((pom=strstr(rob,"MASK="))!=NULL) //Nie NULL czyli jest
     {
     strcpy(MaskName,pom+5);
-	cerr<<"Mask for alive agents from file \""<<MaskName<<"\"\n";
+	cerr<<"* Mask for alive agents from file \""<<MaskName<<"\"\n";
     }	
 	else
 	if((pom=strstr(rob,"HIST="))!=NULL) //Nie NULL czyli jest
     {
     strcpy(HistName,pom+5);
-	cerr<<"History of the symulation will be saved to \""<<HistName<<"\"\n";
+	cerr<<"* History of the symulation will be saved to \""<<HistName<<"\"\n";
     }
 	else
 	if((pom=strstr(rob,"REPL="))!=NULL) //Nie NULL czyli jest
     {
     strcpy(HistName,pom+5);
 	Replay=1;
-	cerr<<"The symulation will be replayed from \""<<HistName<<"\"\n";
+	cerr<<"* The symulation will be replayed from \""<<HistName<<"\"\n";
     }
     else
     if((pom=strstr(rob,"RSPC="))!=NULL) 
     {
-    const char* lpom=pom+5;
-    if(toupper(*lpom)=='N')
-        spatial_correlation_mode=0;
-    else
-    if(toupper(*lpom)=='Y')
-        spatial_correlation_mode=16;
-    else
-        spatial_correlation_mode=atoi(lpom);
-    cerr<<"Random calculation of spatial correlation is "<<(spatial_correlation_mode==0?"d i s a b l e d":"e n a b l e d")<<". Multiplication="<<spatial_correlation_mode<<"\n";
+        if(UseSpatialCorr)
+        {
+        const char* lpom=pom+5;
+        if(toupper(*lpom)=='N')
+            spatial_correlation_mode=0;
+        else
+        if(toupper(*lpom)=='Y')
+            spatial_correlation_mode=16;
+        else
+            spatial_correlation_mode=atoi(lpom);
+         cerr<<"* Random calculation of spatial correlation is "<<(spatial_correlation_mode==0?"d i s a b l e d":"e n a b l e d")<<". Multiplication="<<spatial_correlation_mode<<"\n";
+        }
+        else
+            cerr<<"!!! Sorry but spatial correlation is disabled, RSPC was ignored."<<endl;
     }
 	else
 	if((pom=strstr(rob,"HELP"))!=NULL) //Nie NULL czyli jest
@@ -465,16 +538,18 @@ HELPPRINT:
 		cerr<<"\tMASK=mask.gif	(or BMP)- mask file for alive (not black) agents (ALL ALIVE)\n";
 		cerr<<"\tWIDTH=NN - matrix size ("<<iWidth<<")\n";
 		cerr<<"\tBIAS=item item ... - setting bias by items string (NO BIAS)\n"<<
-			  "\t\tan item string example: \"A1:1 A2:4 B2:2 C2:4 A4&C3:10 A5&B5&C5:12\"\n"; 
+			  "\t\the item string example: \"A1:1 A2:4 B2:2 C2:4 A4&C3:10 A5&B5&C5:12\"\n"; 
 		cerr<<"\tCLSS=NN - number of class. Must be power of 2. ("<<IloscKlas<<")\n";
 		cerr<<"\tMPOW=NN - max strength for initilization ("<<MaksymalnaSila<<")\n"	;
         cerr<<"\tMIPO=NN - min strength for initilization ("<<MinimalnaSila<<")\n"	;
+        cerr<<"\tDSTB=N - level and kind of strength distribution ("<<DistributionLevel<<")\n";
 		cerr<<"\tWPOW=N	- walking step of strenght	("<<RuchomaSila<<")\n";
 		cerr<<"\tTRSP=N - % of treshold of strenght ("<<TresProcent<<")\n";
 		cerr<<"\tPRTR=2..WIDTH^2-1 - number of interaction partners ("<<IleSasiadow<<")\n";
 		cerr<<"\tINDI=1..WIDTH/2-1 - interaction distance ("<<RozmiarSasiedztwa<<")\n";
 		cerr<<"\tSELF=N/Y -use self for calculations ("<<(BranieSiebie?"Yes":"No")<<")\n";
 		cerr<<"\tNOIP=NN - percent of noise ("<<ProcentSzumu<<")\n";		
+        cerr<<"\tSPCH=NN - percent of spontanic change of attitudes ("<<MutacjeSpon*100<<")\n";
 		cerr<<"\tMAX=NNNN - max simulation step ("<<iMaxIterations<<")\n";
 		cerr<<"\tILOG=NNNN - lenght of internal statistic logs  ("<<internal_log<<")\n";
 		cerr<<"\tSTOP=N/Y - exit after MAX steps ("<<(iWychodzenie?"Yes":"No")<<")\n";

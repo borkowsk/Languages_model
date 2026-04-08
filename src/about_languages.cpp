@@ -1,9 +1,11 @@
 #include <windows.h> 
-#include "symshwin.h"
 #include <time.h>
 #include <stdio.h>
+#include "SYMSHELL/src/Windows/symshwin.h"
 
-const ILE_SEC=30; //Ile sekund czeka na OK
+//WIDTH=100 DSTB=-8 CLSS=8 MIPO=3 RSPC=1 VIEW=50 LOGF=10 LOGF=testW100.log
+
+const int ILE_SEC=30; //Ile sekund czeka na OK
 extern char* blebleblebleble;
 
 #ifndef NDEBUG
@@ -22,7 +24,7 @@ public:
 		
 		newtime = localtime( &aclock );  /* Convert time to struct */
 		/* tm form */
-		if(newtime->tm_year>105)
+		if(newtime->tm_year>110)
         {
             fprintf(stderr,"%s",blebleblebleble);
 			abort();

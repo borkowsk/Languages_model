@@ -1,12 +1,12 @@
 //DECLARATION OF   W O R L D  FOR "LANGUAGES" SIMULATION
 /////////////////////////////////////////////////////////
 #include <limits.h> //SHRT_MAX
-#include "world.hpp"
-#include "layer.hpp"
+#include "SYMSHELL/world.hpp"
+#include "SYMSHELL/layer.hpp"
 #include "jagent.h" //Definicja agenta
 
   
-const BIAS_FOR_ANY=8;//wartoœc oznaczajaca "wszystko jedno" w bias'ach warunkowych - wieksza niz najwieksza wartosc w warstwie
+const int BIAS_FOR_ANY=8;//wartoœc oznaczajaca "wszystko jedno" w bias'ach warunkowych - wieksza niz najwieksza wartosc w warstwie
 
 class jworld:public world	//Caly swiat symulacji
 //--------------------------------------------------
@@ -25,8 +25,8 @@ enum SymulMode {NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,I
         _bias_information_base(short* ini):PtrIleKate(ini){}//Nie ma nic do roboty
         virtual ~_bias_information_base(){} //Wirtualny destruktor dla zapewnienia wlasciwej dealokacji
         virtual void clean() {}             //Czyszczenie zawartosci definicji biasu - tu puste
-        virtual int read_one_bias_item(istream& i)=0//Wczytanie elementarnej definicji bias'u - tu atrapa
-        {
+		virtual int read_one_bias_item(istream& i)//=0//Wczytanie elementarnej definicji bias'u - tu atrapa
+		{
             assert("Pure virtual _bias_information_base::read_one_bias_item() was called"==0);
             return EOF;
         }	
@@ -35,6 +35,7 @@ enum SymulMode {NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,I
 private:
 //Rozne implementacje kroku modelu
 ////////////////////////////////////////
+void    _update_age();//Pomocnicze
 void	_one_step_no_bias();
 void	_one_step_simple_bias();
 void	_one_step_conditional_bias();
@@ -50,7 +51,8 @@ short				IleKate;	//Ilosc kategori w mapach
 short				IleSasiad;	//8==Gestosc sasiedztwa
 short				OdlSasiad;	//Rozmiar sasiedztwa
 short				UseSelf;	//Czy ma brac siebie pod uwage
-double				Noise;		//Szum informacyjny
+double				Noise;		//Szum informacyjny na stykach
+double              spontanic;  //Spontaniczne mutacje
 wb_pchar			MappName;	//nazwa pliku inicjujacej bitmapy
 wb_pchar			MaplName;	//nazwa pliku inicjujacej bitmapy
 wb_pchar			MaskName;	//nazwa pliku inicjujacej bitmapy
@@ -69,6 +71,7 @@ ptr_to_struct_matrix_source<jagent,short>		*Firsts;//=Agenci.make_source("First 
 ptr_to_struct_matrix_source<jagent,short>		*Seconds;//=Agenci.make_source("Second mem",&jagent::Second);
 ptr_to_struct_matrix_source<jagent,short>		*Thirds;//=Agenci.make_source("Third mem",&jagent::Third);
 ptr_to_struct_matrix_source<jagent,short>		*Powers;//=Agenci.make_source("Power",&jagent::Power);
+ptr_to_struct_matrix_source<jagent,unsigned long>  *Age;//=Agenci.make_source("Lang age",&jagent::age);
 method_by_ptr_matrix_source<jagent,long>		*Classif;//=Agenci.make_source("Classification",&jagent::Classif);
 
 public:
@@ -78,6 +81,7 @@ jworld(size_t Width,	//Szerokosc torusa macierzy agentow
 	  char* mapl_name,	//Nazwa (bit)mapy inicjujacej "skladowe"
 	  char* mapp_name,	//Nazwa (bit)mapy inicjujacej "sily"
 	  char* live_mask,	//Czarne w tej mapie sa kasowane
+      short Distribution,//Rodzaj i stopien rozkladu sil
 	  double Noise=0,
 	  short	max_sila=255,//Maksymalna sila agenta
       short min_sila=1,  //Minimalna sila agenta
@@ -86,10 +90,26 @@ jworld(size_t Width,	//Szerokosc torusa macierzy agentow
 	  short	ile_sasiad=8, //8==Gestosc sasiedztwa		
 	  short need_use_self=0,
 	  short walkpower=0,	//Czy sila rosnie z wiekiem agenta 
-	  short trespower=SHRT_MAX  //Sila powyzej ktorej agent jest odporny na wplyw
+	  short trespower=SHRT_MAX,  //Sila powyzej ktorej agent jest odporny na wplyw
+      double spontanic=0    //Prawdopodobienstwo (?) spontanicznych mutacji
 	  );	
 
 ~jworld(){}
+
+void	print_experiment_info(ostream& out,const char separ)
+		//...wydruk wartosci parametrow symulacji
+	{
+		out
+		<<"\nNum of Kl="<<separ<<IleKate
+		<<"\n"<<this->MyWidth<<separ<<"x"<<separ<<MyWidth<<separ<<"="<<separ<<MyWidth*MyWidth
+		<<"\nPower range:"<<separ<<MinSila<<'-'<<MaxSila
+		<<"\nDistribution:"<<separ<<(jagent::Distribution<0?"G":"P")<<jagent::Distribution
+		<<"\nTresh of Power="<<separ<<TrsSila		
+		<<"\nNoise %="<<separ<<Noise*100<<separ<<" Spontanic %="<<separ<<spontanic
+		<<"\nSelf="<<separ<<UseSelf
+		<<"\nNaighborhood="<<separ<<IleSasiad<<"/("<<(1+2*OdlSasiad)<<"*"<<(1+2*OdlSasiad)<<")\n";
+	}
+
 
 void set_bias_from_str(const char* pom);	//Ustawianie dodatkowych parametrow symulacji z tekstu. Znaki :&? definiuja typ obiektu obiektu BiasInfo i tryb
 

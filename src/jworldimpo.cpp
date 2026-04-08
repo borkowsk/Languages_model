@@ -3,6 +3,7 @@
 //----------------------------------------------
 //Its is rather simply implementation. You can replace it if you need.
 //////////////////////////////////////////////////////////////////////
+#include "jrand.h"
 #include "jworld.h"  
 
 int jworld::implement_output(ostream& o) const

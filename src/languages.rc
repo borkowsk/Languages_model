@@ -7,8 +7,9 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
-#include "amngrcmd.h"
+//#include "../MFC5_include/afxres.h"
+//#include "SYMSHELL/src/Windows/amngrcmd.h"
+#include "SYMSHELL/src/Windows/menagres/resamngr.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS

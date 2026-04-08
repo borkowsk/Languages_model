@@ -4,15 +4,25 @@
 //#include <math.h>
 #include <string.h>  
 #include <math.h>
+#include "INCLUDE/platform.hpp"
+#include "INCLUDE/compatyb.h"
+
+#ifdef NEW_FASHION_CPP
+#include <strstream>
+#elif defined(unix)
+#include <strstream.h>
+#	else
 #include <strstrea.h>
+#endif
+
+#include "SYMSHELL/histosou.hpp"
+#include "SYMSHELL/clstsour.hpp" //Jest tez statsour
+#include "SYMSHELL/coincsou.hpp"
+#include "SYMSHELL/gadgets.hpp" 
+#include "INCLUDE/wb_ptrio.h"
+
 #include "jrand.h"
 #include "jworld.h"
-#include "histosou.hpp"
-#include "clstsour.hpp" //Jest tez statsour
-#include "coincsou.hpp"
-#include "gadgets.hpp" 
-#include "wb_ptrio.h"
-
 
 void jworld::set_bias_from_str(const char* lst)
 //Ustawianie dodatkowych parametrow symulacji z tekstu - NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,INVALID_BIAS_MODE=4
@@ -235,7 +245,7 @@ int  jworld::_simple_bias_information::read_one_bias_item(istream& in)
     }
     
     //Can we continue next time?
-    in.eatwhite();
+    eat_blanks(in);
     int test=in.get();
     if(test!=0 && test!=-1)
     {
@@ -319,7 +329,7 @@ int  jworld::_conditional_bias_information::read_one_bias_item(istream& in)
     Biases[info.Warstwa[0]][info.Warstwa[1]][info.Warstwa[2]]=BiasValue;//Wszytkie mozliwe bias'y
     
     //Can we continue next time?
-    in.eatwhite();
+    eat_blanks(in);
     int test=in.get();
     if(test!=0 && test!=-1)
     {
@@ -504,7 +514,7 @@ int  jworld::_sequentional_bias_information::read_one_bias_item(istream& in)
     }
     
     //Can we continue next time?
-    in.eatwhite();
+    eat_blanks(in);
     int test=in.get();
     if(test!=0 && test!=-1)
     {
@@ -517,6 +527,21 @@ int  jworld::_sequentional_bias_information::read_one_bias_item(istream& in)
 
 //          IMPLEMENTACJE KROKOW SYMULACJI Z ROZNYMI BIAS'AMI
 ///////////////////////////////////////////////////////////////////////////
+void    jworld::_update_age()
+{
+    const geometry_base* MyGeom=Agenci.get_geometry();
+    iteratorh Iter=MyGeom->make_global_iterator();
+     while(Iter)
+    {   
+        size_t index=MyGeom->get_next(Iter);//Uzyskujemy index agenta 
+                                            assert(index!=MyGeom->FULL); //... tutaj nie powinno sie zdarzyc
+        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());// Uzyskujemy referencje do agenta omijajac asercje na NULL
+        if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta kom鏎ka (NULL)
+            continue;                   // bo wtedy robic dalej by這by bez sensu.
+        CenterAgent.Age++;
+     }
+}
+
 void    jworld::_one_step_no_bias()
 {
     int testowanie=0;
@@ -541,7 +566,11 @@ void    jworld::_one_step_no_bias()
         if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta kom鏎ka (NULL)
             continue;                   // bo wtedy robic dalej by這by bez sensu.
         
-        if(CenterAgent.Power>TrsSila)       // Czy nie ma juz immunitedu na zmiany
+        if(
+            (CenterAgent.Power>TrsSila)   // Czy nie ma juz immunitetu na zmiany
+            ||
+            (jagent::MutationLevel>0 && CenterAgent.try_mutate())     //Albo czy wlasnie nie zmutowal spontanicznie
+            )
             goto STARZENIE;             // Ma - nie robimy nic
         
         {   //KOD NA SZUKANIA WPLYWOW
@@ -617,12 +646,12 @@ void    jworld::_one_step_no_bias()
 
             //assert(indF!=-1 && indS!=-1 && indT!=-1);
             
-            if(indF!=-1)
-                CenterAgent.First=indF;         //zmieniamy w agencie centralnym
-            if(indS!=-1)
-                CenterAgent.Second=indS;        //zmieniamy w agencie centralnym
-            if(indT!=-1)
-                CenterAgent.Third=indT;         //zmieniamy w agencie centralnym
+            if(indF!=-1 && CenterAgent.First!=indF)
+                { CenterAgent.First=indF; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+            if(indS!=-1 && CenterAgent.Second!=indS)
+                { CenterAgent.Second=indS;CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+            if(indT!=-1 && CenterAgent.Third!=indT)
+                { CenterAgent.Third=indT; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
             
         }//KONIEC ZMIAN STANU
         //////
@@ -666,7 +695,11 @@ void    jworld::_one_step_simple_bias()
         if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta kom鏎ka (NULL)
             continue;                   // bo wtedy robic dalej by這by bez sensu.
         
-        if(CenterAgent.Power>TrsSila)       // Czy nie ma juz immunitedu na zmiany
+         if(
+            (CenterAgent.Power>TrsSila)   // Czy nie ma juz immunitetu na zmiany
+            ||
+            (jagent::MutationLevel>0 && CenterAgent.try_mutate())     //Albo czy wlasnie nie zmutowal spontanicznie
+            )
             goto STARZENIE;             // Ma - nie robimy nic
         
         {   //KOD NA SZUKANIA WPLYWOW
@@ -741,12 +774,12 @@ void    jworld::_one_step_simple_bias()
             }
             
             //assert(indF!=-1 && indS!=-1 && indT!=-1);
-            if(indF!=-1)
-                CenterAgent.First=indF;         //zmieniamy w agencie centralnym
-            if(indS!=-1)
-                CenterAgent.Second=indS;        //zmieniamy w agencie centralnym
-            if(indT!=-1)
-                CenterAgent.Third=indT;         //zmieniamy w agencie centralnym
+            if(indF!=-1 && CenterAgent.First!=indF)
+                { CenterAgent.First=indF; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+            if(indS!=-1 && CenterAgent.Second!=indS)
+                { CenterAgent.Second=indS;CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+            if(indT!=-1 && CenterAgent.Third!=indT)
+                { CenterAgent.Third=indT; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
             
         }//KONIEC ZMIAN STANU
         //////
@@ -792,8 +825,12 @@ void    jworld::_one_step_conditional_bias()
         if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta kom鏎ka (NULL)
                 continue;                   // bo wtedy robic dalej by這by bez sensu.
         
-        if(CenterAgent.Power>TrsSila)       // Czy nie ma juz immunitedu na zmiany
-                goto STARZENIE;             // Ma - nie robimy nic
+        if(
+            (CenterAgent.Power>TrsSila)   // Czy nie ma juz immunitetu na zmiany
+            ||
+            (jagent::MutationLevel>0 && CenterAgent.try_mutate())     //Albo czy wlasnie nie zmutowal spontanicznie
+            )
+            goto STARZENIE;             // Ma - nie robimy nic
         
         {   //KOD SZUKANIA WPLYWOW
             /////////////////////////////////////           
@@ -906,11 +943,14 @@ void    jworld::_one_step_conditional_bias()
             FillStat[(indF!=-1)+(indS!=-1)+(indT!=-1)]++;
             }while( indF==-1 || indS==-1 || indT==-1  );
 
-                                                    assert(indF!=-1 && indS!=-1 && indT!=-1);//Po wyjsciu z petli wszystkie musza juz byc ustawione
+            assert(indF!=-1 && indS!=-1 && indT!=-1);//Po wyjsciu z petli wszystkie musza juz byc ustawione
             
-            CenterAgent.First=indF;         //zmieniamy w agencie centralnym            
-            CenterAgent.Second=indS;        //zmieniamy w agencie centralnym
-            CenterAgent.Third=indT;         //zmieniamy w agencie centralnym
+            if(CenterAgent.First!=indF)
+                { CenterAgent.First=indF; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+            if(CenterAgent.Second!=indS)
+                { CenterAgent.Second=indS;CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+            if(CenterAgent.Third!=indT)
+                { CenterAgent.Third=indT; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
 
             //cout<<FillStat[0]<<'='<<FillStat[1]<<'+'<<FillStat[2]<<'+'<<FillStat[3]<<flush<<endl;//Wypisanie stastyki nawrotow petli
         }//KONIEC ZMIAN STANU
@@ -979,8 +1019,12 @@ void    jworld::_one_step_sequentional_bias()
         if(Agenci.is_empty(CenterAgent))     // Sprawdzamy czy nie jest to pusta kom鏎ka (NULL)
             continue;                        // bo wtedy robic dalej by這by bez sensu.
         
-        if(CenterAgent.Power>TrsSila)        // Czy nie ma juz immunitedu na zmiany
-            goto STARZENIE;                  // Ma - nie robimy nic
+         if(
+            (CenterAgent.Power>TrsSila)   // Czy nie ma juz immunitetu na zmiany
+            ||
+            (jagent::MutationLevel>0 && CenterAgent.try_mutate())     //Albo czy wlasnie nie zmutowal spontanicznie
+            )
+            goto STARZENIE;             // Ma - nie robimy nic
         
         {   //KOD NA SZUKANIA WPLYWOW
             /////////////////////////////////////
@@ -1070,9 +1114,12 @@ void    jworld::_one_step_sequentional_bias()
             
             assert(indF!=-1 && indS!=-1 && indT!=-1);
 
-            CenterAgent.First=indF;         //zmieniamy w agencie centralnym
-            CenterAgent.Second=indS;        //zmieniamy w agencie centralnym
-            CenterAgent.Third=indT;         //zmieniamy w agencie centralnym
+            if(indF!=-1 && CenterAgent.First!=indF)
+                { CenterAgent.First=indF; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+            if(indS!=-1 && CenterAgent.Second!=indS)
+                { CenterAgent.Second=indS;CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+            if(indT!=-1 && CenterAgent.Third!=indT)
+                { CenterAgent.Third=indT; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
             
         }//KONIEC ZMIAN STANU
         //////

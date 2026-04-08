@@ -1,7 +1,7 @@
 //DECLARATION OF    A G E N T   FOR "LANGUAGES" SIMULATION
 /////////////////////////////////////////////////////////////
-#include "layer.hpp"
-
+#include "SYMSHELL/layer.hpp"
+    
 class jagent:public agent_base
 {
 	friend class jworld;//Na razie tak - zeby uproscic dostep do skladowych.
@@ -12,19 +12,30 @@ class jagent:public agent_base
     static short min_sila;//i minimalna
 	static short ile_kate;//Ilosc kategori w mapach	
 	static short kate_shift;//Przesuniecie dla wczytywania gifa
+    static short Distribution;//Stopien rozkladu. 0->n rozklady z *, -1->-n rozklady z +
+    static double MutationLevel;//Prawd. spontanicznej zmiany memu
+
 	
 	// SKLADOWE DLA SYMULACJI
 	short Power;	//Sila agenta
+    unsigned long  Age;      //Wiek pogladu agenta
+    
+    union{
+    struct{
 	short First;	//Pierwsze przekonanie
 	short Second;	//Drugie przekonanie
 	short Third;	//Trzecie przekonanie
-	
+    };
+    short FST[3];   //Widziane jako tablica short-ów
+    };
+
 	void _clean()
 	{
 		First=-1;
 		Second=-1;
 		Third=-1;
 		Power=-1;
+        Age=0;
 	}
 	
 	// TO CO MUSI byc zdefiniowane
@@ -41,6 +52,17 @@ public:
 
 	jagent* clone() const
 	{ return new jagent(*this);}
+    
+    bool try_mutate()
+    {
+        if(DRAND()<=MutationLevel)//Rzadka, spontaniczna zmiana pogladu
+        {            
+           int what=RANDOM(3);  assert(0<=what && what<3);
+           FST[what]=RANDOM(ile_kate);
+            return true;
+        }        
+        else return false;
+    }
 		
 	~jagent()
 	{_clean();}
@@ -97,7 +119,7 @@ public:
 	ostream& operator << (ostream& o,const jagent& a)
 	{
 		o<<'{';
-		o<<' '<<a.Power<<' '<<a.First<<' '<<a.Second<<' '<<a.Third<<' ';	
+		o<<' '<<a.Power<<' '<<a.First<<' '<<a.Second<<' '<<a.Third<<' '<<a.Age<<' ';	
 		o<<'}';
 		return o;
 	}
@@ -107,7 +129,7 @@ public:
 	{
 		char pom;
 		i>>pom;		//ignoruje {
-		i>>a.Power>>a.First>>a.Second>>a.Third;
+		i>>a.Power>>a.First>>a.Second>>a.Third>>a.Age;
 		i>>pom;		//ignoruje }
 		return i;
 	}
