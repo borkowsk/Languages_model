@@ -1,7 +1,9 @@
-// implementation of the jworld class.
-//	Virtual Input methods 
-//----------------------------------------------
-//Its is rather simply implementation. You can replace it if you need.
+/// @file
+/// @brief Virtual Input method implementation of the jworld class. (LANGUAGES PROJECT WITH P.Culicover)
+//  ====================================================================================================
+/// @date 2026-04-09 (modified)
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Its is rather simply implementation. You can replace it if you need.
 // ////////////////////////////////////////////////////////////////////
 #include "jrand.h"
 #include "jworld.h"

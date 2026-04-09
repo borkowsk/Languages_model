@@ -1,3 +1,8 @@
+/// @file
+/// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION.  (LANGUAGES PROJECT WITH P.Culicover)
+//  ============================================================================================
+/// @date 2026-04-09 (modified)
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
 //#include <assert.h>
 //#include <string.h>
@@ -20,7 +25,7 @@
 #include "jrand.h"
 #include "jworld.h"
 
-//Embarcadero głupieje w setce miejsc że code has no effect mimo że a pewno ma
+//Embarcadero głupieje w setce miejsc: code has no effect mimo że na pewno ma
 //#pragma warn -8019
 
 //Konstrukcja agentow

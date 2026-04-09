@@ -1,5 +1,8 @@
-//DECLARATION OF   W O R L D  FOR "LANGUAGES" SIMULATION
-// ///////////////////////////////////////////////////////
+/// @file
+/// @brief DECLARATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
+//  =======================================================================================
+/// @date 2026-04-09 (modified)
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include <climits> //SHRT_MAX
 

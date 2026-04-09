@@ -1,3 +1,8 @@
+/// @file
+/// @brief COPYRIGHT BOX ETC. (LANGUAGES PROJECT WITH P.Culicover)
+//  ==============================================================
+/// @date 2026-04-09 (modified)
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -9,7 +14,7 @@
 //WIDTH=100 DSTB=-8 CLSS=8 MIPO=3 RSPC=1 VIEW=50 LOGF=10 LOGF=testW100.log
 
 const int ILE_SEC=30; //Ile sekund czeka na OK
-extern char* blebleblebleble;
+extern const char* blebleblebleble;
 
 #ifndef NDEBUG
 class time_checker
@@ -67,7 +72,7 @@ static char bleblebleble[]=
     "0\08757812312432sqwe45115665525322345765434960911234127468357650259256826852656223226";
 static char WB_NO_LOGO[]="LANGUAGES_NO_LOGO";
 static char INNE[]="LLAANNGGUUAAGGEESS";
-char* blebleblebleble=
+const char* blebleblebleble=
     "\nTIME LIMIT\0\08757812312432sqwe45115665525322345765434960911234127468357650259256826852656223226"
     "\0\0\1\1\0\rtr0\0\1\0\1\0\0\0iisysiiyucgueefuihfuihfuhfiuhefhuifhuhgfhyurgfughicimtmiimatitikii\0\0\0";
 static char wnid[]="Windows & Copyright of LANGUAGES";
