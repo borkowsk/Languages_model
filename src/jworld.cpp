@@ -1,35 +1,35 @@
 /// @file
-/// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION.  (LANGUAGES PROJECT WITH P.Culicover)
+/// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
 //  ============================================================================================
 /// @date 2026-04-09 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//#include <limits.h>
-//#include <assert.h>
-//#include <string.h>
-//#include <math.h>
+
 #include <cstring>
 #include <cmath>
 #include <strstream>
 
 #include "wb_ptrio.h"
 
-#include "clstsour.hpp" //Jest tez statsour
+#include "clstsour.hpp"
 #include "spatcors.hpp"
 #include "coincsou.hpp"
 #include "gadgets.hpp"
 
-//#include "SYMSHELL/ohistosou.hpp" //Stary histogram z ruchoma liczba klas
-#include "dhistosou.hpp" //Dyskretny histogram ze stala liczba klas
-#include "fhistosou.hpp" //Histogram z ustalona arbitralnie liczba klas
+//#include "SYMSHELL/ohistosou.hpp" //Old histogram with sliding number of classes
+#include "dhistosou.hpp" //A discrete histogram with a fixed number of classes.
+#include "fhistosou.hpp" //A histogram with an arbitrarily determined number of classes.
 
 #include "jrand.h"
 #include "jworld.h"
+#include "jagent.h"
 
-//Embarcadero głupieje w setce miejsc: code has no effect mimo że na pewno ma
+
+//When Embarcadero goes crazy in a hundred places: "code has no effect" even though it definitely has an effect!
 //#pragma warn -8019
 
-//Konstrukcja agentow
-// /////////////////////////////////
+// Construction of agents:
+// ///////////////////////
+
 void jagent::_clean()
 {
     First=-1;
@@ -42,11 +42,21 @@ void jagent::_clean()
 
 jagent::jagent(const jagent& ini)
 {
-    if(&ini!=NULL)
+    First=ini.First;
+    Second=ini.Second;
+    Third=ini.Third;
+    Power=RANDOM(max_sila+1);
+    Age=0;
+    Politics=RANDOM(0xffffff);
+}
+
+jagent::jagent(const jagent *ini)
+{
+    if(ini!=NULL)
     {
-        First=ini.First;
-        Second=ini.Second;
-        Third=ini.Third;
+        First=ini->First;
+        Second=ini->Second;
+        Third=ini->Third;
         Power=RANDOM(max_sila+1);
         Age=0;
         Politics=RANDOM(0xffffff);
@@ -61,78 +71,82 @@ jagent::jagent()
     First=RANDOM(ile_kate);
     Second=RANDOM(ile_kate);
     Third=RANDOM(ile_kate);
+    Age=0;
+    Politics=RANDOM(0xffffff);
+
     if(Distribution>=0)
     {
-        double Power=1;
+        double Power_loc=1;
         for(int i=0;i<Distribution;i++)
-            Power*=DRAND();
-        Power*=max_sila+1;
-        this->Power=Power;
+            Power_loc*=DRAND();
+        Power_loc*= max_sila + 1;
+        this->Power=Power_loc;
     }
     else
     {
-        double Power=0;
+        double Power_loc=0;
         for(int i=0;i<(-Distribution);i++)
-            Power+=DRAND();
-        Power/=-Distribution;
-        this->Power=Power*(max_sila+1);
+            Power_loc+=DRAND();
+        Power_loc/=-Distribution;
+        this->Power= Power_loc * (max_sila + 1);
     }
 }
 
-//Statyczne pola jagentow dla inicjalizacji
-// //////////////////////////////////////////////////////////////
-short jagent::ruchsily=1;  //Maksymalny skok sily
-short jagent::max_sila=256;	//Maksymalna sila agenta
-short jagent::min_sila=1;  //i minimalna 
-short jagent::ile_kate=256;	//Ilosc kategori w mapach
-short jagent::kate_shift=0;	//Przesuniecie dla wczytywania gifa
-double	jagent::MutationLevel=0;	//Prawd. spontanicznej zmiany memu (0..1)
-short jagent::Distribution=1;	//Stopien rozkladu. 0->n rozklady z *, -1->-n rozklady z +
+// Static "jagent-s" fields for initialization:
+// ////////////////////////////////////////////
 
-//KONSTRUKCJA	SWIATA
-// //////////////////////////////////
+short jagent::ruchsily=1;
+short jagent::max_sila=256;
+short jagent::min_sila=1;
+short jagent::ile_kate=256;
+short jagent::kate_shift=0;
+double	jagent::MutationLevel=0;
+short jagent::Distribution=1;  //Degree of distribution. 0->n distributions with *, -1->-n distributions with + (Gaussian's like)
+
+// CONSTRUCTION OF THE WORLD:
+// //////////////////////////
 extern unsigned internal_log;
 extern unsigned spatial_correlation_mode;
 extern bool UseSpatialCorr;
 
 
-jworld::jworld(size_t Width,		//Szerokosc torusa macierzy agentow
-      char* log_name,	//Nazwa pliku do zapisywania histori
-      char* mapl_name,	//Nazwa (bit)mapy inicjujacej "skladowe"
-      char* mapp_name,	//Nazwa (bit)mapy inicjujacej "sily"
-      char* live_mask,	//Czarne w tej mapie sa kasowane
-      short Distribution,	//Rodzaj i stopien rozkladu sil
-      double noise,		//Szum informacyjny przy decyzji
-      short	max_sila,	//Maksymalna sila agenta
-      short min_sila,   //Minimalna sila agenta
-      short	ile_kate,	//Ilosc kategori w mapach
-      short	odl_sasiad,	//Rozmiar sasiedztwa
-      short	ile_sasiad, //8==Gestosc sasiedztwa
-      short need_use_self,	//Czy ma uzywac siebie
+jworld::jworld(size_t Width,
+      char* log_name,
+      char* mapl_name,
+      char* mapp_name,
+      char* live_mask,
+      short Distribution,
+      double noise,
+      short	max_sila,
+      short min_sila,
+      short	ile_kate,
+      short	odl_sasiad,
+      short	ile_sasiad,
+      short need_use_self,
       short walkpower,
       short trespower,
-      double ispontanic,	//Ogolny szum informacyjny
-      bool i_use_SW_links,	//Czy używamy dalekich linków
+      double ispontanic,
+      bool i_use_SW_links,
       double i_SW_startconnect_percent,
-      double i_SW_reconect_percent//Procent zmian dalekich linków na krok
+      double i_SW_reconect_percent
         ):
         world(log_name,50),
-        MaplName(clone_str(mapl_name)),	//Nazwa (bit)mapy 1. inicjujacej agentow
-        MappName(clone_str(mapp_name)),	//Nazwa (bit)mapy 2. inicjujacej agentow
-        MaskName(clone_str(live_mask)),	//Nazwa bitmapy maskujacej (kasujacej agentow)
-    //Sub-obiekty wlasciwe dla tej symulacji
+        MaplName(clone_str(mapl_name)),
+        MappName(clone_str(mapp_name)),
+        MaskName(clone_str(live_mask)),
+        //Sub-objects specific to this simulation:
         MyWidth(Width),
-        Agenci(Width,Width,NULL),	//Initer == NULL wiec tworzone przez konstruktor a nie klonowanie
+        Agenci(Width,Width,NULL),	//`iiniter == NULL`, so agents created by the constructor, not cloning.
         FarLinks(Width,Width),
-        MaxSila(max_sila),	//Maksymalna sila agenta
-        MinSila(min_sila),  //Maksymalna sila agenta
-        TrsSila(trespower), //Sila dajaca odporosc na zmiany
-        IleKate(ile_kate),	//Ilosc kategori w mapach
-        IleSasiad(ile_sasiad),	//8==Gestosc sasiedztwa
-        OdlSasiad(odl_sasiad),	//Rozmiar sasiedztwa
+        MaxSila(max_sila),
+        MinSila(min_sila),
+        TrsSila(trespower),
+        IleKate(ile_kate),
+        IleSasiad(ile_sasiad),
+        OdlSasiad(odl_sasiad),
         Noise(noise),
         UseSelf(need_use_self),
-        //Wskazniki do podstawowych seri danych
+        //Pointers to basic data series:
         Firsts(NULL),
         Seconds(NULL),
         Thirds(NULL),
@@ -141,29 +155,30 @@ jworld::jworld(size_t Width,		//Szerokosc torusa macierzy agentow
         Politics(NULL),
         BiasMode(NO_BIAS),
         spontanic(ispontanic),
-        use_SW_links(i_use_SW_links),	//Czy używamy dalekich linków
-        SW_startconnect_percent(i_SW_startconnect_percent), //Startowy procent dalekich linków
-        SW_reconect_percent(i_SW_reconect_percent)	//Procent zmian dalekich linków na krok
-{//!!!Niewiele mozna zrobic bo nie mozna tu jeszcze polegac na wirtualnych metodach klasy swiat
+        use_SW_links(i_use_SW_links),
+        SW_startconnect_percent(i_SW_startconnect_percent),
+        SW_reconect_percent(i_SW_reconect_percent)
+{ //There is not much that can be done because we cannot rely on virtual methods of the world class yet.
         jagent::ruchsily=walkpower;
         jagent::Distribution=Distribution;
-        set_simulation_name("Languages_v2 SW");
+        world::set_simulation_name("Languages_v2 SW");
         set_bias_from_str("");
         jagent::MutationLevel=spontanic;
-        _far_link::MyWorld=this;	//Podłączenie do celu odczytywania counterów przez tablice
-            assert(Agenci.get_rect_geometry()->is_torus());	//ZAWSZE TORUS. ZAŁOŻONE W ALGORYTMIE DALEKICH LINKÓW itd
-        //Inicjowanie bezpośrednich statystyk
+
+        _far_link::MyWorld=this;	//Connection to read counters via arrays
+
+            assert(Agenci.get_rect_geometry()->is_torus());	//ALWAYS TORUS. ASSURED IN THE DISTANT LINK ALGORITHM, etc.
+
+        //Initiating direct statistics, or rather the only one.
         SW_dynamic_perc=0;
 }
 
-
-//Generuje podstawowe zrodla dla wbudowanego menagera danych lub innego
-//----------------------------------------------------------------------------
 void jworld::make_basic_sources()
+//Generuje podstawowe zrodla dla wbudowanego menagera danych lub innego
 {
     world::make_basic_sources();	//Odziedziczone
 
-    //Glowne serie
+    //Main series:
     Firsts=Agenci.make_source("First mem",&jagent::First);
     if(Firsts)
         Firsts->setminmax(0,IleKate-1);
@@ -210,21 +225,21 @@ void jworld::make_basic_sources()
 }
 
 
-//Przygotowuje wspolprace z menagerem wyswietlania oraz z logiem
-//------------------------------------------------------------------
 #define ON_ERROR_MAKE {cerr<<"Error occurred during 'make_default_visualisation'"<<endl; return; }
 
 void jworld::make_default_visualisation()
+//Przygotowuje wspolprace z menagerem wyswietlania oraz z logiem
+//------------------------------------------------------------------
 //Tworzy złożone serie (źródła) danych i definiuje log a potem
 //O ILE JEST DOSTĘPNY Manager obszarów/lufcików
-//umieszcza w nim domyslne wizualizacje - grafy
+//umieszcza w nim domyslne wizualizacje czyli grafy
 {
     //Metoda klasy bazowej - może nic nie robić, ale na wszelki wypadek
     world::make_default_visualisation(); //Obszar domyślne - np obszar STATUSU
     bool WithGr=this->HasAreaMenager(); //Czy będzie tworzone wyjście graficzne?
 
-    //Indeksy serii potrzebne dalej dla grafów
-    //////////////////////////////////////////////
+    // Indeksy serii potrzebne dalej dla grafów
+    // ////////////////////////////////////////////
 
     //Indeksy głównych serii
     int iFirst=0,iSecond=0,iThird=0,iPower=0,iClassif=0;
@@ -1035,7 +1050,7 @@ unsigned jworld::_far_link::get_target_count()
 {
     if(/*0<=a &&*/ a<MyWorld->MyWidth
         && /*0<=b &&*/ b<MyWorld->MyWidth)
-        return MyWorld->FarLinks.get(a,b).count;
+        return MyWorld->FarLinks.get(a,b).count; // Reads `count` from a,b location on far links layer.
     else
         return 0;
 }

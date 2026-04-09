@@ -13,10 +13,11 @@
 #endif
 //WIDTH=100 DSTB=-8 CLSS=8 MIPO=3 RSPC=1 VIEW=50 LOGF=10 LOGF=testW100.log
 
-const int ILE_SEC=30; //Ile sekund czeka na OK
-extern const char* blebleblebleble;
+const int ILE_SEC=30; //How many seconds wait for OK?
+extern const char* ble_ble_ble;
 
 #ifndef NDEBUG
+__attribute__((unused))
 class time_checker
 {
 
@@ -34,12 +35,12 @@ public:
         /* tm form */
         if(newtime->tm_year>200)         //TIME LIMIT   !!!
         {
-            fprintf(stderr,"%s",blebleblebleble);
+            fprintf(stderr, "%s", ble_ble_ble);
             abort();
         }
 
         /* Print local time as a string */
-        //printf( "The current date and time are: %s", asctime( newtime ) );
+        //printf("The current date and time are: %s", asctime( newtime ));
 
     }
 
@@ -63,21 +64,26 @@ static char WB_Copyright[]=
     //X('U'), X('n'), X('i'), X('v'), X('e'), X('r'), X('s'), X('i'), X('t'), X('y'),
     0
     };
-static char blebleble[]=
+__attribute__((unused))
+static char ble_ble_ble_ble[]=
     "\0\1\0\0\0\rtr0\0\1\0\1\0\0\0iisysiiyucgueihuhewijfcijjfcremcoiisteiiomiewiitpicimtmiimatitikii\0\0\0"
-    "0\08757812312432sqwe45115665525322345765434960916246378900887465765874582372657626526";
+    "0\08757812312432sq_we45115665525322345765434960916246378900887465765874582372657626526";
 static char numer[4]="000";	//FAKTYCZNY NUMER LICENCJI
-static char bleblebleble[]=
+__attribute__((unused))
+static char bumblebee[]=
     "\0\0\1\1\0\rtr0\0\1\0\1\0\0\0iisysiiyucgueefuihfuihfuhfiuhefhuifhuhgfhyurgfughicimtmiimatitikii\0\0\0"
-    "0\08757812312432sqwe45115665525322345765434960911234127468357650259256826852656223226";
+    "0\08757812312432sq_we45115665525322345765434960911234127468357650259256826852656223226";
+__attribute__((unused))
 static char WB_NO_LOGO[]="LANGUAGES_NO_LOGO";
+__attribute__((unused))
 static char INNE[]="LLAANNGGUUAAGGEESS";
-const char* blebleblebleble=
-    "\nTIME LIMIT\0\08757812312432sqwe45115665525322345765434960911234127468357650259256826852656223226"
+const char* ble_ble_ble=
+    "\nTIME LIMIT\0\08757812312432sq_we45115665525322345765434960911234127468357650259256826852656223226"
     "\0\0\1\1\0\rtr0\0\1\0\1\0\0\0iisysiiyucgueefuihfuihfuhfiuhefhuifhuhgfhyurgfughicimtmiimatitikii\0\0\0";
-static char wnid[]="Windows & Copyright of LANGUAGES";
+static char wind[]="Windows & Copyright of LANGUAGES";
 
-/*
+#ifdef USE_WINDOWS
+
 extern "C" {
     extern HINSTANCE WB_Instance;
     extern HWND		 WB_Hwnd;
@@ -141,7 +147,7 @@ public:
             ShowWindow(Dialog,SW_SHOW);	//SW_SHOWNOACTIVATE???
         }
     }
-    //DESTRUKTOR NA WYPADEK GDYBY USER NIE ZAMKNAL
+    //DESTRUKTOR NA WYPADEK GDYBY USER NIE ZAMKNĄŁ
     ~_type_force_call_about_dialog_on_start()
     {
         if(Timer)
@@ -197,7 +203,7 @@ BOOL CALLBACK AutorsDialog(HWND  hDlg,UINT   message,WPARAM   wParam,LPARAM   lP
         return FALSE;
     case WM_RBUTTONDOWN:
         {
-            wb_about(wnid);
+            wb_about(wind);
             return FALSE;
         }
     case WM_COMMAND:
@@ -234,13 +240,13 @@ BOOL CALLBACK AutorsDialog(HWND  hDlg,UINT   message,WPARAM   wParam,LPARAM   lP
         return FALSE;
     }  
 } 
-*/
+#endif
 
 /* **************************************************************** */
-/*           THIS CODE IS DESIGNED & COPYRIGHT  BY:                 */
+/*           THIS CODE IS DESIGNED & COPYRIGHT BY:                  */
 /*            W O J C I E C H   B O R K O W S K I                   */
-/* Zaklad Systematyki i Geografii Roslin Uniwersytetu Warszawskiego */
-/*  & Instytut Studiow Spolecznych Uniwersytetu Warszawskiego       */
+/* Zakład Systematyki i Geografii Roślin Uniwersytetu Warszawskiego */
+/*  & Instytut Studiów Społecznych Uniwersytetu Warszawskiego       */
 /*        WWW:  http://moderato.iss.uw.edu.pl/~borkowsk             */
 /*        MAIL: borkowsk@iss.uw.edu.pl                              */
 /*                               (Don't change or remove this note) */

@@ -31,7 +31,7 @@ class jagent:public agent_base
             short	Second;	//Drugie przekonanie
             short	Third;	//Trzecie przekonanie
         };
-        short	FST[3];	//Widziane jako tablica short-ów
+        short	FST[3]={0,0,0};	//Widziane jako tablica short-ów
     };
 
     void _clean();
@@ -45,7 +45,7 @@ public:
     }
 
     jagent(const jagent& ini);	//Konkretna implementacja w jworld!
-
+    jagent(const jagent* ini);	//Konkretna implementacja w jworld!
     jagent();					//Konkretna implementacja w jworld!
 
     jagent* clone() const
