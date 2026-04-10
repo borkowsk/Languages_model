@@ -1,9 +1,12 @@
+
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
 //  ============================================================================================
-/// @date 2026-04-09 (modified)
+/// @date 2026-04-10 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "modernize-use-nullptr"
+#pragma ide diagnostic ignored "modernize-use-auto"
 #include <cstring>
 #include <cmath>
 #include <strstream>
@@ -50,7 +53,7 @@ jagent::jagent(const jagent& ini)
     Politics=RANDOM(0xffffff);
 }
 
-jagent::jagent(const jagent *ini)
+jagent::jagent(const jagent* ini)
 {
     if(ini!=NULL)
     {
@@ -158,7 +161,7 @@ jworld::jworld(size_t Width,
         use_SW_links(i_use_SW_links),
         SW_startconnect_percent(i_SW_startconnect_percent),
         SW_reconect_percent(i_SW_reconect_percent)
-{ //There is not much that can be done because we cannot rely on virtual methods of the world class yet.
+{ //There is not too much that can be done because we cannot rely on virtual methods of the world class yet.
         jagent::ruchsily=walkpower;
         jagent::Distribution=Distribution;
         world::set_simulation_name("Languages_v2 SW");
@@ -174,9 +177,8 @@ jworld::jworld(size_t Width,
 }
 
 void jworld::make_basic_sources()
-//Generuje podstawowe zrodla dla wbudowanego menagera danych lub innego
 {
-    world::make_basic_sources();	//Odziedziczone
+    world::make_basic_sources();	//Inherited
 
     //Main series:
     Firsts=Agenci.make_source("First mem",&jagent::First);
@@ -197,7 +199,7 @@ void jworld::make_basic_sources()
 
     Classif=Agenci.make_source("Classification",&jagent::Classif);
     if(Classif)
-        Classif->setminmax(0,IleKate*IleKate*IleKate-1);	//Max class ==IleKate^3 bo trzy niezalezne plaszczyzny
+        Classif->setminmax(0,IleKate*IleKate*IleKate-1);	//'Max class ==IleKate^3',because three independent layers.
 
     //struct_matrix_source<_far_link,unsigned>		*
     FarA=FarLinks.make_source("F.links to A",&_far_link::a);
@@ -211,7 +213,7 @@ void jworld::make_basic_sources()
 
     FCount=FarLinks.make_source("counters of far connections",&_far_link::get_target_count);
 
-    //Umieszczenie glownych serii w menagerze serii
+    //Placing the main data series in the series manager:
     Sources.insert(Firsts);
     Sources.insert(Seconds);
     Sources.insert(Thirds);
@@ -228,79 +230,93 @@ void jworld::make_basic_sources()
 #define ON_ERROR_MAKE {cerr<<"Error occurred during 'make_default_visualisation'"<<endl; return; }
 
 void jworld::make_default_visualisation()
-//Przygotowuje wspolprace z menagerem wyswietlania oraz z logiem
+//Prepares cooperation with the display manager and the log
 //------------------------------------------------------------------
-//Tworzy złożone serie (źródła) danych i definiuje log a potem
-//O ILE JEST DOSTĘPNY Manager obszarów/lufcików
-//umieszcza w nim domyslne wizualizacje czyli grafy
+//Creates complex data series (sources) and defines the log, and then,
+//if the Area Manager is available, place default
+//visualization areas in it, i.e., mainly graphs.
 {
-    //Metoda klasy bazowej - może nic nie robić, ale na wszelki wypadek
-    world::make_default_visualisation(); //Obszar domyślne - np obszar STATUSU
-    bool WithGr=this->HasAreaMenager(); //Czy będzie tworzone wyjście graficzne?
+    // Base class method - may do nothing, but we call it just in case.
+    world::make_default_visualisation(); // Should create default areas - e.g. STATUS area
+    bool WithGr=this->HasAreaMenager(); // Will there be graphical output?
 
-    // Indeksy serii potrzebne dalej dla grafów
-    // ////////////////////////////////////////////
+    // Data series indexes needed for the statistical log and further for graphs:
+    // //////////////////////////////////////////////////////////////////////////
 
-    //Indeksy głównych serii
-    int iFirst=0,iSecond=0,iThird=0,iPower=0,iClassif=0;
+    // Indexes of the main series:
+    int	iFirst=0;		///< Raw data of the "Firsts" layer of language attributes (index of).
+    int	iSecond=0;		///< Raw data of the "Seconds" layer of language attributes (index of).
+    int	iThird=0;		///< Raw data of the "Thirds" layer of language attributes (index of).
+    int	iPower=0;		///< Raw data of the agent strengths (index of).
+    int	iClassif=0;		///< Raw data of the agent languages (index of).
 
-    //Różne inne serie
+    /// Indexes of various other derived series.
     int iFarLinksMeans=-1,iFarLinksMaxs=-1,iEntropyFS=-1,iCorrFSR=-1,
         iEntropyST=-1,iCorrSTR=-1,iEntropyTF=-1,iCorrTFR=-1,
         iSFirst=-1,iSSecond=-1,iSThird=-1,
         iNumClassF=-1,iClassEntropy=-1,iMainClassF=-1;
 
-    //Indeksy seri dla SpatialCorrelations
+    /// Series Indexes for spatial correlations source.
     int iSpatialCorr1=-1,iSpatialCorr2=-1,iSpatialCorr3=-1,iClusterSize1=-1,iClusterSize2=-1,iClusterSize3=-1;
 
-    //Uzyskanie indeksow podstawowych serii z menagera
+    // Obtaining the indexes of basic series from the data manager:
+    //-------------------------------------------------------------
     {
-    if(Firsts) iFirst=Sources.search(Firsts->name());
-        else  ON_ERROR_MAKE
-    if(Seconds) iSecond=Sources.search(Seconds->name());
-        else  ON_ERROR_MAKE
-    if(Thirds)   iThird=Sources.search(Thirds->name());
-        else  ON_ERROR_MAKE
-    if(Powers)   iPower=Sources.search(Powers->name());
-        else  ON_ERROR_MAKE
-    if(Classif)  iClassif=Sources.search(Classif->name());
-        else  ON_ERROR_MAKE
+    if(Firsts) iFirst=Sources.search(Firsts->name()); // Raw data of the "Firsts" layer of language attributes.
+    else  ON_ERROR_MAKE
+
+    if(Seconds) iSecond=Sources.search(Seconds->name()); // Raw data of the "Seconds" layer of language attributes.
+    else  ON_ERROR_MAKE
+
+    if(Thirds)   iThird=Sources.search(Thirds->name()); // Raw data of the "Thirds" layer of language attributes.
+    else  ON_ERROR_MAKE
+
+    if(Powers)   iPower=Sources.search(Powers->name()); // Raw data of the agent strengths.
+    else  ON_ERROR_MAKE
+
+    if(Classif)  iClassif=Sources.search(Classif->name()); // Raw data of the agent languages.
+    else  ON_ERROR_MAKE
     }
 
-    //Oraz utworzenie pochodnych serii statystycznych
-
-    generic_clustering_source*	FirstStat=new generic_clustering_source(Firsts);
+    // And the creation of derived statistical series:
+    //------------------------------------------------
+    generic_clustering_source*	FirstStat=new generic_clustering_source(Firsts); ///< Statistics of the "Firsts".
     if(!FirstStat) ON_ERROR_MAKE
-        else	Sources.insert(FirstStat);
-    generic_clustering_source*	SecondStat=new generic_clustering_source(Seconds);
+    Sources.insert(FirstStat);
+
+    generic_clustering_source*	SecondStat=new generic_clustering_source(Seconds); ///< Statistics of the "Seconds".
     if(!SecondStat) ON_ERROR_MAKE
-        else	Sources.insert(SecondStat);
-    generic_clustering_source*	ThirdStat=new generic_clustering_source(Thirds);
+    Sources.insert(SecondStat);
+
+    generic_clustering_source*	ThirdStat=new generic_clustering_source(Thirds); ///< Statistics of the "Thirds".
     if(!ThirdStat) ON_ERROR_MAKE
-        else	Sources.insert(ThirdStat);
+    Sources.insert(ThirdStat);
 
-    //UWAGA:
-    //Jesli IleKate > 16 to sie robią bardzo duze tablice spowalniajace program!!!
-    generic_discrete_histogram_source*  ClassStat=new generic_discrete_histogram_source(0,IleKate*IleKate*IleKate,Classif,"DistrOf(%s[%d..%d])");	//histogram z klasyfikacji jezykow
+    //NOTE FOR HISTOGRAMS: If `IleKate > 16`, very large arrays are created, slowing down the program somewhat!
+
+    /// Histogram of language classification (sizes of particular languages).
+    generic_discrete_histogram_source*  ClassStat=new generic_discrete_histogram_source(0,IleKate*IleKate*IleKate,Classif,"DistrOf(%s[%d..%d])");
     if(!ClassStat) ON_ERROR_MAKE
-        else	Sources.insert(ClassStat);
+    Sources.insert(ClassStat);
 
+    /// Histogram of languages by size (haw many languages in particular size class).
     generic_fix_histogram_source* HistClass=new generic_fix_histogram_source(100,1,MyWidth*MyWidth,ClassStat,"Distr_%dcl(%s[%g..%g])",true);	//histogram jezyków
     if(!HistClass) ON_ERROR_MAKE
-        else	Sources.insert(HistClass);
+    Sources.insert(HistClass);
 
-    generic_log_F_filter*  LogHistClass=new generic_log_F_filter(ClassStat);	//Zlogarytmowany histogram jezyków
+    generic_log_F_filter*  LogHistClass=new generic_log_F_filter(ClassStat);
     if(!LogHistClass)ON_ERROR_MAKE
-        else	Sources.insert(LogHistClass);
+    Sources.insert(LogHistClass);
 
-    generic_fix_histogram_source*  LogLogHistClassStat=new generic_fix_histogram_source(16,0,8,LogHistClass,"LogDistr_%dcl(%s[%g..%g])");	//Histogram zlogarytmowanych jezyków
+    /// Histogram of languages in logarithmic size classes (10 users, 100 users, 1000 etc.).
+    generic_fix_histogram_source*  LogLogHistClassStat=new generic_fix_histogram_source(16,0,8,LogHistClass,"LogDistr_%dcl(%s[%g..%g])");
     if(!LogLogHistClassStat) ON_ERROR_MAKE
-        else	Sources.insert(LogLogHistClassStat);
+    Sources.insert(LogLogHistClassStat);
 
-    //Statystyki do badania dalekich linków
+    // Statistics for examining far links:
     generic_basic_statistics_source* FarLinksStat=new generic_basic_statistics_source(this->FCount);
     if(!FarLinksStat) ON_ERROR_MAKE
-        else	Sources.insert(FarLinksStat);
+    Sources.insert(FarLinksStat);
 
     fifo_source<double>* FarLinksMeans=new fifo_source<double>(FarLinksStat->Mean(),internal_log);
     if(!FarLinksMeans) ON_ERROR_MAKE
@@ -310,22 +326,24 @@ void jworld::make_default_visualisation()
     if(!FarLinksMaxs) ON_ERROR_MAKE
     iFarLinksMaxs=Sources.insert(FarLinksMaxs);
 
-    //A takze utworzenie seri liczacych ich wzajemne ko-statystyki
+    /// The serie calculating the mutual co-statistics for fists and seconds. (NOTE: even larger tables)
     coincidention_source* CorrFS=new coincidention_source(Firsts,Seconds);
     if(!CorrFS) ON_ERROR_MAKE
-    Sources.insert(CorrFS);	//Zeby zostala kiedys zwolniona, a poza tym moze ktos kiedys...
+    Sources.insert(CorrFS);
 
+    /// A "fifo" queue of entropies of the firsts and the seconds.
     fifo_source<double>* EntropyFSLog=new fifo_source<double>(CorrFS->Entropy(),internal_log);
     if(!EntropyFSLog) ON_ERROR_MAKE
     iEntropyFS=Sources.insert(EntropyFSLog);
 
-    fifo_source<double>* CorrFSLogR=new fifo_source<double>(CorrFS->Tau_a_Goodman_Kruskal(),internal_log);	//Fifo korelacji pierwszych z drugimi
+    /// A "fifo" queue of correlations of the firsts and the seconds.
+    fifo_source<double>* CorrFSLogR=new fifo_source<double>(CorrFS->Tau_a_Goodman_Kruskal(),internal_log);
     if(!CorrFSLogR) ON_ERROR_MAKE
     iCorrFSR=Sources.insert(CorrFSLogR);
 
     coincidention_source* CorrST=new coincidention_source(Seconds,Thirds);
     if(!CorrST) ON_ERROR_MAKE
-    Sources.insert(CorrST);	//Zeby zostala kiedys zwolniona, a poza tym moze ktos kiedys...
+    Sources.insert(CorrST);
 
     fifo_source<double>* EntropySTLog=new fifo_source<double>(CorrST->Entropy(),internal_log);
     if(!EntropySTLog) ON_ERROR_MAKE
@@ -337,43 +355,46 @@ void jworld::make_default_visualisation()
 
     coincidention_source* CorrTF=new coincidention_source(Thirds,Firsts);
     if(!CorrTF) ON_ERROR_MAKE
-    Sources.insert(CorrTF);	//Zeby zostala kiedys zwolniona, a poza tym moze ktos kiedys...
+    Sources.insert(CorrTF);
 
     fifo_source<double>* EntropyTFLog=new fifo_source<double>(CorrTF->Entropy(),internal_log);
     if(!EntropyTFLog) ON_ERROR_MAKE
     iEntropyTF=Sources.insert(EntropyTFLog);
 
-    fifo_source<double>* CorrTFLogR=new fifo_source<double>(CorrTF->Tau_a_Goodman_Kruskal(),internal_log);	//Fifo korelacji pierwszych z drugimi
+    fifo_source<double>* CorrTFLogR=new fifo_source<double>(CorrTF->Tau_a_Goodman_Kruskal(),internal_log);
     if(!CorrTFLogR) ON_ERROR_MAKE
     iCorrTFR=Sources.insert(CorrTFLogR);
 
-    //I utworzenie serii liczacych ich statystyki
+    // Creating series that count even more derived statistics:
     /*
-    fifo_source<double>* MeanFirstLog=new fifo_source<double>(FirstStat->Mean(),internal_log);	//Fifo ze sredniej sily
+    fifo_source<double>* MeanFirstLog=new fifo_source<double>(FirstStat->Mean(),internal_log);
     if(!MeanFirstLog) ON_ERROR_MAKE
     iMFirst=Sources.insert(MeanFirstLog);
     */
-    fifo_source<double>* StressFirstLog=new fifo_source<double>(FirstStat->Stress(),internal_log);	//Fifo ze stresu
+    /// A fifo queue from first layer average stresses.
+    fifo_source<double>* StressFirstLog=new fifo_source<double>(FirstStat->Stress(),internal_log);
     if(!StressFirstLog) ON_ERROR_MAKE
     iSFirst=Sources.insert(StressFirstLog);
+
     /*
-    fifo_source<double>* MeanSecondLog=new fifo_source<double>(SecondStat->Mean(),internal_log);	//Fifo ze sredniej sily
+    fifo_source<double>* MeanSecondLog=new fifo_source<double>(SecondStat->Mean(),internal_log);
     if(!MeanSecondLog) ON_ERROR_MAKE
     iMSecond=Sources.insert(MeanSecondLog);
     */
-    fifo_source<double>* StressSecondLog=new fifo_source<double>(SecondStat->Stress(),internal_log);	//Fifo ze stresu
+    /// A fifo queue from second layer average stresses.
+    fifo_source<double>* StressSecondLog=new fifo_source<double>(SecondStat->Stress(),internal_log);
     if(!StressSecondLog) ON_ERROR_MAKE
     iSSecond=Sources.insert(StressSecondLog);
     /*
-    fifo_source<double>* MeanThirdLog=new fifo_source<double>(ThirdStat->Mean(),internal_log);	//Fifo ze sredniej sily
+    fifo_source<double>* MeanThirdLog=new fifo_source<double>(ThirdStat->Mean(),internal_log);
     if(!MeanThirdLog) ON_ERROR_MAKE
     iMThird=Sources.insert(MeanThirdLog);
     */
-    fifo_source<double>* StressThirdLog=new fifo_source<double>(ThirdStat->Stress(),internal_log);//Fifo ze stresu
+    /// A fifo queue from third layer average stresses.
+    fifo_source<double>* StressThirdLog=new fifo_source<double>(ThirdStat->Stress(),internal_log);
     if(!StressThirdLog) ON_ERROR_MAKE
     iSThird=Sources.insert(StressThirdLog);
-
-    //iMainClassF,iWhichMainF,iNumClassF,
+    /// Language count fifo queue.
     fifo_source<double>* NumClassLog=new fifo_source<double>(ClassStat->NumOfClass(),internal_log);
     if(!NumClassLog) ON_ERROR_MAKE
     iNumClassF=Sources.insert(NumClassLog);
@@ -382,15 +403,16 @@ void jworld::make_default_visualisation()
     if(!WhichMainLog) ON_ERROR_MAKE
     int iWhichMainF=Sources.insert(WhichMainLog);
     */
+    /// Fifo queue with language histogram entropy.
     fifo_source<double>* ClassEntropyLog=new fifo_source<double>(ClassStat->Entropy(),internal_log);
     if(!ClassEntropyLog) ON_ERROR_MAKE
     iClassEntropy=Sources.insert(ClassEntropyLog);
-
+    /// A fifo queue with the size of the largest language.
     fifo_source<double>* MainClassLog=new fifo_source<double>(ClassStat->MainClass(),internal_log);
     if(!MainClassLog) ON_ERROR_MAKE
     iMainClassF=Sources.insert(MainClassLog);
 
-    //I umieszczanie w logu tego co trzeba
+    // Logging the statistical data series we are interested in:
     Log.insert(ClassStat->NumOfClass());
     Log.insert(ClassStat->Entropy());
     Log.insert(ClassStat->NormEntropy());
@@ -426,11 +448,11 @@ void jworld::make_default_visualisation()
     Log.insert(FarLinksStat->Mean());
     Log.insert(FarLinksStat->Max());
 
-    //Wstawianie histogramu log-log do pliku logu - tak żeby był w ostatnich kolumnach)
+    // Inserting the log-log histogram into the log file - so that it is in the last columns:
     for(int i=0;i<LogLogHistClassStat->get_size();i++)
             Log.insert( LogLogHistClassStat->Class(i,"Log<%g,%g)(%s)")  );
 
-    //Optional Spatial Correlation statistic and its logs
+    // Optional Spatial Correlation statistic and its columns in the log:
     if(UseSpatialCorr)
     {
         generic_spatial_correlation_source* SpatialCorr1=new generic_spatial_correlation_source(Firsts,-1,spatial_correlation_mode);
@@ -462,16 +484,17 @@ void jworld::make_default_visualisation()
         Log.insert(SpatialCorr3->ApproximatedClusterSize());
     }
 
+    // Now we create data visualizations in a window if there is a window at all:
+    // ///////////////////////////////////////////////////////////////////////////
 
-    //PODSTAWOWA WIZUALIZACJA SERII DANYCH
     if(WithGr)
     {
-        area_menager&	Menager=MyAreaMenager(); //Skrót do Menagera obszarów
+        area_menager&	Menager=MyAreaMenager(); ///< Shortcut to Area Manager
 
-        //WYMIARY DOMYSLNEGO OKNA
+        // AVAILABLE WINDOW DIMENSIONS:
         unsigned szer=Menager.getwidth();
         unsigned wyso=Menager.getheight();
-        assert(szer>100 && wyso>80);//Najmniejsze sensowne okno
+                                        assert(szer>100 && wyso>80); //Is it larger than the smallest reasonable window?
 
         if(OutArea)
         {
@@ -479,83 +502,85 @@ void jworld::make_default_visualisation()
             Menager.as_orginal(Menager.search(OutArea->name()));
         }
 
-        //WLASCIWE LUFCIKI
-        graph* pom1=new sequence_graph(szer/2-1,wyso/4,szer-50,wyso/2-1,
+        // VISUALIZATION OF BASIC DATA SERIES:
+        graph* pom1=new sequence_graph(szer/2-1,wyso/4,szer-50,wyso/2-1, //default coordinates of this display area
                                         3,Sources.make_series_info(
                                                 iClassEntropy,iNumClassF,iMainClassF,
                                                     -1
                                                 ).get_ptr_val(),
-                                        0//* Z reskalowaniem
+                                        0 // 0 means with rescaling
                                        );
         if(!pom1) ON_ERROR_MAKE
         pom1->setframe(128);
         pom1->settitle("History of classes");
         Menager.insert(pom1);
 
-        pom1=new sequence_graph(szer/2-1,1,szer-50,wyso/4-1,
+        pom1=new sequence_graph(szer/2-1,1,szer-50,wyso/4-1, //default coordinates of this display area
                                         3,Sources.make_series_info(
                                                 iEntropyFS,
                                                 iEntropyST,
                                                 iEntropyTF,
                                                     -1
                                                 ).get_ptr_val(),
-                                       1/*Wspolne minimum/maximum*/);
+                                       1 // 1 means common minimum and maximum.
+                                       );
         if(!pom1) ON_ERROR_MAKE
         pom1->setframe(128);
-        pom1->settitle("History of ENTROPY of coincidention");
+        pom1->settitle("History of ENTROPY of coincidence");
         Menager.insert(pom1);
 
-        graph* pom=new true_color_carpet_graph(1,wyso/2,szer/2-1,wyso-1,	//domyslne wspolrzedne,
-        //Kombinowana mapa memów - w tym samym miejscu co klasyfikacja wiec albo/albo
+        graph* pom=new true_color_carpet_graph(1,wyso/2,szer/2-1,wyso-1, //Combined meme map - in the same place as the classification, so either/or
                      Firsts,0,
                      Seconds,0,
-                     Thirds,0
-                     );//Memy jako zrodla danych o kolorach
+                     Thirds,0 // Memes, i.e., language attributes, appear here as sources of color data
+                     );
         pom->settitle("RGB map of languages");
         Menager.insert(pom);
 
-        //pom=new fast_carpet_graph<ptr_to_struct_matrix_source<jagent,unsigned long> ,true>(szer/2-1,wyso/2,szer-50,wyso-1,	//domyslne wspolrzedne,
-        pom=new carpet_graph(szer/2-1,wyso/2,szer-50,wyso-1,	//domyslne wspolrzedne,
-                     Politics,0, //Przynależność polityczna
-                     true);//Nadrzędni sąsiedzi jako zrodlo danych o kolorach
+        //pom=new fast_carpet_graph<ptr_to_struct_matrix_source<jagent,unsigned long> ,true>(szer/2-1,wyso/2,szer-50,wyso-1,
+        pom=new carpet_graph(szer/2-1,wyso/2,szer-50,wyso-1,  //default coordinates of this display area
+                     Politics,0, //Visualization of agents' political affiliation
+                     true // Master agents as a source of color data
+                     );
         pom->settitle("POLITICAL MAP");
         Menager.insert(pom);
 
-        //Boczne menu dodatkowych wizualizacji
-        /////////////////////////////////////////////////////////
-        unsigned int MLeft=szer-49;      //Lewy bok bocznego menu
-        unsigned int MStep=char_height('X')+2;//WYsokość jednego paska bocznego
+        // Side menu for additional visualizations:
 
-        //Historia dalekich połączeń Small Worlds
-        pom=new sequence_graph(MLeft,5*MStep,szer,6*MStep,	//domyslne wspolrzedne
+        unsigned int MLeft=szer-49;      ///< Left edge of the side menu.
+        unsigned int MStep=char_height('X')+2; ///< Side menu one line height.
+
+        // The history of changes in distant connections (the structure of Small Worlds):
+        pom=new sequence_graph(MLeft,5*MStep,szer,6*MStep,
                                         3,Sources.make_series_info(
                                                 iFarLinksMeans,
                                                 iFarLinksMaxs,
                                         //		iFarLinksDynam,
                                                     -1
                                                 ).get_ptr_val(),
-                                        //0// Z reskalowaniem
-                                       1);//Wspolne minimum/maximum
+                               1 //or 0?
+                               );
         if(!pom) ON_ERROR_MAKE
         pom->setframe(128);
         pom->settitle("History of far links");
         Menager.insert(pom);
 
-        //Historia stresu
-        pom=new sequence_graph(MLeft,12*MStep,szer,13*MStep,	//domyslne wspolrzedne
+        // Stress history:
+        pom=new sequence_graph(MLeft,12*MStep,szer,13*MStep,
                                         3,Sources.make_series_info(
                                                 iSFirst,
                                                 iSSecond,
                                                 iSThird,
                                                     -1
                                                 ).get_ptr_val(),
-                                        //0// Z reskalowaniem
-                                       1);//Wspolne minimum/maximum
+                               1 //or 0?
+                               );
         if(!pom) ON_ERROR_MAKE
         pom->setframe(128);
         pom->settitle("History of stress");
         Menager.insert(pom);
 
+        // History of correlation:
         pom=new sequence_graph(MLeft,13*MStep,szer,14*MStep,
                                         3,Sources.make_series_info(
                                                 iCorrFSR,	//iCorrFS,
@@ -563,75 +588,75 @@ void jworld::make_default_visualisation()
                                                 iCorrTFR,	//iCorrTF,
                                                     -1
                                                 ).get_ptr_val(),
-                                        1
-                                       );
+                                1
+                               );
         if(!pom) ON_ERROR_MAKE
         pom->setframe(128);
         pom->settitle("History of correlations");
         Menager.insert(pom);
 
-
-        pom=new true_color_manhattan_graph(MLeft,4*MStep,szer,5*MStep,	//domyslne wspolrzedne
-                                Powers,0,	//I zrodlo danych o wysokosciach, niezazadzane
-                                Firsts,0,	//Zrodla danych o kolorach
+        // Visualization of the world in the colors of the languages and with the height of the bars visualizing the strength of agents.
+        pom=new true_color_manhattan_graph(MLeft,4*MStep,szer,5*MStep,
+                                Powers,0,	//Bar height data source (unmanaged)
+                                Firsts,0,	//Color component data sources (RGB)
                                 Seconds,0,
                                 Thirds,0,
-                                1,		//Slupki zaczynaja sie conajmniej od 0!
-                                            //Jesli 0 to zaczynaja sie od min>0
-                                0.22,		//Ulamek szerokosci przeznaczony na perspektywe
-                                0.77		//Ulamek wysokosci  przeznaczony na perspektywe
-                                );//I zrodlo danych
+                                1,		//If 1, then the bars start at least from 0! If 0, then they can start from `min>0`.
+                                0.22,		//A fraction of the width is allocated to perspective
+                                0.77		//A fraction of the height is dedicated to perspective
+                                );
         pom->setdatacolors(0,255);
         pom->settitle("Strength of agents versus RGB view of languages");
         Menager.insert(pom);
 
-        if(IleKate*IleKate*IleKate<=256)	//Dla wiekszej liczby jezyków taka wizualizacja nie ma sensu
+        if(IleKate*IleKate*IleKate<=256) //For more languages, the following visualization does not make sense.
         {
-        pom=new manhattan_graph(MLeft,5*MStep,szer,6*MStep,	//domyslne wspolrzedne
-                                Powers,0,	//I zrodlo danych o wysokosciach, niezazadzane
-                                Classif,0,	//Zrodlo danych o kolorach - niezazadzane
-                                1,		//Slupki zaczynaja sie conajmniej od 0!
-                                            //Jesli 0 to zaczynaja sie od min>0
-                                0.22,		//Ulamek szerokosci przeznaczony na perspektywe
-                                0.77		//Ulamek wysokosci  przeznaczony na perspektywe
-                                );//I zrodlo danych
-        pom->setdatacolors(0,255);
-        pom->settitle("Strength of agents versus languages");
-        int inde=Menager.insert(pom);
-        Menager.minimize(inde);
+            pom=new manhattan_graph(MLeft,5*MStep,szer,6*MStep,
+                                    Powers,0,	//Bar height data source (unmanaged)
+                                    Classif,0,	//Artificial color data source (unmanaged)
+                                    1,		//If 1, then the bars start at least from 0! If 0, then they can start from `min>0`.
+                                    0.22,		//A fraction of the width is allocated to perspective
+                                    0.77		//A fraction of the height is dedicated to perspective
+                                    );
+            pom->setdatacolors(0,255);
+            pom->settitle("Strength of agents versus languages");
+            int inde=Menager.insert(pom);
+            Menager.minimize(inde);
         }
 
-        generic_log_1_plus_F_filter* LogAge=new generic_log_1_plus_F_filter(Age);
+        generic_log_1_plus_F_filter* LogAge=new generic_log_1_plus_F_filter(Age); // AGE: 15*char_height('X')+16,szer,16*char_height('X')+17 (Something old???)
         if(!LogAge) ON_ERROR_MAKE
-        Sources.insert(LogAge);               //STARE AGE: 15*char_height('X')+16,szer,16*char_height('X')+17
+        Sources.insert(LogAge);
 
-        pom=new carpet_graph(MLeft,6*MStep,szer,7*MStep,	//domyslne wspolrzedne
-                                LogAge);//I zrodlo danych
+        // How long has the current language been used here?
+        pom=new carpet_graph(MLeft,6*MStep,szer,7*MStep,
+                                LogAge);
         //pom->setdatacolors(255,511);
         pom->settitle("Age of agent's language");
         Menager.insert(pom);
 
-        if(IleKate*IleKate*IleKate<=256)	//Dla wiekszej liczby jezyków taka wizualizacja nie ma sensu
+        if(IleKate*IleKate*IleKate<=256) //For more languages, the following visualization does not make sense.
         {
-            pom=new carpet_graph(MLeft,6*MStep,szer,7*MStep,	//domyslne wspolrzedne
-                Classif);//I zrodlo danych
+            pom=new carpet_graph(MLeft,6*MStep,szer,7*MStep,
+                Classif	//Artificial color data source, no more than 256
+                );
             pom->setdatacolors(0,255);
             pom->settitle("Map of languages");
             Menager.insert(pom);
         }
 
-        if(ClassStat->get_size()<max(1024,Menager.getwidth()-30))
-        //Nie ma sensu tworzyc takiej wizualizacji jesli sie histogram nie zmiesci na ekranie
+        if(ClassStat->get_size()<max(1024,Menager.getwidth()-30)) // There is no point in creating such a visualization if the histogram does not fit on the screen
         {
-            pom=new bars_graph(MLeft,7*MStep,szer,8*MStep,	//domyslne wspolrzedne
-                ClassStat);
+            pom=new bars_graph(MLeft,7*MStep,szer,8*MStep,
+                ClassStat
+                );
             pom->setdatacolors(0,255);
             pom->settitle("Histogram of languages");
             int ipom=Menager.insert(pom);
             Menager.minimize(ipom);
         }
 
-        //LogLog histogram jezyków - ile jest jezyków w poszczegolnych klasach wielkosci (10,100,1000,10000 uzytkownikow)
+        // Log-Log histogram of languages - how many languages are there in each size class (10, 100, 1000, 10 000 users)
         pom=new bars_graph(MLeft,7*MStep,szer,8*MStep,
                                 LogLogHistClassStat);
         if(!pom) ON_ERROR_MAKE
@@ -642,7 +667,7 @@ void jworld::make_default_visualisation()
 
         if(!UseSpatialCorr)
         {
-            pom=new bars_graph(MLeft,8*MStep,szer,9*MStep,	//domyslne wspolrzedne
+            pom=new bars_graph(MLeft,8*MStep,szer,9*MStep,
                 HistClass);
             pom->setdatacolors(0,255);
             pom->settitle("Histogram of language size classes");
@@ -651,94 +676,104 @@ void jworld::make_default_visualisation()
         else
         {
         /*
-            function_source_base* Linear=new function_source<yeqx>(SpatialCorr->get_size(),0,SpatialCorr->get_size(),"lenght"); Sources.insert(Linear);
+            function_source_base* Linear=new function_source<yeqx>(SpatialCorr->get_size(),0,SpatialCorr->get_size(),"length"); Sources.insert(Linear);
             pom1=new scatter_graph(szer-49,8*char_height('X')+8,szer,9*char_height('X')+10,
                 Linear,0,
                 SpatialCorr,0);
         */
         /*
-        pom=new bars_graph(szer-49,7*char_height('X')+7,szer,8*char_height('X')+9,	//domyslne wspolrzedne
-                                LogHistClass);
-        pom->setdatacolors(0,255);
-        pom->settitle("Log10 Histogram of languages");
-        Menager.insert(pom);
+            pom=new bars_graph(szer-49,7*char_height('X')+7,szer,8*char_height('X')+9,
+                                    LogHistClass);
+            pom->setdatacolors(0,255);
+            pom->settitle("Log10 Histogram of languages");
+            Menager.insert(pom);
         */
         }
+
         //Koincydencje cech
-        pom=new manhattan_graph(MLeft,9*MStep,szer,10*MStep,	//domyslne wspolrzedne
-                                    CorrFS,0,	//I zrodlo danych
+        pom=new manhattan_graph(MLeft,9*MStep,szer,10*MStep,
+                                    CorrFS,0,
                                     CorrFS,0,
                                     1,
-                                    0.22,		//Ulamek szerokosci przeznaczony na perspektywe
-                                    0.77);		//Ulamek wysokosci  przeznaczony na perspektywe
+                                    0.22,
+                                    0.77);
         pom->setdatacolors(0,255);
         pom->settextcolors(0);
-        pom->settitle("First & Second coincidention");
+        pom->settitle("First & Second coincidence");
         Menager.insert(pom);
 
-        pom=new manhattan_graph(MLeft,10*MStep,szer,11*MStep,	//domyslne wspolrzedne
-                                    CorrST,0,	//I zrodlo danych
+        pom=new manhattan_graph(MLeft,10*MStep,szer,11*MStep,
+                                    CorrST,0,
                                     CorrST,0,
                                     1,
-                                    0.22,		//Ulamek szerokosci przeznaczony na perspektywe
-                                    0.77);		//Ulamek wysokosci  przeznaczony na perspektywe
+                                    0.22,
+                                    0.77);
         pom->setdatacolors(0,255);
         pom->settextcolors(0);
-        pom->settitle("Second & Third coincidention");
+        pom->settitle("Second & Third coincidence");
         Menager.insert(pom);
 
-        pom=new manhattan_graph(MLeft,11*MStep,szer,12*MStep,	//domyslne wspolrzedne
-                                    CorrTF,0,	//I zrodlo danych
+        pom=new manhattan_graph(MLeft,11*MStep,szer,12*MStep,
+                                    CorrTF,0,
                                     CorrTF,0,
                                     1,
-                                    0.22,		//Ulamek szerokosci przeznaczony na perspektywe
-                                    0.77);		//Ulamek wysokosci  przeznaczony na perspektywe
+                                    0.22,
+                                    0.77);
         pom->setdatacolors(0,255);
         pom->settextcolors(0);
-        pom->settitle("Third & First coincidention");
+        pom->settitle("Third & First coincidence");
         Menager.insert(pom);
 
-        //Mapy poszczegolnych memow
+        // Maps of individual memes - language attributes:
+        //------------------------------------------------
+
         pom=new carpet_graph(MLeft,15*MStep,szer,16*MStep,
-                                Firsts);//I zrodlo danych
+                                Firsts);
         pom->setdatacolors(0,255);
         pom->settitle("Map of FIRSTs");
         int inde=Menager.insert(pom);
         Menager.minimize(inde);
 
-        pom=new true_color_carpet_graph(MLeft,15*MStep,szer,16*MStep,	//domyslne wspolrzedne
-                                Firsts,0,NULL,0,NULL,0);//I zrodlo danych
+        pom=new true_color_carpet_graph(MLeft,15*MStep,szer,16*MStep,
+                                Firsts,0,
+                                NULL,0,
+                                NULL,0);
         pom->setdatacolors(0,255);
         pom->settitle("Red map of FIRSTs");
         Menager.insert(pom);
 
-        pom=new carpet_graph(MLeft,16*MStep,szer,17*MStep,	//domyslne wspolrzedne
-                                Seconds);//I zrodlo danych
+        pom=new carpet_graph(MLeft,16*MStep,szer,17*MStep,
+                                Seconds);
         pom->setdatacolors(0,255);
         pom->settitle("Map of SECONDs");
         inde=Menager.insert(pom);
         Menager.minimize(inde);
 
-        pom=new true_color_carpet_graph(MLeft,16*MStep,szer,17*MStep,	//domyslne wspolrzedne
-                                NULL,0,Seconds,0,NULL,0);//I zrodlo danych
+        pom=new true_color_carpet_graph(MLeft,16*MStep,szer,17*MStep,
+                                NULL,0,
+                                Seconds,0,
+                                NULL,0);
         pom->setdatacolors(0,255);
         pom->settitle("Green map of SECONDs");
         Menager.insert(pom);
 
-        pom=new carpet_graph(MLeft,17*MStep,szer,18*MStep,	//domyslne wspolrzedne
-                                Thirds);//I zrodlo danych
+        pom=new carpet_graph(MLeft,17*MStep,szer,18*MStep,
+                                Thirds);
         pom->setdatacolors(0,255);
         pom->settitle("Map of THIRDs");
         inde=Menager.insert(pom);
         Menager.minimize(inde);
 
-        pom=new true_color_carpet_graph(MLeft,17*MStep,szer,18*MStep,	//domyslne wspolrzedne
-                                NULL,0,NULL,0,Thirds,0);//I zrodlo danych
+        pom=new true_color_carpet_graph(MLeft,17*MStep,szer,18*MStep,
+                                NULL,0,
+                                NULL,0,
+                                Thirds,0);
         pom->setdatacolors(0,255);
         pom->settitle("Blue map of THIRDs");
         Menager.insert(pom);
 
-        pom=new scatter_graph(MLeft,18*MStep,szer,19*MStep,	//domyślne wspolrzedne
+        // Information about far links:
+        pom=new scatter_graph(MLeft,18*MStep,szer,19*MStep,
                                 FarA,0,
                                 FarB,0,
                                 FCount,0,
@@ -747,8 +782,9 @@ void jworld::make_default_visualisation()
         pom->setbackground(256+100);
         Menager.insert(pom);
 
-        if(UseSpatialCorr) //Optional visualisation of Spatial Correlation,
+        if(UseSpatialCorr)
         {
+            //Optional visualization of Spatial Correlation
             pom1=new sequence_graph(MLeft,8*MStep,szer,9*MStep,
                 3,Sources.make_series_info(
                 iSpatialCorr1,
@@ -763,61 +799,55 @@ void jworld::make_default_visualisation()
             pom1->settitle("SPATIAL CORRELATION");
             Menager.insert(pom1);
 
-            pom=new sequence_graph(MLeft,14*MStep,szer,15*MStep,	//domyslne wspolrzedne
-                3,Sources.make_series_info(
-                iClusterSize1,	//iCorrFS,
-                iClusterSize2,	//iCorrST,
-                iClusterSize3,	//iCorrTF,
-                -1
-                ).get_ptr_val(),
-                                        1
-                                        );
+            pom=new sequence_graph(MLeft,14*MStep,szer,15*MStep,
+                                    3,Sources.make_series_info(
+                                    iClusterSize1,	//iCorrFS,
+                                    iClusterSize2,	//iCorrST,
+                                    iClusterSize3,	//iCorrTF,
+                                    -1
+                                    ).get_ptr_val(),
+                                1
+                                );
             if(!pom) ON_ERROR_MAKE
             pom->setframe(128);
             pom->settitle("History of approximated cluster size");
             Menager.insert(pom);
     }
 
-    //Tworzenie obszaru sterujacego
+    // Creating a zoom control area on maps.
     {
-    wb_dynarray<rectangle_source_base*> tmp(5,(rectangle_source_base*)Sources.get(iFirst),
-                                              (rectangle_source_base*)Sources.get(iSecond),
-                                              (rectangle_source_base*)Sources.get(iThird),
-                                              (rectangle_source_base*)Sources.get(iPower),
-                                              (rectangle_source_base*)Sources.get(iClassif),
-                                              -1
-                                              );
-    drawable_base* pom=new steering_wheel(MLeft,0,szer,4*MStep,tmp);
-    assert(pom!=NULL);
-    pom->setbackground(10);
-    pom->settitle(" (-o-) ");
-    Menager.insert(pom);
+        wb_dynarray<rectangle_source_base*> tmp(5,(rectangle_source_base*)Sources.get(iFirst),
+                                                  (rectangle_source_base*)Sources.get(iSecond),
+                                                  (rectangle_source_base*)Sources.get(iThird),
+                                                  (rectangle_source_base*)Sources.get(iPower),
+                                                  (rectangle_source_base*)Sources.get(iClassif),
+                                                  -1
+                                                  );
+        drawable_base* pWheel=new steering_wheel(MLeft, 0, szer, 4 * MStep, tmp);  assert(pWheel != NULL);
+        pWheel->setbackground(10);
+        pWheel->settitle(" (-o-) ");
+        Menager.insert(pWheel);
     }
 }
 
-    //JUŻ GOTOWE - MOŻNA EWENTUALNIE ODRYSOWAĆ
-    Sources.new_data_version(1,1);//Oznajmia seriom ze dane sie uaktualnily	(po inicjacji)
+    // FINALLY, DONE - YOU CAN ALSO DRAW IT ALL:
+    Sources.new_data_version(1,1); // Notifies the series that data has been updated (after initialization)
     if(WithGr)
-        this->MyAreaMenager().maximize(0);
-
-    //return;
-    //ERROR:	//... tu akcja na niepogode
-    //	;//error_message(...)
+        this->MyAreaMenager().maximize(0); // Minimizing the zero-index area (OutArea?)
 }
 
 
 
-//AKCJE SYMULACYJNE
-// ////////////////////
-// ////////////////////
-void jworld::after_read_from_image()
-//actions after read state from file. Aktualizacja pol static jagent'a!!!
-{
-    jagent::max_sila=MaxSila;//Maksymalna sila agenta
-    jagent::min_sila=MinSila;//Mnimalna sila agenta
-    jagent::ile_kate=IleKate;//Ilosc kategori w mapach
+// TYPICAL SIMULATION ACTIONS:
+// ///////////////////////////
 
-    switch(IleKate)
+void jworld::after_read_from_image()
+{
+    jagent::max_sila=MaxSila; // Sets the maximum agent strength
+    jagent::min_sila=MinSila; // Sets the minimum agent strength
+    jagent::ile_kate=IleKate; // Sets the number of categories
+
+    switch(IleKate) //Sets the bit offset for reading categories
     {
     case   2:jagent::kate_shift=7;break;
     case   4:jagent::kate_shift=6;break;
@@ -836,20 +866,19 @@ void jworld::after_read_from_image()
     }
 }
 
-// stan startowy symulacji
+
 void jworld::initialize_layers()
 //-------------------------------------
 {
-    static int first=1;//TYMCZASOWE WYLACZENIE NADMIARU WYDRUKOW!!!
+    static int first=1; //DISABLING EXCESS PRINTOUTS WHEN INITIATING SIMULATION REPETITIONS.
     if(first)
-        Log.GetStream()<<"LANGUAGE SIMULATION:";
-    //odl_sasiad=1,	//Rozmiar sasiedztwa
-    //ile_sasiad=8 //8==Gestosc sasiedztwa
-    jagent::max_sila=MaxSila;//Maksymalna sila agenta
-    jagent::min_sila=MinSila;//Mnimalna sila agenta
-    jagent::ile_kate=IleKate;//Ilosc kategori w mapach
+        Log.GetStream()<<"LANGUAGE SIMULATION:"; //There are a lot of prints in the first initialization.
 
-    switch(IleKate)
+    jagent::max_sila=MaxSila; // Sets the maximum agent strength
+    jagent::min_sila=MinSila; // Sets the minimum agent strength
+    jagent::ile_kate=IleKate; // Sets the number of categories
+
+    switch(IleKate) //Sets the bit offset for reading categories
     {
     case   2:jagent::kate_shift=7;break;
     case   4:jagent::kate_shift=6;break;
@@ -865,75 +894,75 @@ void jworld::initialize_layers()
         cerr<<"Invalid number of class (not power of 2 less than 256). Using default.\n";
         Log.GetStream()<<"Invalid number of class (not power of 2). Using default.\n";
         break;
-    }        //jkania@borland.pl
-        if(first)
+    }        //jkania@borland.pl ???
 
-    print_experiment_info(Log.GetStream(),Log.separator());//...wydruk wartosci parametrow symulacji
+    if(first)
+        print_experiment_info(Log.GetStream(),Log.separator()); //Printout of simulation parameter values.
 
-    //			USTALANIE STANÓW AGENTÓW
-    //Wczytuje uzywajac konstruktora lub klonowania gdy niema, wiec inicjuje reszte pól.
+    //DETERMINING AGENT STATES FROM GRAPHIC FILES WHERE AVAILABLE:
     int from1=0,from2=0;
     char *pos=NULL;
     char *old=NULL;
 
-    from1= Agenci.init_from_bitmap(MappName.get_ptr_val(),&jagent::assignPow); //Inicjowanie sily z pliku sil
+    from1= Agenci.init_from_bitmap(MappName.get_ptr_val(),&jagent::assignPow); //Initializing powers from the map of powers.
 
-    if((pos=strchr(MaplName.get_ptr_val(),';'))==NULL) //Jesli nie sa to trzy nazwy plikow
+    if((pos=strchr(MaplName.get_ptr_val(),';'))==NULL) // If there are not three file names in MaplName, we treat it as one common RGB map.
     {
-        from2= Agenci.init_from_bitmap(MaplName.get_ptr_val(),&jagent::assign123); //Inicjowanie przekonan z jednego pliku
+        from2= Agenci.init_from_bitmap(MaplName.get_ptr_val(),&jagent::assign123); //Initializing attributes from one file
     }
-    else
+    else //When we have three separate files...
     {
         *pos='\0';
-        from2= Agenci.init_from_bitmap(MaplName.get_ptr_val(),&jagent::assign1); //Inicjowanie przekonan 1. z pierwszego pliku
+        from2= Agenci.init_from_bitmap(MaplName.get_ptr_val(),&jagent::assign1); //Initializing the first attribute from the first file
 
         old=pos+1;
         if(from2==1 && (pos=strchr(old,';'))!=NULL)
         {
-            clog<<"1. layer initialised by data file "<<MaplName.get_ptr_val()<<'\n'<<flush;
+            clog<<"1. layer initialized by data file "<<MaplName.get_ptr_val()<<'\n'<<flush;
 
             *pos='\0';
-            from2= Agenci.init_from_bitmap(old,&jagent::assign2); //Inicjowanie przekonan 2. z drugiego pliku
+            from2= Agenci.init_from_bitmap(old,&jagent::assign2); //Initializing the second attribute from the next file
 
             if(from2==1)
             {
-                clog<<"2. layer initialised by data file "<<old<<'\n'<<flush;
+                clog<<"2. layer initialized by data file "<<old<<'\n'<<flush;
                 old=pos+1;
                 if((pos=strchr(old,';'))!=NULL)
-                                *pos='\0'; //Na wypadek gdyby byl konczacy ';'
-                from2= Agenci.init_from_bitmap(old,&jagent::assign3); //Inicjowanie przekonan 3. z trzeciego pliku
+                                *pos='\0'; //In case there is a trailing ';' present
+                from2= Agenci.init_from_bitmap(old,&jagent::assign3); //Initializing the third attribute from the last file
 
                 if(from2==1)
-                    clog<<"3. layer initialised by data file "<<old<<'\n'<<flush;
+                    clog<<"3. layer initialized by data file "<<old<<'\n'<<flush;
             }
         }
     }
 
-    //Jesli nie zainicjowane to prowizoryczna inicjacja przez konstruktory lub klonowanie
+    // If the agents and language attributes are not initialized from files,
+    // a temporary random initialization is performed by constructors or by cloning.
     if(from1!=1 && from2!=1)
         Agenci.reallocate_all();
 
-    //Zabija m jesli w masce jesc czarny kolor
+    // Using the mask for uninhabitable areas. Resets an agent if the mask shows black in that area.
     if(Agenci.init_from_bitmap(MaskName.get_ptr_val(),&jagent::killBlack)==1 )
         Agenci.deallocate_not_OK();
 
     if(use_SW_links)
-        _connect_far_links(SW_startconnect_percent);//Probuje przyłączyc jakiś procent dalekich linków przed startem
+        _connect_far_links(SW_startconnect_percent); //I try to connect some percentage of distant links before starting
 
-    first=0;//Koniec pierwszego wywolania //TYMCZASOWO!!! ???? HAHA!!! Nie mam pojęcia dlaczego...
+    first=0; //End of the first call, the next ones will not be so eloquent.
 }
 
 
-//Pojedynczy krok symulacji
 void jworld::simulate_one_step()
-//---------------------------------------
 {
-    _update_age();//Pomocnicza
+    _update_age(); //First, we age the agents.
+
     if(use_SW_links)
     {
-        _connect_far_links(SW_reconect_percent);//Probuje przyłączyc N% procent dalekich linków
+        _connect_far_links(SW_reconect_percent); //Trying to connect some percentage of far distant links.
     }
-    switch(BiasMode){
+
+    switch(BiasMode){ //Depending on the bias mode, we use one of the auxiliary implementations.
     case NO_BIAS:	        _one_step_no_bias();       break;
     case SIMPLE_BIAS:	    _one_step_simple_bias();    break;
     case CONDITIONAL_BIAS:  _one_step_conditional_bias();break;
@@ -944,80 +973,88 @@ void jworld::simulate_one_step()
         break;}
 }
 
-//Probuje przełączyc pewien procent dalekich linków
+
 void    jworld::_connect_far_links(double Percent)
 {
-    unsigned N=(double(MyWidth)*double(MyWidth)*Percent)/100;
-    unsigned Counter=0;
-    for(unsigned i=0;i<N;i++)	//N prób - choć czasem może być podwójnie albo i wiEcej
+    unsigned N=(double(MyWidth)*double(MyWidth)*Percent)/100; ///< Number of attempts.
+    unsigned Counter=0; ///< Successful attempts counter.
+    for(unsigned i=0;i<N;i++)	//Makes N attempts - although sometimes it can hit double or even triple
     {
-        unsigned const a=RANDOM(MyWidth);
-        unsigned const b=RANDOM(MyWidth);
-        //Losowo - proporcjonalnie do zasięgu
-        if(Agenci.filled(a,b))	//Uwaga na puste komórki!
+        unsigned const a=RANDOM(MyWidth); ///< Random coordinate `a`.
+        unsigned const b=RANDOM(MyWidth); ///< Random coordinate `b`.
+
+        if(Agenci.filled(a,b)) //Note! Only for a non-empty cell!
         {
             const jagent& on=Agenci.get(a,b);
-            double r=on.Power/double(jagent::max_sila)*MyWidth/2;
- //			r=OdlSasiad+r*DRAND();//Zwykle losowanie w obrębie promienia ale nie mniej niż OdlSasiad
-            r=OdlSasiad+r*DRAND()*DRAND()*DRAND();//Zagęszczone blisko losowanie w obrębie promienia
-            double Angle=DRAND()*2*M_PI;
-            int ta=a+r*sin(Angle);//Target a
-            int tb=b+r*cos(Angle);//Target b
-            ta=(ta+MyWidth)%MyWidth;//Dopasowywanie do TORUSA - zawsze!!!
+            double r=on.Power/double(jagent::max_sila)*MyWidth/2; ///< Distance to random target.
+//			r=OdlSasiad+r*DRAND(); // Usually radius is draw within a radius, but not less than `OdlSasiad`.
+            r=OdlSasiad+r*DRAND()*DRAND()*DRAND(); // Randomisation of radius, which is now draw condensed, closer to the agent.
+            double Angle=DRAND()*2*M_PI; ///< Drawing the angle is rather simple (flat distribution).
+            int ta=a+r*sin(Angle); ///< Calculated target coordinate `a`.
+            int tb=b+r*cos(Angle); ///< Calculated target coordinate `b`.
+
+            //Adjustment to TORUS - always necessary!!!
+            ta=(ta+MyWidth)%MyWidth;
             tb=(tb+MyWidth)%MyWidth;
-                                    assert(0<=ta && ta<MyWidth);
-                                    assert(0<=tb && tb<MyWidth);
-            if((a!=ta || b!=tb) && Agenci.filled(ta,tb)) //Nie ma sensu połaczenie ze sobą i z pustym polem
+                                                                                   assert(0<=ta && ta<MyWidth);
+                                                                                   assert(0<=tb && tb<MyWidth);
+            if((a!=ta || b!=tb) && Agenci.filled(ta,tb)) //There is no point in connecting with yourself or with an empty field
             {
-                //ALGORYTM BEZ LOSOWOSCI
 #if 0
-                if(Agenci.get(ta,tb).Power>=on.Power) //dobrowolne oddanie się w protekcje lub czasem sojusz.
-                {									 //Pomijając ingerencje zewnętrzne połączenie dąży do
-                                                     //najsilniejszym agenta w zasięgu r
+                //OLD ALGORITHM WITHOUT RANDOMNESS:
+                if(Agenci.get(ta,tb).Power>=on.Power) //Voluntary submission to protection or sometimes alliance.
+                {									  //Ignoring external interference, the connection strives to connect
+                                                      //with the strongest agent within the available radius (r).
 
                     double power_of_protector=0;
-                    if(FarLinks.get(a,b).a!=UINT_MAX)	//Jest już jakiś protektor
+                    if(FarLinks.get(a,b).a!=UINT_MAX)	//When there is a protector, we read its strength/power.
                         power_of_protector=Agenci.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).Power;
-                    if(Agenci.get(ta,tb).Power+on.Power>power_of_protector)	//W sojuszu z nowym, trzeba pokonac starego protektora
+
+                    if(Agenci.get(ta,tb).Power+on.Power>power_of_protector)	//In alliance with the new, you must defeat the old protector
                     {
-                        _connect_flink_to(a,b,ta,tb); Counter++;
+                        _connect_flink_to(a,b,ta,tb);
+                        Counter++; //Victory!
                     }
                 }
-                else //Próba przyłączenia - trzeba wysiudać aktualnego protektora
+                else //Attempt to annex a area of the weaker one - you have to defeat the current protector
                 {
                     double power_of_protector=0;
-                    if(FarLinks.get(ta,tb).a!=UINT_MAX)	//Jest jakiś protektor
+                    if(FarLinks.get(ta,tb).a!=UINT_MAX)	//When there is a protector, we read its strength/power.
                         power_of_protector=Agenci.get(FarLinks.get(ta,tb).a,FarLinks.get(ta,tb).b).Power;
-                    if(on.Power>power_of_protector+Agenci.get(ta,tb).Power)	//Trzeba pokonac sojusz najechanego i jego portektora
+
+                    if(on.Power>power_of_protector+Agenci.get(ta,tb).Power)	//It is necessary to defeat the alliance of the invaded party and its protector
                     {
-                        _connect_flink_to(ta,tb,a,b); Counter++;
+                        _connect_flink_to(ta,tb,a,b); //link built the other way!
+                        Counter++; //Victory!
                     }
                 }
 #else
-                //ALGORYTM Z PROSTYM SZUMEM - SIŁA ZREALIZOWANA MOŻE WYNOSIĆ OD 50 do 150% NOMINALNEJ
-                if(Agenci.get(ta,tb).Power>=on.Power) //dobrowolne oddanie się "on-ego" w protekcje
-                                                     //lub czasem zawarcie sojuszu (gdy siły zblizone)
-                {									 //Pomijając ingerencje zewnętrzne  dąży do połączenia z
-                                                     //najsilniejszym agenta w zasięgu r
-
+                //SIMPLE NOISE ALGORITHM - REALIZED POWER CAN BE FROM 50 TO 150% OF NOMINAL:
+                if(Agenci.get(ta,tb).Power>=on.Power) //Voluntary submission to protection or sometimes alliance.
+                {									  //Ignoring external interference, the connection strives to connect
+                                                      //with the strongest agent within the available radius (r).
                     double power_of_protector=0;
-                    if(FarLinks.get(a,b).a!=UINT_MAX)	//Gdy "on" ma już jakiegoś protektora
+                    if(FarLinks.get(a,b).a!=UINT_MAX)	//When there is a protector, we read its strength/power.
                         power_of_protector=Agenci.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).Power;
-                    //W sojuszu z nowym, trzeba pokonac starego protektora
+
+                    //Taking into account randomness, in alliance with the new one, you have to defeat the old protector.
                     if((0.5+DRAND())*(Agenci.get(ta,tb).Power+on.Power)>power_of_protector)
                     {
-                        _connect_flink_to(a,b,ta,tb); Counter++;
+                        _connect_flink_to(a,b,ta,tb);
+                        Counter++;
                     }
                 }
-                else //Próba przyłączenia sobie wasala - trzeba wysiudać aktualnego protektora
+                else //Attempting to attach a new vassal - you have to get rid of the current protector.
                 {
                     double power_of_protector=0;
-                    if(FarLinks.get(ta,tb).a!=UINT_MAX)	//Jest jakiś protektor
+                    if(FarLinks.get(ta,tb).a!=UINT_MAX)	//When there is a protector, we read its strength/power.
                         power_of_protector=Agenci.get(FarLinks.get(ta,tb).a,FarLinks.get(ta,tb).b).Power;
-                    //Trzeba pokonac sojusz najechanego i jego protektora
+
+                    //Taking into account randomness, you have to defeat the alliance of the invaded party and its protector.
                     if((0.5+DRAND())*on.Power>power_of_protector+Agenci.get(ta,tb).Power)
                     {
-                        _connect_flink_to(ta,tb,a,b); Counter++;
+                        _connect_flink_to(ta,tb,a,b);
+                        Counter++;
                     }
                 }
 #endif
@@ -1025,23 +1062,24 @@ void    jworld::_connect_far_links(double Percent)
         }
     }
 
-    //Tylko ze względu na kolorowanie!
-    for(int a=0;a<N;a++)
-    for(int b=0;b<N;b++)
-    if(Agenci.filled(a,b))	//Uwaga na puste komórki!
-    {
-       _far_link pom=FarLinks.get(a,b);
-       if(pom.a!=UINT_MAX)	//Jest jakiś protektor
-       {
-           unsigned long politofprot=Agenci.get(pom.a,pom.b).Politics;
-           Agenci.get(a,b).Politics=politofprot;
-       }
+    //Double looping through all agents just for coloring!
+    for(int a=0;a<N;a++) {
+        for (int b = 0; b < N; b++)
+            if (Agenci.filled(a, b))    //Watch out for empty cells!
+            {
+                _far_link pom = FarLinks.get(a, b);
+                if (pom.a != UINT_MAX)    //If there is any protector at all.
+                {
+                    unsigned long politOfProtector= Agenci.get(pom.a, pom.b).Politics; ///< A political marker of the Protector.
+                    Agenci.get(a, b).Politics = politOfProtector; // An agent adopts the political marker of his protector.
+                }
+            }
     }
 
-    //Statystyka bezpośrednia
+    //Direct statistics are calculated here - real SW dynamics:
     if(N>0)
         SW_dynamic_perc=Counter/double(N);
-        else
+    else
         SW_dynamic_perc=0;
 
 }
@@ -1050,48 +1088,55 @@ unsigned jworld::_far_link::get_target_count()
 {
     if(/*0<=a &&*/ a<MyWorld->MyWidth
         && /*0<=b &&*/ b<MyWorld->MyWidth)
-        return MyWorld->FarLinks.get(a,b).count; // Reads `count` from a,b location on far links layer.
+        return MyWorld->FarLinks.get(a,b).count; // Reads `count` from [a,b] location on far links layer.
     else
         return 0;
 }
 
-//Implementacja zapisu stanu symulacji w formacie NET lub NET2 (z atrybutami)
+
 void jworld::dump_net_file(const char* core_name,unsigned long Step)
 {
-    unsigned N=(double(MyWidth)*double(MyWidth));
+    unsigned N=(double(MyWidth)*double(MyWidth)); ///< Number of cells.
     wb_pchar Name(512);
     Name.prn("%s%06d.net",core_name,Step);
     ofstream Out(Name.get(),ios::out);
     if(Out)
-    {   unsigned wer,col;
-        Out<<N<<endl;
-        for(wer=0;wer<MyWidth;wer++)	//Po wierszach
-         for(col=0;col<MyWidth;col++)	//Po kolumnach we wierszu
+    {
+        unsigned wer,col;
+
+        Out<<N<<endl; //How many cells should I expect?
+
+        // Recording agent forces at individual positions.
+        for(wer=0;wer<MyWidth;wer++)	//Loop through the lines/rows.
+         for(col=0;col<MyWidth;col++)	//Loop through columns in a given row.
          {
             Out<<col<<'\t'<<wer<<'\t'<<Agenci.get(col,wer).Power<<"  "<<col<<'x'<<wer<<endl;
          }
 
-        for(wer=0;wer<MyWidth;wer++)	//Po wierszach
-         for(col=0;col<MyWidth;col++)	//Po kolumnach we wierszu
+        // Saving information about distant links of individual items.
+        for(wer=0;wer<MyWidth;wer++)	//Loop through the lines/rows.
+         for(col=0;col<MyWidth;col++)	//Loop through columns in a given row.
          {
             _far_link& lnk=FarLinks.get(col,wer);
             if(/*0<=lnk.a &&*/ lnk.a<MyWidth
             && /*0<=lnk.b &&*/ lnk.b<MyWidth)
-             Out<<(wer*MyWidth)+col<<'\t'<<(lnk.b*MyWidth)+lnk.a<<'\t'<<1<<endl;
+                Out<<(wer*MyWidth)+col<<'\t'<<(lnk.b*MyWidth)+lnk.a<<'\t'<<1<<endl;
          }
     }
     Out.close();
 }
 
+// Static fields require a separate definition in some cpp file. But why did I omit initialization?
 jworld* jworld::_far_link::MyWorld; //=NULL;
 
-
+#pragma clang diagnostic pop
 /* **************************************************************** */
-/*           THIS CODE IS DESIGNED & COPYRIGHT  BY:                 */
+/*           THIS CODE IS DESIGNED & COPYRIGHT BY:                  */
 /*            W O J C I E C H   B O R K O W S K I                   */
-/* Zaklad Systematyki i Geografii Roslin Uniwersytetu Warszawskiego */
-/*  & Instytut Studiow Spolecznych Uniwersytetu Warszawskiego       */
+/* Zakład Systematyki i Geografii Roślin Uniwersytetu Warszawskiego */
+/*  & Instytut Studiów Społecznych Uniwersytetu Warszawskiego       */
 /*        WWW:  http://moderato.iss.uw.edu.pl/~borkowsk             */
 /*        MAIL: borkowsk@iss.uw.edu.pl                              */
 /*                               (Don't change or remove this note) */
 /* **************************************************************** */
+
