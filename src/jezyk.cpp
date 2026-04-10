@@ -5,6 +5,9 @@
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///  THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "modernize-use-nullptr"
+#pragma ide diagnostic ignored "modernize-use-auto"
 #include "compatyb.h"
 const char* WINDOW_HEADER="LANGUAGES version SW 2.20b, compilation " __DATE__ ", " __TIME__ ;
 const char* Authors="(programed by W.Borkowski for ISS UW & Ohio State Univ.)";
@@ -865,6 +868,7 @@ int main(const int argc,const char* argv[])
 /* STATIC ALLOCATION */
 //unsigned agent::max=0;//jaki jest najwiekszy taxon
 
+#pragma clang diagnostic pop
 /* **************************************************************** */
 /*           THIS CODE IS DESIGNED & COPYRIGHT  BY:                 */
 /*            W O J C I E C H   B O R K O W S K I                   */
