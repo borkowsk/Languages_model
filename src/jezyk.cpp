@@ -1,7 +1,7 @@
 /// @file
 /// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover)
 //  ==============================================================
-/// @date 2026-04-09 (modified)
+/// @date 2026-04-11 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///  THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -9,70 +9,75 @@
 #pragma ide diagnostic ignored "modernize-use-nullptr"
 #pragma ide diagnostic ignored "modernize-use-auto"
 #include "compatyb.h"
-const char* WINDOW_HEADER="LANGUAGES version SW 2.20b, compilation " __DATE__ ", " __TIME__ ;
-const char* Authors="(programed by W.Borkowski for ISS UW & Ohio State Univ.)";
+const char* WINDOW_HEADER="LANGUAGES version SW 2.20c, compilation " __DATE__ ", " __TIME__ ;
+const char* Authors="(programed by W. Borkowski for ISS UW & Ohio State Univ.)";
 const char* SCREENDUMPNAME="LANGUAGES";
-// Symulacja rozprzestrzeniania sie zachowan jezykowych
-// metoda wielowarstwowego przekazywania przekonan
+/// @details
+/// Simulation of the spread of linguistic behavior using the multi-layered meme/belief transmission method.
 //
-//	JEZYK czyli LANGUAGES
-//			versja  2.20b - ADAPTACJA DO NOWYCH WARUNKOW KOMPILACJI W clion W ROKU 2026
+///	"JEZYK" means LANGUAGE:
+//  ////////////////////////
+//			ver.  2.20c - Angielskojęzyczne komentarze.
+//			ver.  2.20b - ADAPTACJA DO NOWYCH WARUNKÓW KOMPILACJI W clion W ROKU 2026.
 //			...[kilkanaście lat odstępu]...
-//			versja  2.20 - Wprowadzenie 16 klas do LogLog histogramu dodanego w wersji 1.401
+//			ver.  2.20 - Wprowadzenie 16 klas do Log-Log histogramu dodanego w wersji 1.401.
 //						   Zmiana kolejności serii w pliku log.
-//						   Wprowadzenie  konsolowego/bacgroundowego trybu pracy
-//			versja  2.11 - początki użycia klas OptionalParameters do obsługi parametrów wywołania
-//			versja  2.10 - implementacja procesu zaciągania władzy i wyświetlanie mapy politycznej
-//			versja  2.06 - działające sterowanie częstością wyświetlania i my_area_menager zadeklarowany
-//			versja  2.05 - rozbudowane menu, zwłaszcza nowe opcje wizualizacji, parametr SRND i DUMP
-//			versja  2.04 - Ciagłe zrzucanie sieci jako parametr
-//			versja  2.03a - Implementacja zrzutu sieci SW w postaci plików NET
-//			vrsja   2.01-2 - Uruchomienie modelu Small Worlds
-//			versja  1.99b - przejście do modelu Small Worlds:
-//							Przygotowanie nowego układu wizualizacji
-//							Przygotowanie żródeł danych i grafu dla dalekich połączeń
-//							Implemetcja algorytmu dynamicznych dalekich połączeń "politycznych"
-//							Włączenie wplywów z dalekich polaczeń do implementacji modeli wpływu
-//							(nie przetestowane dla skomplikowanych biasów)
+//						   Wprowadzenie  konsolowego trybu pracy (w tle, w ogóle bez grafiki).
+//			ver.  2.11 - początki użycia klas `OptionalParameters` do obsługi parametrów wywołania (potem z nich zrezygnowano).
+//			ver.  2.10 - implementacja procesu zaciągania władzy i wyświetlanie mapy politycznej.
+//			ver.  2.06 - działające sterowanie częstością wyświetlania i `my_area_menager` zadeklarowany.
+//			ver.  2.05 - rozbudowane menu, zwłaszcza nowe opcje wizualizacji, parametr `SRND` i `DUMP`.
+//			ver.  2.04 - Ciagłe zrzucanie sieci jako parametr.
+//			ver.  2.03a - Implementacja zrzutu sieci SW w postaci plików NET.
+//			ver.  2.01-2 - Uruchomienie modelu Small Worlds.
+//			ver.  1.99b - przejście do modelu Small Worlds:
+//							- Przygotowanie nowego układu wizualizacji.
+//							- Przygotowanie źródeł danych i grafu dla dalekich połączeń.
+//							- Implementable algorytmu dynamicznych dalekich połączeń "politycznych".
+//							- Włączenie wpływów z dalekich połączeń do implementacji modeli wpływu
+//							(nie przetestowane dla skomplikowanych biasów).
 //
-//			versja  1.53a - drobne zmiany konieczne do uruchomienia komplacji pod BDS 2006
+//			ver.  1.53a - drobne zmiany konieczne do uruchomienia kompilacji pod BDS 2006.
 //
-//			versja  1.51-2 - drobne zmiany kosmetyczne.
+//			ver.  1.51-2 - drobne zmiany kosmetyczne.
 //
-//			version 1.5 - dodanie mapy jezyków TrueColor, i map skladowych w kolorach skladowych RGB. 			
-//							Zmiana domyslnych parametrów startowych
+//			version 1.5 - dodanie mapy języków w "TrueColor", i map składowych w kolorach składowych RGB.
+//						- Zmiana domyślnych parametrów startowych.
 //          version 1.41a                                                                      
-//                        - dodanie wieku jezyka danego agenta i seri danych to przedstawiajacej 
-//                          na wykresie logarytmicznym
+//                        - dodanie wieku języka danego agenta i seri danych to przedstawiającej
+//                          na wykresie logarytmicznym.
 //          
 //          version 1.402a
-//                        - Wprowadzenie 12 klas do LogLog histogramu dodanego w wersji 1.401
+//                        - Wprowadzenie 12 klas do LogLog histogramu dodanego w wersji 1.401.
 //          version 1.401b
-//                        - zmiana histogramu LogLog rozmiaru jezyków na typ fix o 6 klasach
-//                          czyli efekt wizualny bardzo podobny, ale inaczej oznakowane klasy
-//                        - dodanie fix-histogramu klas rozmiaru jezyków 
-//          version 1.4 - dodanie mutacji spontanicznych we wszystkich wersjach bajasiowania,
-//                      - wprowadzenie mozliwosci wylaczenia korelacji przestrzennej (UseSpatialCorr) z KODU!!!
-//                      - wprowadzenie wykresu log-log rozkladu rozmiarów języków (dhistosou.h),
-//                      - wprowadzenie wpisywania tego histogramu do logu 
-//                      - uzupelnienie czesci komunikatów o ustawieniach parametrów (ale czesc zostalo bez)
-//                      - wprowadzenie parametru DSTB ostalajace rodzaj i stopien rozkladu sil (uzyskiwany przez * lub +)
+//                        - zmiana histogramu LogLog rozmiaru języków na typ fix o 6 klasach,
+//                          czyli efekt wizualny bardzo podobny, ale inaczej oznakowane klasy.
+//                        - dodanie fix-histogramu klas rozmiaru języków.
+//
+//          version 1.4 - dodanie mutacji spontanicznych we wszystkich trybach biasu,
+//                      - wprowadzenie możliwości wyłączenia korelacji przestrzennej (UseSpatialCorr) z KODU!!!
+//                      - wprowadzenie wykresu log-log rozkładu rozmiarów języków (dhistosou.h),
+//                      - wprowadzenie wpisywania tego histogramu do logu.
+//                      - uzupełnienie części komunikatów o ustawieniach parametrów (ale cześć została bez).
+//                      - wprowadzenie parametru DSTB ustalającego rodzaj i stopień rozkładu sił (uzyskiwany przez * lub +).
 //          TEST:
+//          ```
 //          .........WIDTH=100 DSTB=-8 CLSS=8 MIPO=3 RSPC=1 VIEW=50 LOGF=10 LOGF=testW100.log
+//          ```
 //
 //          version 1.35a - ???
-//          version 1.34a - usuniecie asercji zabezpieczajacych przed agentami
+//          version 1.34a - usuniecie asercji zabezpieczających przed agentami
 //							o zerowej sile i wprowadzenie minimalnej sily (def. = 1)
-//          version 1.33a - rekompilacja do nowej biblioteki i dodanie menu
+//          version 1.33a - rekompilacja do nowej biblioteki i dodanie menu.
 //          version 1.32a - rekompilacja z nowa wersja biblioteki wizualizacji
-//                          i wprowadzenie pliku "about_labguages.cpp" z kontrola czasu dla DEBUG
-//          version 1.31a - wprowadzono inicjalizacje jezykow (pogladow) z trzech plikow graficznych w odcieniach szarosci
-//          version 1.3a - wprowadzony podwojny baias w wersji nastepczej, rownolegly dziala zle - 
-//                              wymaga inteligentnego przewazenia licznikow        
-//          version 1.2a - przygotowanie do wprowadzenia "podwojnego biasu"
-//			version 1.01b - poprawiony default dla tresholdu sily
-//			version 1.05b - wbudowana obsluga pracy w batch'u i powtarzania eksperymentu
-//			version 1.10b - wprowadzenie "biasu" dla parametrow jezyka
+//                          i wprowadzenie pliku "about_languages.cpp" z kontrolą czasu dla DEBUG.
+//          version 1.31a - wprowadzono inicjalizacje języków (poglądów) z trzech plików graficznych w odcieniach szarości.
+//          version 1.30a - wprowadzony podwójny bias w wersji następczej, ale równoległy działa źle —
+//                          wymaga inteligentnego przeważenia liczników.
+//          version 1.20a - przygotowanie do wprowadzenia "podwójnego biasu".
+//			version 1.01b - poprawiony default dla progu siły.
+//			version 1.05b - wbudowana obsługa pracy w batch-u i powtarzania eksperymentu.
+//			version 1.10b - wprowadzenie "biasu" dla parametrów języka.
 
 int My_Rand_seed=0; //Jak 0 to RANDOMIZE jak inny to SRAND(My_Rand_seed)
 
@@ -93,7 +98,7 @@ using namespace std;
 
 unsigned	SWIDTH=1440*0.6666;	//720;	//1440;
 unsigned	SHEIGHT=1080*0.6666;	/*na typowy rozmiar menu*/;	//540;	//1080;
-bool		Console=false;			//Wskaźnik pracy w trybie konsolowym - bez grafiki
+bool		Console=false;			//Wskaźnik pracy w trybie konsolowym — bez grafiki
 
 //Nieobiektowo przekazywane do metody inicializacji zrodel 
 unsigned	internal_log=10000;	//Domyslna dlugosc wewnetrznych logów
