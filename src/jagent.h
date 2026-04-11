@@ -1,58 +1,65 @@
 /// @file
 /// @brief DECLARATION OF A G E N T FOR "LANGUAGES" SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
 //  ================================================================================================
-/// @date 2026-04-10 (modified)
+/// @date 2026-04-11 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "layer.hpp"
-    
+
+/// Language Evolution Simulation Agent.
 class jagent:public agent_base
 {
     friend class jworld;	//To simplify access to the attributes of the world.
 
     // STATIC ATTRIBUTES - AGENT INITIATION PARAMETERS:
-    static short	ruchsily;	//!< Czy siła się zmienia (rośnie) z wiekiem
-    static short	max_sila;	//!< Maksymalna siła agenta
-    static short	min_sila;	//!< i minimalna
-    static short	ile_kate;	//!< Liczba kategorii w mapach
-    static short	kate_shift;	//!< Przesuniecie dla wczytywania gifa
-    static short	Distribution;	//!< Stopień rozkładu siły. 0->n rozkłady z multiplikacją, -1->-n rozkłady z sumowaniem.
-    static double	MutationLevel;	//!< Prawd. spontanicznej zmiany memu, czyli atrybutu języka.
+    static short	ruchsily;	//!< Determines whether strength change (increase) with age.
+    static short	max_sila;	//!< Maximum agent strength.
+    static short	min_sila;	//!< Maximum agent strength.
+    static short	ile_kate;	//!< Number of categories in each language (or culture) attribute.
+    static short	kate_shift;	//!< Bit shift for loading from a graphics file.
+    static short	Distribution;	//!< Degree of power/strength distribution. 0->n distributions with multiplication, -n->-1 distributions using summation.
+    static double	MutationLevel;	//!< Probability of spontaneous change of a meme, i.e., an attribute of language/culture.
 
 
     // SKŁADOWE DLA SYMULACJI:
-    short	Power;	//!< Sila agenta
-    unsigned long	Age;		//!< Wiek aktualnego języka agenta (czyli ile kroków od ostatniej zmiany)
-    unsigned long	Politics;	//!< Przynależność polityczna
+    short	Power;	//!< The power/strength of this agent.
+    unsigned long	Age;		//!< Age of the agent's current language/culture (i.e., how many steps since the last change).
+    unsigned long	Politics;	//!< Political affiliation
 
-    /// Unia dla atrybutów języka widzianych po nazwach i jednocześnie jako tablica.
+    /// Union for language/culture attributes viewed by name and simultaneously as an array.
     union{
         struct{
-            short	First;	//!< Pierwsze przekonanie/mem/atrybut języka.
-            short	Second;	//!< Drugie przekonanie/mem/atrybut języka.
-            short	Third;	//!< Trzecie przekonanie/mem/atrybut języka.
+            short	First;	//!< The first belief/meme/language attribute.
+            short	Second;	//!< Second belief/meme/language attribute.
+            short	Third;	//!< Third belief/meme/language attribute.
         };
-        short	FST[3]={0,0,0};	///< Całość uni widziana jako tablica short-ów.
+        short	FST[3]={0,0,0};	///< The entire union seen as an array of shorts.
     };
 
     void _clean();
 
-    // TO CO MUSI byc zdefiniowane:
+    // WHAT MUST always be defined:
     // ////////////////////////////
 public:
-    int IsOK()	//!< Sprawdzenie poprawności atrybutów i siły agenta.
+    int IsOK() const	//!< Checking the correctness of language attributes and agent strength.
     {
         return First!=-1 && Second!=-1 && Third!=-1 && Power!=-1;
     }
 
-    jagent(const jagent& ini);	//!< Konstruktor kopiujący. Konkretna implementacja w "jworld.cpp"!
-    jagent(const jagent* ini);	//!< Konstruktor ze wskaźnika. Konkretna implementacja w jworld!
-    jagent();					//!< Konstruktor domyślny. Konkretna implementacja w "jworld.cpp"!
+    jagent();					//!< Default constructor. Real implementation in "jworld.cpp"!
+    jagent(const jagent& ini);	//!< Copy constructor. Real implementation in "jworld.cpp"!
+    explicit jagent(const jagent* ini);	//!< Constructor from a pointer. Implemented in "jworld.cpp", of course!
 
-    jagent* clone() const		//!< Wykonanie kopii agenta na stercie.
+    ~jagent() override			//!< Virtual destructor.
+    {_clean();}
+
+    jagent* clone() const		//!< Make a copy of the agent on the heap.
     { return new jagent(*this);}
+
+    void clean() override		//!< Virtual cleaner.
+    {_clean();}
     
-    bool try_mutate()			//!< Rzadka, spontaniczna zmiana poglądu/atrybutu języka.
+    bool try_mutate()			//!< A rare, spontaneous change in language/culture attribute.
     {
         if(DRAND()<=MutationLevel)
         {            
@@ -63,58 +70,52 @@ public:
         else return false;
     }
 
-    ~jagent() override			//!< Wirtualny destruktor.
-    {_clean();}
-
-    void clean() override		//!< Wirtualny czyściciel.
-    {_clean();}
-
-    void assign123(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Wczytywanie trzech atrybutów z jednego piksela RGB.
+    void assign123(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading three attributes from one RGB pixel.
     {
         First=Red>>kate_shift;
         Second=Green>>kate_shift;
         Third=Blue>>kate_shift;
     }
 
-    void assign1(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Wczytywanie pierwszego atrybutu z jednego piksela RGB.
+    void assign1(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading the first attribute from one RGB/gray pixel.
     {
-        First=( (int(Red)+int(Green)+int(Blue))/3 ) >>kate_shift;	//Średnie natężenie koloru sklasyfikowane. Najlepiej gdy `R = G = B`
+        First=( (int(Red)+int(Green)+int(Blue))/3 ) >>kate_shift;	//Average color intensity classified. Best when `R = G = B`
     }
     
-    void assign2(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Wczytywanie drugiego atrybutu z jednego piksela RGB.
+    void assign2(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading a second attribute from one RGB pixel.
     {
-        Second=( (int(Red)+int(Green)+int(Blue))/3 ) >>kate_shift;	//Średnie natężenie koloru sklasyfikowane. Najlepiej gdy `R = G = B`
+        Second=( (int(Red)+int(Green)+int(Blue))/3 ) >>kate_shift;	//Average color intensity classified. Best when `R = G = B`
     }
 
-    void assign3(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Wczytywanie trzeciego atrybutu z jednego piksela RGB.
+    void assign3(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading the third attribute from one RGB pixel.
     {
-        Third=( (int(Red)+int(Green)+int(Blue))/3 ) >>kate_shift;	//Średnie natężenie koloru sklasyfikowane. Najlepiej gdy `R = G = B`
+        Third=( (int(Red)+int(Green)+int(Blue))/3 ) >>kate_shift;	//Average color intensity classified. Best when `R = G = B`
     }
 
-    void assignPow(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Wczytywanie siły agenta z jednego piksela RGB.
+    void assignPow(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading agent strength from one RGB pixel.
     {
         Power=min_sila+short((int(Red)+int(Green)+int(Blue))/(3.*255)*(max_sila-min_sila));
     }
 
-    void killBlack(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Czyszczenie agentów w obszarach niemieszkalnych.
+    void killBlack(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Agent cleaning in non-residential areas.
     {
         if(Red==0 && Green==0 && Blue==0)
             _clean();
     }
 
-    long Classif()	//!< Zamiana atrybutów agenta na numer klasyfikacyjny języka.
+    long Classif() const	//!< Converting agent attributes to language classification number.
     {
         return First+ile_kate*(Second+ile_kate*Third);
     }
 
-    long RGB()	//!< Kolor agenta w wizualizacjach true-color.
+    long RGB() const	//!< Agent color in true-color visualizations.
     {
         return ((unsigned long) (((unsigned char) (First) |
             ((unsigned short) (Second) << 8)) |
             (((unsigned long) (unsigned char) (Third)) << 16))) ;
     }
 
-    friend ostream& operator << (ostream& o,const jagent& a)	//!< Serializacja.
+    friend ostream& operator << (ostream& o,const jagent& a)	//!< Serialization.
     {
         o<<'{';
         o<<' '<<a.Power<<' '<<a.First<<' '<<a.Second<<' '<<a.Third<<' '<<a.Age<<' '<<a.Politics<<' ';
@@ -122,19 +123,19 @@ public:
         return o;
     }
 
-    friend istream& operator >> (istream& i,jagent& a)	//!< Deserializacja.
+    friend istream& operator >> (istream& i,jagent& a)	//!< Deserialization.
     {
         char pom;
-        i>>pom;		//ignoruje {
+        i>>pom;		// ignores {
         i>>a.Power>>a.First>>a.Second>>a.Third>>a.Age>>a.Politics;
-        i>>pom;		//ignoruje }
+        i>>pom;		// ignores }
         return i;
     }
 
 };
 
 /* **************************************************************** */
-/*           THIS CODE IS DESIGNED & COPYRIGHT  BY:                 */
+/*           THIS CODE IS DESIGNED & COPYRIGHT BY:                  */
 /*            W O J C I E C H   B O R K O W S K I                   */
 /* Zakład Systematyki i Geografii Roślin Uniwersytetu Warszawskiego */
 /*  & Instytut Studiów Społecznych Uniwersytetu Warszawskiego       */
