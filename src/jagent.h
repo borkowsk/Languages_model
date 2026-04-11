@@ -103,7 +103,7 @@ public:
             _clean();
     }
 
-    long Classif() const	//!< Converting agent attributes to language classification number.
+    long Classif() 	//!< Converting agent attributes to language classification number. NOLINT(*-make-member-function-const)
     {
         return First+ile_kate*(Second+ile_kate*Third);
     }
