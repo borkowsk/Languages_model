@@ -1,7 +1,7 @@
 /// @file
 /// @brief DECLARATION OF A G E N T FOR "LANGUAGES" SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
 //  ================================================================================================
-/// @date 2026-04-11 (modified)
+/// @date 2026-04-14 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "layer.hpp"
@@ -21,7 +21,7 @@ class jagent:public agent_base
     static double	MutationLevel;	//!< Probability of spontaneous change of a meme, i.e., an attribute of language/culture.
 
 
-    // SKŁADOWE DLA SYMULACJI:
+    //AGENT ATTRIBUTES IMPORTANT IN SIMULATION:
     short	Power;	//!< The power/strength of this agent.
     unsigned long	Age;		//!< Age of the agent's current language/culture (i.e., how many steps since the last change).
     unsigned long	Politics;	//!< Political affiliation

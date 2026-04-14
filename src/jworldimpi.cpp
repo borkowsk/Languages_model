@@ -1,7 +1,7 @@
 /// @file
 /// @brief Virtual Input method implementation of the jworld class. (LANGUAGES PROJECT WITH P.Culicover)
 //  ====================================================================================================
-/// @date 2026-04-09 (modified)
+/// @date 2026-04-14 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Its is rather simply implementation. You can replace it if you need.
 // ////////////////////////////////////////////////////////////////////
@@ -12,14 +12,14 @@ int jworld::implement_input(istream& i)
 {
     int ret=world::implement_input(i);
     if(ret!=1) return ret;
-    i>>MyWidth;		//Obwod torusa
-    i>>MaxSila;		//Maksymalna sila agenta
-    i>>MinSila;		//i minimalna
-    i>>IleKate;		//Ilosc kategori w mapach
-    i>>IleSasiad;	//8==Gestosc sasiedztwa
-    i>>OdlSasiad;	//Rozmiar sasiedztwa
-    i>>UseSelf;		//Czy ma brac siebie pod uwage
-    i>>Noise;		//Szum informacyjny
+    i>>MyWidth;
+    i>>MaxSila;
+    i>>MinSila;
+    i>>IleKate;
+    i>>IleSasiad;
+    i>>OdlSasiad;
+    i>>UseSelf;
+    i>>Noise;
     rectangle_geometry* Geom=(rectangle_geometry*)Agenci.get_geometry();
     assert(Geom!=NULL);
     if(Geom->get_width()!=MyWidth||
@@ -32,8 +32,8 @@ int jworld::implement_input(istream& i)
 /* **************************************************************** */
 /*           THIS CODE IS DESIGNED & COPYRIGHT  BY:                 */
 /*            W O J C I E C H   B O R K O W S K I                   */
-/* Zaklad Systematyki i Geografii Roslin Uniwersytetu Warszawskiego */
-/*  & Instytut Studiow Spolecznych Uniwersytetu Warszawskiego       */
+/* Zakład Systematyki i Geografii Roślin Uniwersytetu Warszawskiego */
+/*  & Instytut Studiow Społecznych Uniwersytetu Warszawskiego       */
 /*        WWW:  http://moderato.iss.uw.edu.pl/~borkowsk             */
 /*        MAIL: borkowsk@iss.uw.edu.pl                              */
 /*                               (Don't change or remove this note) */

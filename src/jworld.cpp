@@ -471,11 +471,11 @@ void jworld::make_default_visualisation()
         if(!ClusterSize1Log) ON_ERROR_MAKE
         iClusterSize1=Sources.insert(ClusterSize1Log);
 
-        fifo_source<double>* ClusterSize2Log=new fifo_source<double>(SpatialCorr2->ApproximatedClusterSize(),internal_log);//Fifo z rozmiaru klastra
+        fifo_source<double>* ClusterSize2Log=new fifo_source<double>(SpatialCorr2->ApproximatedClusterSize(),internal_log);
         if(!ClusterSize2Log) ON_ERROR_MAKE
         iClusterSize2=Sources.insert(ClusterSize2Log);
 
-        fifo_source<double>* ClusterSize3Log=new fifo_source<double>(SpatialCorr3->ApproximatedClusterSize(),internal_log);//Fifo z rozmiaru klastra
+        fifo_source<double>* ClusterSize3Log=new fifo_source<double>(SpatialCorr3->ApproximatedClusterSize(),internal_log);
         if(!ClusterSize3Log) ON_ERROR_MAKE
         iClusterSize3=Sources.insert(ClusterSize3Log);
 
@@ -690,7 +690,7 @@ void jworld::make_default_visualisation()
         */
         }
 
-        //Koincydencje cech
+        //Coincidences of features
         pom=new manhattan_graph(MLeft,9*MStep,szer,10*MStep,
                                     CorrFS,0,
                                     CorrFS,0,

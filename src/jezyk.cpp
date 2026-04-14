@@ -1,7 +1,7 @@
 /// @file
-/// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover)
+/// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover.
 //  ==============================================================
-/// @date 2026-04-11 (modified)
+/// @date 2026-04-14 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///  THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,11 +168,11 @@ new OptionalParameter<long>(iMaxIterations,0,0x7FFFFFFF,"MAX",NULL),	//hidden al
 new OptionalParameter<long>(iLogRatio,1,iMaxIterations,"LOGC","Writing to log frequency (not higher than MAXI)"),
 new OptionalParameter<long>(iViewRatio,1,iMaxIterations,"VIEW","visualization frequency"),
 new OptionalParameter<long>(My_Rand_seed,0,0x7FFFFFFF,"SRND","SRND (rand seed). Must be >=0, but 0 means current time in seconds!"),
-new OptionalParameter<bool>(jworld::continous_dump,false,true,"DUMP","dumping the screen at every step"),
+new OptionalParameter<bool>(jworld::continuous_dump,false,true,"DUMP","dumping the screen at every step"),
 new OptionalParameter<bool>(BranieSiebie,false,true,"SELF","use own state for calculation the new one or not"),
 new OptionalParameter<TYPE>(RozmiarSasiedztwa,1,iWidth,"INDI","Radius of neighborhood"),
 new OptionalCheckFunction(NeighRadCheck(),"if(INDI>(WIDTH/2-1)) INDI=WIDTH/2-1;");
-new OptionalParameter<long>(IleSasiadow,2,sqr(RozmiarSasiedztwa*2+1)-1,"PRTR","How many contacts chosen from neighbours"),
+new OptionalParameter<long>(IleSasiadow,2,sqr(RozmiarSasiedztwa*2+1)-1,"PRTR","How many contacts chosen from neighbors"),
 new OptionalParameter<bool>(AUTOSTART,false,true,"AUTO","Automatically start the simulation"),
 new OptionalParameter<bool>(iWychodzenie,false,true,"STOP","Automatic exit when done"),
 new OptionalParameter<long>(internal_log,50,iMaxIterations,"ILOG","yyy"),
@@ -239,7 +239,7 @@ int parse_options(const int argc,const char* argv[])
 
     //Uppercasing
     char* pom=strchr(rob,'=');
-    if(pom==NULL)
+    if(pom==NULL) // NOLINT(*-use-nullptr)
             goto ERROR; //NA PEWNO ZLE
 
     *pom='\0';strupr(rob);*pom='=';	//Part to the = sign
@@ -299,7 +299,7 @@ int parse_options(const int argc,const char* argv[])
         cerr<<"!!! Bad MIPO ="<<MinimalnaSila<<" (must be >=1 )"<<endl;
         return 0;
         }
-    cerr<<"* Minimal strenght: MIPO= "<<MinimalnaSila<<endl;
+    cerr<<"* Minimal strength: MIPO= "<<MinimalnaSila<<endl;
     }
     else
     if((pom=strstr(rob,"MPOW="))!=NULL) //If not NULL then exists
@@ -321,7 +321,7 @@ int parse_options(const int argc,const char* argv[])
         cerr<<"!!! Bad WPOW ="<<RuchomaSila<<" (must be >=0 )"<<endl;
         return 0;
         }
-    cerr<<"* Moving strenght: WPOW= "<<RuchomaSila<<endl;
+    cerr<<"* Moving strength: WPOW= "<<RuchomaSila<<endl;
     }
     else
     if((pom=strstr(rob,"SWST="))!=NULL) //If not NULL then exists
@@ -338,7 +338,7 @@ int parse_options(const int argc,const char* argv[])
             <<SW_step_perc<<"% at every step"<<endl;
        SW_links=true;
     }
-    else //ZrzucajNET
+    else
     if((pom=strstr(rob,"NETD="))!=NULL) //If not NULL then exists
     {
         ZrzucajNET=(toupper(pom[5])=='Y');
@@ -356,7 +356,7 @@ int parse_options(const int argc,const char* argv[])
         else
         {
         cerr<<"* Immunisation strength threshold : TRSP= "<<int(TresProcent)<<"%"<<endl;
-        if(RuchomaSila==0)	//Nie ma sensu TRSP jesli nie jest ruchoma sila
+        if(RuchomaSila==0)	//There is no point in TRSP if there is no mobile force
             {
             RuchomaSila=1;
             cerr<<"** Automatically set WPOW to "<<RuchomaSila<<endl;
@@ -515,7 +515,7 @@ int parse_options(const int argc,const char* argv[])
     BIAS_STR=rob+5;
     cerr<<"* BIAS = "<<BIAS_STR<<endl;
     static wb_pchar taker;
-    taker=hand.give();	//Zabiera zarząd. Zwolnienie na koncu programu.
+    taker=hand.give();	//Takes away the management. Dismissal at the end of the program.
     }
     else
     if((pom=strstr(rob,"STOP="))!=NULL)  //If not NULL then exists
@@ -628,13 +628,13 @@ HELPPRINT:
         cerr<<"\tBIAS=item item ... - setting bias by items string (NO BIAS)\n"<<
               "\t\the item string example: \"A1:1 A2:4 B2:2 C2:4 A4&C3:10 A5&B5&C5:12\"\n";
         cerr<<"\tCLSS=NN - number of class. Must be power of 2. ("<<IloscKlas<<")\n";
-        cerr<<"\tMPOW=NN - max strength for initilization ("<<MaksymalnaSila<<")\n"	;
-        cerr<<"\tMIPO=NN - min strength for initilization ("<<MinimalnaSila<<")\n"	;
+        cerr<<"\tMPOW=NN - max strength for initialization ("<<MaksymalnaSila<<")\n"	;
+        cerr<<"\tMIPO=NN - min strength for initialization ("<<MinimalnaSila<<")\n"	;
         cerr<<"\tDSTB=N - level and kind of strength distribution ("<<DistributionLevel<<")\n";
         cerr<<"\nSWST=PP/PP - percentage of SW links created at every step, and at the beginning (0)\n";
         cerr<<"\nNETD=N/Y - dumping net files parallel to statistics (N)\n";
-//		cerr<<"\tWPOW=N	- walking step of strenght	("<<RuchomaSila<<")\n";
-        cerr<<"\tTRSP=N - % of threshold of strenght ("<<TresProcent<<")\n";
+//		cerr<<"\tWPOW=N	- walking step of strength	("<<RuchomaSila<<")\n";
+        cerr<<"\tTRSP=N - % of threshold of strength ("<<TresProcent<<")\n";
         cerr<<"\tPRTR=2..WIDTH^2-1 - number of interaction partners ("<<IleSasiadow<<")\n";
         cerr<<"\tINDI=1..WIDTH/2-1 - interaction distance ("<<RozmiarSasiedztwa<<")\n";
         cerr<<"\tSELF=N/Y - use self for calculations ("<<(BranieSiebie?"Yes":"No")<<")\n";
@@ -656,7 +656,7 @@ HELPPRINT:
     }
     else
     {
-        /* Ostatecznie wychodzi ze nie ma takiej opcji */
+        /* Ultimately, it turns out that there is no such option */
         ERROR:
         cerr<<"Unknown parameter \""<<argv[i]<<"\"\n";
         return 0;
@@ -776,15 +776,15 @@ int main(const int argc,const char* argv[])
         Lufciki.set_dump_name(buf.get());
     }
 
-    //INICJALIZACJA MODELU SYMULACYJNEGO
+    //INITIALIZATION OF THE SIMULATION MODEL
     jworld& tenSwiat=*new jworld(iWidth,
                                LogName,
                                MapLName,
                                MapPName,
                                MaskName,
                                DistributionLevel,
-                               ProcentSzumu/100.0,	//Szum od 0-1
-                               MaksymalnaSila,	//Zeby byla w przedziale
+                               ProcentSzumu/100.0,	//Noise from 0 to 1
+                               MaksymalnaSila,	//We want it to be within range
                                MinimalnaSila,
                                IloscKlas,
                                RozmiarSasiedztwa,
@@ -824,7 +824,7 @@ int main(const int argc,const char* argv[])
             cerr<<"You cannot replay in console mode!"<<endl;
             exit(2);
         }
-        tenSwiat.initialize(&Lufciki,1);//inicjalizacja wizualizacji
+        tenSwiat.initialize(&Lufciki,1); //visualization initialization
         cout<<WINDOW_HEADER<<": PREPARED FOR READING. WAIT!"<<endl;
         Lufciki.restore(0);
         Lufciki.replot(0);

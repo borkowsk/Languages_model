@@ -1,7 +1,7 @@
 /// @file
 /// @brief DECLARATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
 //  =======================================================================================
-/// @date 2026-04-09 (modified)
+/// @date 2026-04-14 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include <climits> //SHRT_MAX
@@ -9,9 +9,9 @@
 #include "compatyb.h"
 #include "world.hpp"
 #include "layer.hpp"
-#include "jagent.h" //Definicja agenta
+#include "jagent.h" //Agent definition
 
-extern bool			Console;	///< Flag for working in console mode - without any graphics. By default: `==false`.
+extern bool			Console;	///< Flag for working in console mode - without any graphics. By default,: `==false`.
 extern const int	BIAS_FOR_ANY;	///< The value that represents "all-the-same" in conditional biases.
                                     ///< Always greater than the largest value in the layer. Default `==8`.
 /// The Whole World of Simulation.
@@ -140,7 +140,7 @@ private:
     // /////////////////////////////
 
     // !< The layer defines the suitability for habitation.
-    //rectangle_unilayer<unsigned char>			zdatnosc;
+    //rectangle_unilayer<unsigned char>			livability; //livability layer.
 
     /// The layer of colonizing agents.
     rectangle_layer_of_ptr_to_agents<jagent>	Agenci;
@@ -163,7 +163,7 @@ private:
     method_matrix_source<_far_link,unsigned>		*FCount;	//!< `=FarLinks.make_source("far counters",&_far_link::getcount)`
 
 public:
-    //KONSTRUKCJA DESTRUKCJA
+    //CONSTRUCTION & DESTRUCTION
     jworld(size_t Width,			//!< Width of the torus of the agent matrix.
           char* log_name,			//!< File name for saving history.
           char* mapl_name,			//!< The name of the raster graphic that initializes the "language components".

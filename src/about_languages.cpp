@@ -1,7 +1,7 @@
 /// @file
 /// @brief COPYRIGHT BOX ETC. (LANGUAGES PROJECT WITH P.Culicover)
 //  ==============================================================
-/// @date 2026-04-09 (modified)
+/// @date 2026-04-14 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include <cstdio>
 #include <cstdlib>
@@ -13,7 +13,7 @@
 #endif
 //WIDTH=100 DSTB=-8 CLSS=8 MIPO=3 RSPC=1 VIEW=50 LOGF=10 LOGF=testW100.log
 
-const int ILE_SEC=30; //How many seconds wait for OK?
+constexpr int ILE_SEC=30; //How many seconds wait for OK?
 extern const char* ble_ble_ble;
 
 #ifndef NDEBUG
@@ -121,12 +121,13 @@ return 0;
 extern "C"
 BOOL CALLBACK AutorsDialog(HWND  hDlg,UINT   message,WPARAM   wParam,LPARAM   lParam);
 
-class _type_force_call_about_dialog_on_start //Moze byc tylko jeden na aplikacje!!!
+class _type_force_call_about_dialog_on_start //There can only be one per application!!!
 {
 public:
-    HWND Dialog;	//Uchwyt dialogu
-    int  Timer;   //Uchwyt zegara
-    //KONSTRUKTOR
+    HWND Dialog;	//Dialogue handler.
+    int  Timer;   //Clock handler.
+
+    //CONSTRUCTOR:
     _type_force_call_about_dialog_on_start():Dialog(NULL),Timer(NULL)
     {
     }
@@ -147,7 +148,8 @@ public:
             ShowWindow(Dialog,SW_SHOW);	//SW_SHOWNOACTIVATE???
         }
     }
-    //DESTRUKTOR NA WYPADEK GDYBY USER NIE ZAMKNĄŁ
+
+    //DESTRUCTOR IN CASE USER DON'T CLOSE.
     ~_type_force_call_about_dialog_on_start()
     {
         if(Timer)
