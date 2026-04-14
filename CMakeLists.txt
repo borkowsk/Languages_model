@@ -60,7 +60,9 @@ add_executable( languages
                 src/jworldimpo.cpp
                 src/lang_res.h
                 src/resource.h
-                # $WINDOWS_ONLY_SRC
+        src/conditionalbias1.cpp
+        src/conditionalbias.cpp
+        # $WINDOWS_ONLY_SRC
                 # $X_ONLY_SRC
               )
 
