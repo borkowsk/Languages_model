@@ -1,7 +1,7 @@
 /// @file
 /// @brief ... (LANGUAGES PROJECT WITH P.Culicover)
 //  ===============================================
-/// Splited from "jbias.cpp" by borkowsk on 14.04.2026.
+/// Split from "jbias.cpp" by borkowsk on 14.04.2026.
 /// @date 2026-04-14 (created)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
@@ -12,11 +12,11 @@
 #include <cmath>
 #include <strstream>
 
-#include "compatyb.h"
+//#include "compatyb.h"
 #include "histosou.hpp"
-#include "clstsour.hpp" //Jest tez statsour
+//#include "clstsour.hpp"
 #include "coincsou.hpp"
-#include "compatyb.hpp"
+//#include "compatyb.hpp"
 #include "gadgets.hpp"
 #include "wb_ptrio.h"
 
@@ -24,121 +24,120 @@
 #include "jworld.h"
 
 // ...
-void    jworld::_one_step_conditional_bias()
+void    jworld::_one_step_conditional_bias1()
 {
-    // Coś tu było???
-                                                                                                      assert(BiasDefinition.OK());
+    // Was there anything here before???
+                                                                                            assert(BiasDefinition.OK());
+    /// We want to use the specifics of this type directly, not just a common interface.
     _conditional_bias_information* BiasData=dynamic_cast<_conditional_bias_information*>
-                                                            (BiasDefinition.get_ptr_val());           assert(BiasData!=NULL);
+                                                            (BiasDefinition.get_ptr_val());      assert(BiasData!=NULL);
+    /// Shortcut to the geometry of the simulation world.
+    const geometry_base* MyGeom=Agenci.get_geometry();                                             assert(MyGeom!=NULL);
 
-    const geometry_base* MyGeom=Agenci.get_geometry();                                                assert(MyGeom!=NULL);//Geometria "swiata" symulacji
+    /// THREE-DIMENSIONAL TABLE FOR COUNTING INFLUENCES.
+    /// Number of allowable categories in each meme + positions for single biases and double combinations.
+    int Wplywy[BIAS_FOR_ANY+1][BIAS_FOR_ANY+1][BIAS_FOR_ANY+1];                           assert(IleKate<=BIAS_FOR_ANY); //Aren't there too many categories for such an influence board?
 
-    //TROJWYMIAROWA TABLICA NA ZLICZANIE WPLYWOW
-    //Ilosc dopuszczalnych kategori w kazdym memeie + pozycje na pojedyncze biasy i kombinacje podwojne
-    int Wplywy[BIAS_FOR_ANY+1][BIAS_FOR_ANY+1][BIAS_FOR_ANY+1];                                       assert(IleKate<=BIAS_FOR_ANY);//Czy nie ma za duzo kategori na taka tablice wplywow
+    /// Monte-Carlo iterator (may have data allocations inside).
+    iteratorh Monte=MyGeom->make_random_global_iterator();
+    int testowanie=0; ///< An auxiliary counter for testing the algorithm.
 
-    //Alokujemy iterator Monte-Carlo
-    iteratorh Monte=MyGeom->make_random_global_iterator();  //Losowanie kolejnego agenta
-    int testowanie=0;
-
-    //Idziemy po agentach iteratorem Monte-Carlo. Niektórzy moga sie powtórzyc
+    //We go through the agents with a Monte-Carlo iterator. Some may be drawn again.
     while(Monte)
     {
-        size_t index=MyGeom->get_next(Monte);       //Uzyskujemy index losowo wybranego agenta
-        //if(index==FULL) continue;                 //Ignorujemy jesli trafil za tablice - Moze sie zdazyc tylko dla wycinkow?)
-                                                                    assert(index!=MyGeom->FULL);    //... tutaj nie powinno sie zdarzyc
-
-        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());// Uzyskujemy referencje do agenta omijajac asercje na NULL
-
-        if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta komórka (NULL)
-                continue;                   // bo wtedy robic dalej byłoby bez sensu.
+        size_t index=MyGeom->get_next(Monte); //We obtain the index of a randomly selected agent
+        //if(index==FULL) continue;
+                                                                                            assert(index!=MyGeom->FULL);
+        /// Reference to the agent. Obtained bypassing the NULL assertion.
+        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());
+        if(Agenci.is_empty(CenterAgent)) // Check if it is not an empty cell (NULL)
+                continue;
 
         if(
-            (CenterAgent.Power>TrsSila)   // Czy nie ma juz immunitetu na zmiany
+            (CenterAgent.Power>TrsSila) // Is there no immunity to change anymore?
             ||
-            (jagent::MutationLevel>0 && CenterAgent.try_mutate())     //Albo czy wlasnie nie zmutowal spontanicznie
-            )
-            goto STARZENIE;             // Ma - nie robimy nic
+            (jagent::MutationLevel>0 && CenterAgent.try_mutate()) //Or didn't it just mutate spontaneously
+          )
+            goto STARZENIE;
 
-        {   //KOD SZUKANIA WPLYWOW
-            /////////////////////////////////////
-            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad);  // Alokujemy iterator sasiedztwa
-            unsigned zliczanie=0;           //Zliczanie sasiadów
+        {   // INFLUENCE CALCULATION CODE:
+            //////////////////////////////
+            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad); // We allocate the neighborhood iterator
+            unsigned zliczanie=0;           //For counting neighbors
 
-            //Czyszczenie tabeli licznika
-            memset(Wplywy,0,sizeof(Wplywy));//Trzeba zerowac cala, nawet jesli nie cala uzywamy - bo sa kolumny dla BIAS_FOR_ANY
+            //The counter table need to be reset.
+            //You have to zero the whole thing, even if you don't use all of it - because there are columns for BIAS_FOR_ANY.
+            memset(Wplywy,0,sizeof(Wplywy));
 
-            if(use_SW_links)
-            {//REJESTROWANIE WPŁYWU OD PROTEKTORA
-            size_t a,b;
-            unsigned x,y;
-            dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b);//Odzyskac  x i y z indeksu agenta
-                assert("Not tested after porting!"==nullptr);
-            // if(_xy_of_far_link_of(0,TODO,x,y)) //Pobrać indeks "protektora" tego agenta  o ile go ma
-            // 	{
-            // 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-            // 	jagent& PeryfAgent=Agenci.get(x,y);//Uzyskujemy referencje do "protektora"
-            // 										assert(!Agenci.is_empty(PeryfAgent));//nie powinna to być pusta komórka (NULL) ale...
-            // 										assert("NOT TESTED IPLEMENTATION");
-            // 	Wplywy[PeryfAgent.First][PeryfAgent.Second][PeryfAgent.Third]+=3*PeryfAgent.Power;//"zlicznik" dla koincydencji ABC
-            //
-            // 	Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][PeryfAgent.Third]+=2*PeryfAgent.Power;//"zlicznik" histogramu BxC
-            // 	Wplywy[PeryfAgent.First][BIAS_FOR_ANY][PeryfAgent.Third]+=2*PeryfAgent.Power;//"zlicznik" histogramu AxC
-            // 	Wplywy[PeryfAgent.First][PeryfAgent.Second][BIAS_FOR_ANY]+=2*PeryfAgent.Power;//"zlicznik" histogramu AxB
-            //
-            // 	Wplywy[PeryfAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=PeryfAgent.Power;//"zlicznik" histogramu dla Axx
-            // 	Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][BIAS_FOR_ANY]+=PeryfAgent.Power;//"zlicznik" histogramu dla xBx
-            // 	Wplywy[BIAS_FOR_ANY][BIAS_FOR_ANY][PeryfAgent.Third]+=PeryfAgent.Power;//"zlicznik" histogramu dla xxC
-            //
-            // 	zliczanie++;
-            // 	}
-            }
-
-            while(Neigh)
+            if(use_SW_links) //RECORDING IMPACT FROM THE PROTECTOR
             {
-                size_t index2=MyGeom->get_next(Neigh);//Uzyskujemy index sasiada
-                if(index2==MyGeom->FULL || index2==index)   //Jesli poza obszarem symulacji lub w
-                    continue;               //centrum obszaru to dalej byloby bez sensu.
-
-                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val());//Uzyskujemy referencje do sasiada omijajac asercje na NULL
-                if(Agenci.is_empty(PeryfAgent))     //Sprawdzamy czy nie jest to pusta komórka (NULL)
-                    continue;                      // bo wtedy robic dalej byłoby bez sensu.
-
-                zliczanie++;                        //Zlicza wylosowanych sasiadow
-
-                //Dodawanie sil każdego z sasiadow do licznikow w tablicach
-                Wplywy[PeryfAgent.First][PeryfAgent.Second][PeryfAgent.Third]+=3*PeryfAgent.Power;//"zlicznik" dla koincydencji ABC
-
-                Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][PeryfAgent.Third]+=2*PeryfAgent.Power;//"zlicznik" histogramu BxC
-                Wplywy[PeryfAgent.First][BIAS_FOR_ANY][PeryfAgent.Third]+=2*PeryfAgent.Power;//"zlicznik" histogramu AxC
-                Wplywy[PeryfAgent.First][PeryfAgent.Second][BIAS_FOR_ANY]+=2*PeryfAgent.Power;//"zlicznik" histogramu AxB
-
-                Wplywy[PeryfAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=PeryfAgent.Power;//"zlicznik" histogramu dla Axx
-                Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][BIAS_FOR_ANY]+=PeryfAgent.Power;//"zlicznik" histogramu dla xBx
-                Wplywy[BIAS_FOR_ANY][BIAS_FOR_ANY][PeryfAgent.Third]+=PeryfAgent.Power;//"zlicznik" histogramu dla xxC
-
+                size_t a,b;
+                unsigned x,y;
+                dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b); //Retrieve x and y from the agent index
+                    assert("Not tested after porting!"==nullptr);
+                // if(_xy_of_far_link_of(0,TODO,x,y)) //Pobrać indeks "protektora" tego agenta  o ile go ma
+                // {
+                // 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
+                // 	    jagent& PeryfAgent=Agenci.get(x,y);
+                // 										assert(!Agenci.is_empty(PeryfAgent));
+                // 										assert("NOT TESTED IPLEMENTATION"==NULL);
+                // 	    Wplywy[PeryfAgent.First][PeryfAgent.Second][PeryfAgent.Third]+=3*PeryfAgent.Power; //"counter" for ABC coincidence
+                //
+                // 	    Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][PeryfAgent.Third]+=2*PeryfAgent.Power; //"counter" of the BxC histogram
+                // 	    Wplywy[PeryfAgent.First][BIAS_FOR_ANY][PeryfAgent.Third]+=2*PeryfAgent.Power; //"counter" of the AxC histogram
+                // 	    Wplywy[PeryfAgent.First][PeryfAgent.Second][BIAS_FOR_ANY]+=2*PeryfAgent.Power; //"counter" of the AxB histogram
+                //
+                // 	    Wplywy[PeryfAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=PeryfAgent.Power; //histogram "counter" for Axx
+                // 	    Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][BIAS_FOR_ANY]+=PeryfAgent.Power; //histogram "counter" for xBx
+                // 	    Wplywy[BIAS_FOR_ANY][BIAS_FOR_ANY][PeryfAgent.Third]+=PeryfAgent.Power; //histogram "counter" for xxC
+                //
+                // 	    zliczanie++;
+                // }
             }
 
-            MyGeom->destroy_iterator(Neigh);    // upewniamy sie ze iterator zostanie usuniety
-            testowanie++;                       //Zlicza wylosowanych agentow
+            while(Neigh) //Loop through the neighborhood.
+            {
+                size_t index2=MyGeom->get_next(Neigh); ///< We get the neighbor's index.
+                if(index2==MyGeom->FULL || index2==index) //If it was outside the simulation area or in the center of the area, it would still be pointless.
+                    continue;
 
+                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val()); ///< A reference to a neighbor bypassing NULL assertions
+                if(Agenci.is_empty(PeryfAgent))     //We check whether it is not an empty cell (NULL) because then it would be pointless to continue.
+                    continue;
 
-            if(UseSelf)
-            {   //Dodawanie wlasnych sil do licznikow w tablicach
-                Wplywy[CenterAgent.First][CenterAgent.Second][CenterAgent.Third]+=3*CenterAgent.Power;//"zlicznik" dla koincydencji ABC
+                zliczanie++;                        //Counts the number of randomly selected neighbors.
 
-                Wplywy[BIAS_FOR_ANY][CenterAgent.Second][CenterAgent.Third]+=2*CenterAgent.Power;//"zlicznik" histogramu BxC
-                Wplywy[CenterAgent.First][BIAS_FOR_ANY][CenterAgent.Third]+=2*CenterAgent.Power;//"zlicznik" histogramu AxC
-                Wplywy[CenterAgent.First][CenterAgent.Second][BIAS_FOR_ANY]+=2*CenterAgent.Power;//"zlicznik" histogramu AxB
+                //Adding the forces of each neighbor to the counters in the tables:
+                Wplywy[PeryfAgent.First][PeryfAgent.Second][PeryfAgent.Third]+=3*PeryfAgent.Power; //"counter" for ABC coincidence
 
-                Wplywy[CenterAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=CenterAgent.Power;//"zlicznik" histogramu dla Axx
-                Wplywy[BIAS_FOR_ANY][CenterAgent.Second][BIAS_FOR_ANY]+=CenterAgent.Power;//"zlicznik" histogramu dla xBx
-                Wplywy[BIAS_FOR_ANY][BIAS_FOR_ANY][CenterAgent.Third]+=CenterAgent.Power;//"zlicznik" histogramu dla xxC
+                Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][PeryfAgent.Third]+=2*PeryfAgent.Power; //BxC histogram "counter".
+                Wplywy[PeryfAgent.First][BIAS_FOR_ANY][PeryfAgent.Third]+=2*PeryfAgent.Power; //AxC histogram "counter".
+                Wplywy[PeryfAgent.First][PeryfAgent.Second][BIAS_FOR_ANY]+=2*PeryfAgent.Power; //AxB histogram "counter".
 
+                Wplywy[PeryfAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=PeryfAgent.Power; //histogram "counter" for Axx
+                Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][BIAS_FOR_ANY]+=PeryfAgent.Power; //histogram "counter" for xBx
+                Wplywy[BIAS_FOR_ANY][BIAS_FOR_ANY][PeryfAgent.Third]+=PeryfAgent.Power; //histogram "counter" for xxC
             }
 
-            //W petli dodawanie szumu i biasu
-            //--------------------------------------------------
+            MyGeom->destroy_iterator(Neigh);    // We make sure that the iterator will be removed.
+
+            testowanie++;                       // Counts the number of randomly selected agents
+
+            if(UseSelf) //Adding your own forces to counters in tables
+            {
+                Wplywy[CenterAgent.First][CenterAgent.Second][CenterAgent.Third]+=3*CenterAgent.Power;
+
+                Wplywy[BIAS_FOR_ANY][CenterAgent.Second][CenterAgent.Third]+=2*CenterAgent.Power;
+                Wplywy[CenterAgent.First][BIAS_FOR_ANY][CenterAgent.Third]+=2*CenterAgent.Power;
+                Wplywy[CenterAgent.First][CenterAgent.Second][BIAS_FOR_ANY]+=2*CenterAgent.Power;
+
+                Wplywy[CenterAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=CenterAgent.Power;
+                Wplywy[BIAS_FOR_ANY][CenterAgent.Second][BIAS_FOR_ANY]+=CenterAgent.Power;
+                Wplywy[BIAS_FOR_ANY][BIAS_FOR_ANY][CenterAgent.Third]+=CenterAgent.Power;
+            }
+
+            //Adding noise and bias in the loop:
+            //----------------------------------
             for(int i=0,width=(BIAS_FOR_ANY+1)*(BIAS_FOR_ANY+1)*(BIAS_FOR_ANY+1);i<width;i++)
             {
                 if(Noise>0)
@@ -147,82 +146,98 @@ void    jworld::_one_step_conditional_bias()
                     if(Rnd>0)
                     ((int*)Wplywy)[i]+=long(Rnd*Noise*(4.5*MaxSila));
                 }
-                ((int*)Wplywy)[i]+=((float*)BiasData->Biases)[i];//cast!!! - sztuczka zeby uniknac potrojnie zagniezdzonej petli
+                ((int*)Wplywy)[i]+=((float*)BiasData->Biases)[i]; //cast!!! - trick to avoid triple nested loop
             }
 
-            //Szukanie maksimow - niebanalne (?)
-            //////////////////////////////////////////////////////////////////////////
-            wb_dynarray<int> FillStat(4);fill(FillStat,0);  //Tablica statystyki z petli szukania maksimow
+            // Searching for maxima - less trivial here:
+            ////////////////////////////////////////////
 
+            /// Array of statistics from the maximum search loop.
+            wb_dynarray<int> FillStat(4); //TODO FillStat.fill();
+            fill(FillStat,0);
 
             int indF=-1;
             int indS=-1;
             int indT=-1;
 
-            do{ //Petla poszukiwania kolejnych maksimow - do wypelnienia ind{FST}'ow
-                ////////////////////////////////////////////////////////////////////////////
-            int width=BIAS_FOR_ANY+1;       //"Szerokosc" tablicy szesciennej na liczniki
-            int offsetA=RANDOM(IleKate);            assert(0<=offsetA && offsetA<IleKate);//Jak IleKate==2 to 0 albo 1 itd..
-            int offsetB=RANDOM(IleKate);            assert(0<=offsetB && offsetB<IleKate);//Jak IleKate==2 to 0 albo 1 itd..
-            int offsetC=RANDOM(IleKate);            assert(0<=offsetC && offsetC<IleKate);//Jak IleKate==2 to 0 albo 1 itd..
-            int Max=-1,pA=-1,pB=-1,pC=-1;
-            FillStat[0]++; //Ile nawrotów
+            do{ // Loop of searching for subsequent maxima - to fill ind{FST}'s:
+                ////////////////////////////////////////////////////////////////
+                int width=BIAS_FOR_ANY+1;    ///< "Width" of the cube array for counters.
 
-            //Szukanie aktualnego maksimum  (nieco rozrzutne, mozna troche przyspieszyc przez jesli BIAS_FOR_ANY bedzie zmienna ==IleKate)
-            for(int i=0;i<width;i++)
-            {
-                int a=(i+offsetA)%width;            assert(a>=0 && a<width);
-                for(int j=0;j<width;j++)
+                int offsetA=RANDOM(IleKate);            assert(0<=offsetA && offsetA<IleKate);
+                int offsetB=RANDOM(IleKate);            assert(0<=offsetB && offsetB<IleKate);
+                int offsetC=RANDOM(IleKate);            assert(0<=offsetC && offsetC<IleKate);
+
+                int Max=-1,pA=-1,pB=-1,pC=-1;
+                FillStat[0]++; //Relapse counting
+
+                //Searching for the current maximum:
+                //(a bit wasteful, you can speed it up a bit if BIAS_FOR_ANY is a variable == IleKate) (???)
+                for(int i=0;i<width;i++)
                 {
-                    int b=(j+offsetB)%width;        assert(b>=0 && b<width);
-                    for(int k=0;k<width;k++)
+                    int a=(i+offsetA)%width;            assert(a>=0 && a<width);
+                    for(int j=0;j<width;j++)
                     {
-                        int c=(k+offsetC)%width;    assert(c>=0 && c<width);
-
-                        int pom=Wplywy[a][b][c];
-                        if(pom>Max)
+                        int b=(j+offsetB)%width;        assert(b>=0 && b<width);
+                        for(int k=0;k<width;k++)
                         {
-                            Max=pom;
-                            pA=a;pB=b;pC=c;         //Zapamietanie gdzie znaleziono maksimum
+                            int c=(k+offsetC)%width;    assert(c>=0 && c<width);
+
+                            int pom=Wplywy[a][b][c];
+                            if(pom>Max)
+                            {
+                                Max=pom;
+                                pA=a;pB=b;pC=c;         //Remembering where the maximum was found.
+                            }
                         }
                     }
                 }
-            }
+                                                        //He had to find something (?)
+                                                        assert(pA!=-1 && pB!=-1 && pC!=-1);
+                //What to do with the maximum???
+                Wplywy[pA][pB][pC]=0; //Reset it to zero so that it doesn't mess up in your next search!
 
-                                                    assert(pA!=-1 && pB!=-1 && pC!=-1);//Cos musial znalezc (?)
-            //Co zrobic z maksimum ???
-            Wplywy[pA][pB][pC]=0;//Wyzerowac, zeby nie bruzdzilo w nastepnym szukaniu
-
-            if(pA!=BIAS_FOR_ANY && indF==-1)	//Zapamientanie memow do zmiany - tylko wtedy gdy slot jest jeszcze wolny
-                indF=pA;
-            if(pB!=BIAS_FOR_ANY && indS==-1)
-                indS=pB;
-            if(pC!=BIAS_FOR_ANY && indT==-1)
-                indT=pC;
-            FillStat[(indF!=-1)+(indS!=-1)+(indT!=-1)]++;
+                //Storing memes to change - only when the slot is still free.
+                if(pA!=BIAS_FOR_ANY && indF==-1)
+                    indF=pA;
+                if(pB!=BIAS_FOR_ANY && indS==-1)
+                    indS=pB;
+                if(pC!=BIAS_FOR_ANY && indT==-1)
+                    indT=pC;
+                FillStat[(indF!=-1)+(indS!=-1)+(indT!=-1)]++;
             }while( indF==-1 || indS==-1 || indT==-1  );
 
-            assert(indF!=-1 && indS!=-1 && indT!=-1);//Po wyjsciu z petli wszystkie musza juz byc ustawione
-
+            assert(indF!=-1 && indS!=-1 && indT!=-1); //After leaving the loop, they all need to be set.
+                                                      //And like a lonely agent with no neighbors.
+            //We change in the central agent:
             if(CenterAgent.First!=indF)
-                { CenterAgent.First=indF; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+                { CenterAgent.First=indF; CenterAgent.Age=0;}
             if(CenterAgent.Second!=indS)
-                { CenterAgent.Second=indS;CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+                { CenterAgent.Second=indS;CenterAgent.Age=0;}
             if(CenterAgent.Third!=indT)
-                { CenterAgent.Third=indT; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+                { CenterAgent.Third=indT; CenterAgent.Age=0;}
 
-            //cout<<FillStat[0]<<'='<<FillStat[1]<<'+'<<FillStat[2]<<'+'<<FillStat[3]<<flush<<endl;//Wypisanie stastyki nawrotow petli
-        }//KONIEC ZMIAN STANU
-        //////
+            //cout<<FillStat[0]<<'='<<FillStat[1]<<'+'<<FillStat[2]<<'+'<<FillStat[3]<<flush<<endl; //Print out the loop recurrence statistics
+        }
 
-        //Sila jako wiek
 STARZENIE:
-        if(jagent::ruchsily)
+        if(jagent::ruchsily) //Strength as age
         {
             CenterAgent.Power+=jagent::ruchsily;
-            CenterAgent.Power%=jagent::max_sila;//Nigdy nie przekracza sily maksymalnej
+            CenterAgent.Power%=jagent::max_sila; //Never exceeds maximum force
         }
     }
-    // upewniamy sie ze iterator zostanie usuniety
+
+    // make sure the iterator is removed:
     MyGeom->destroy_iterator(Monte);
-} //CONDITIONAL BIAS
+} //CONDITIONAL BIAS IMPLEMENTATION ENDS HERE.
+
+/* **************************************************************** */
+/*           THIS CODE IS DESIGNED & COPYRIGHT BY:                  */
+/*            W O J C I E C H   B O R K O W S K I                   */
+/* Zakład Systematyki i Geografii Roślin Uniwersytetu Warszawskiego */
+/*  & Instytut Studiów Społecznych Uniwersytetu Warszawskiego       */
+/*        WWW:  http://moderato.iss.uw.edu.pl/~borkowsk             */
+/*        MAIL: borkowsk@iss.uw.edu.pl                              */
+/*                               (Don't change or remove this note) */
+/* **************************************************************** */
