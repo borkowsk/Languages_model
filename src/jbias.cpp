@@ -13,7 +13,7 @@
 
 #include "compatyb.h"
 #include "histosou.hpp"
-#include "clstsour.hpp" //Jest tez statsour
+//#include "clstsour.hpp"
 #include "coincsou.hpp"
 #include "compatyb.hpp"
 #include "gadgets.hpp"
@@ -22,12 +22,15 @@
 #include "jrand.h"
 #include "jworld.h"
 
-const int BIAS_FOR_ANY=8;	//Zapowiedziny w nagłówku
+/// The value that represents "all-the-same" in conditional biases.
+/// Always greater than the largest value in the layer. Default `==8`. Announced in the header.
+const int BIAS_FOR_ANY=8;
 
 void jworld::set_bias_from_str(const char* lst)
-//Ustawianie dodatkowych parametrow symulacji z tekstu - NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,INVALID_BIAS_MODE=4
+//Setting additional simulation parameters from text.
+//Np.: NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,INVALID_BIAS_MODE=4.
 {
-    if(*lst=='\0')	//Jesli pusty to tylko czyszczenie
+    if(*lst=='\0')	//If the list is empty, just clear it.
     {
         if(BiasDefinition.OK())
             BiasDefinition->clean();
@@ -36,7 +39,7 @@ void jworld::set_bias_from_str(const char* lst)
     else
     if(strchr(lst,'?')!=NULL)
     {
-        cout<<"ASSUMED SEQUENTIONAL BIAS\n"<<flush;
+        cout<<"ASSUMED SEQUENTIAL BIAS\n"<<flush;
         BiasMode= SEQUENTIONAL_BIAS;
         BiasDefinition=new _sequentional_bias_information(&IleKate);
     }
@@ -61,19 +64,19 @@ void jworld::set_bias_from_str(const char* lst)
         return;
     }
 
-    wb_pchar src(lst);	//Kopia lst
+    wb_pchar src(lst);	///< Local copy of `lst`
     istrstream in(src.get_ptr_val());
     _read_bias_from_stream(in); 
 }
 
-void jworld::_read_bias_from_stream(istream& in)        
-//Ustawianie dodatkowych parametrow symulacji ze strumienia
+
+void jworld::_read_bias_from_stream(istream& in)
 {
-    cout<<"PARSING OF BIAS DEFINITIONS: "<<flush;       assert(BiasDefinition.OK());
+    cout<<"PARSING OF BIAS DEFINITIONS: "<<flush;           assert(BiasDefinition.OK());
     
     do
     {
-        switch(BiasDefinition->read_one_bias_item(in)){
+        switch(BiasDefinition->read_one_bias_item(in)) {
         case EOF:goto OK;
         case -10:goto ON_ERROR;
         case -11:goto INVALID_PARAM;
@@ -81,23 +84,23 @@ void jworld::_read_bias_from_stream(istream& in)
         default:
             break; //Do nothing!
         }
-    }while(1);
+    }while(true);
 
 OK:
     cout<<endl<<flush;
     return;
 ON_ERROR:
-    cerr<<"Syntax error on bias definition:"<<endl;
-    cerr<<"syntax exaple:  A1:4 A2&B1:1 A1&B1&C2:3 B2:1"<<endl;
+    cerr<<"Syntax error on bias definition!"<<endl;
     cerr<<"\aALL BIAS DEFINITIONS WILL BE IGNORED!"<<endl;
+    cerr<<"Syntax example:  A1:4 A2&B1:1 A1&B1&C2:3 B2:1"<<endl;
     return;
 INVALID_PARAM:
-    cerr<<"Invalid parameters in bias string."<<endl;
+    cerr<<"Invalid parameters in bias string!"<<endl;
     cerr<<"\aALL BIAS DEFINITIONS WILL BE IGNORED!"<<endl;
-    return;
+    //return;
 }
 
-
+// For pairs like a1, b3 etc.
 int jworld::_read_local(istream& in,int& Layer,int& Value)
 {
     char Znak;
@@ -111,9 +114,9 @@ int jworld::_read_local(istream& in,int& Layer,int& Value)
     if(in.fail())
         return -10;
     
-    Znak=tolower(Znak);	//Ujednolicenie wielkosci liter
+    Znak=tolower(Znak);	//Unification of letter size
     
-    switch(Znak){   //Konwersja z zapisu f[irst], s[econd], t[hird]
+    switch(Znak){   //Conversion from f[irst], s[econd], t[hird]
     case 'f':
             Znak='a';break;
     case 's':
@@ -128,12 +131,17 @@ int jworld::_read_local(istream& in,int& Layer,int& Value)
     return 0;
 }
 
+
+/// Simple bias info.
 struct BiasInfo
 {  
-    int Warstwa[3];	//Wartosc dla kazdej z trzech warstw
-    BiasInfo(){Warstwa[0]=Warstwa[1]=Warstwa[2]=BIAS_FOR_ANY;} 
-    
-    int reg(int Index,int Wartosc)	//Rejestruje wartosc dla warstwy, pod warunkiem ze to po raz pierwszy
+    int Warstwa[3];	///< Value for each of the three layers.
+
+    /// Constructor. The value for each of the three layers is initialized in the old style.
+    BiasInfo(){Warstwa[0]=Warstwa[1]=Warstwa[2]=BIAS_FOR_ANY;} // NOLINT(*-pro-type-member-init)
+
+    /// Sets the value for the layer, but only if it is the first time, otherwise it signals an error.
+    int reg(int Index,int Wartosc)
     {
         if(Index>=0 && Index<=2)
         {
@@ -181,13 +189,13 @@ struct BiasInfo
 
 };
 
+
 int  jworld::_simple_bias_information::read_one_bias_item(istream& in)
-//Wczytanie elementarnej definicji bias'u
 {
-    char Separator;
     BiasInfo info;
-    int    Index,Number;
-    double BiasValue;
+    char    Separator;
+    int     Index,Number;
+    double  BiasValue;
 
     cout<<endl<<flush;
 
@@ -202,7 +210,7 @@ int  jworld::_simple_bias_information::read_one_bias_item(istream& in)
     if(in.fail())
         return -10;
 
-    if(Separator!=':')
+    if(Separator!=':') //Requires `:` as separator.
     {
         cerr<<"Expected ':' not "<<Separator<<endl;
         return -10;
@@ -221,9 +229,10 @@ int  jworld::_simple_bias_information::read_one_bias_item(istream& in)
     if( (info.Warstwa[2]<0 || info.Warstwa[2]>=IleKate()) && info.Warstwa[2]!=BIAS_FOR_ANY )
         {cerr<<"The value "<<info.Warstwa[2]+1<<" for layer C are invalid"<<endl;return -11;}
 
-    assert((info.Warstwa[0]==BIAS_FOR_ANY)+(info.Warstwa[1]==BIAS_FOR_ANY)+(info.Warstwa[2]==BIAS_FOR_ANY)==2);	//Jesli sa dwa BIAS_FOR_ANY to bias bezwarunkowy
+    //If there are two BIAS_FOR_ANY it is unconditional bias
+    assert((info.Warstwa[0]==BIAS_FOR_ANY)+(info.Warstwa[1]==BIAS_FOR_ANY)+(info.Warstwa[2]==BIAS_FOR_ANY)==2);
     
-    {//Zapis do tablicy bias'ow warunkowych UncdBias[3][8]
+    {//Now write to the conditional bias table `UncdBias[3][8]`.
         if(info.Warstwa[0]!=BIAS_FOR_ANY)
         {
             UncdBias[0][info.Warstwa[0]]=BiasValue;
@@ -240,7 +249,7 @@ int  jworld::_simple_bias_information::read_one_bias_item(istream& in)
                 }
                 else
                 {
-                    assert("This line should never be reached."==0);	//Upss...
+                    assert("This line should never be reached."==NULL);	//Upss...
                 }
     }
     
@@ -256,11 +265,11 @@ int  jworld::_simple_bias_information::read_one_bias_item(istream& in)
         return EOF;
 }
 
+
 int  jworld::_conditional_bias_information::read_one_bias_item(istream& in)
-//Wczytanie elementarnej definicji bias'u
 {
-    char Separator;
     BiasInfo info;
+    char   Separator;
     int    Index,Number;
     double BiasValue;
 
@@ -277,7 +286,7 @@ int  jworld::_conditional_bias_information::read_one_bias_item(istream& in)
     if(in.fail())
         return -10;
 
-    if(Separator=='&') //jeszcze jeden
+    if(Separator=='&') //There is one more
     {
         ret=_read_local(in,Index,Number);   
         if(ret!=0) 
@@ -291,7 +300,7 @@ int  jworld::_conditional_bias_information::read_one_bias_item(istream& in)
         if(in.fail())
             return -10;
 
-        if(Separator=='&') //i jeszcze jeden
+        if(Separator=='&') //Oh! And one more.
         {
             ret=_read_local(in,Index,Number);   
             if(ret!=0) 
@@ -326,10 +335,11 @@ int  jworld::_conditional_bias_information::read_one_bias_item(istream& in)
     if( (info.Warstwa[2]<0 || info.Warstwa[2]>=IleKate()) && info.Warstwa[2]!=BIAS_FOR_ANY )
         {cerr<<"The value "<<info.Warstwa[2]+1<<" for layer C are invalid"<<endl;return -11;}
     
-    Biases[info.Warstwa[0]][info.Warstwa[1]][info.Warstwa[2]]=BiasValue;	//Wszytkie mozliwe bias'y
+    Biases[info.Warstwa[0]][info.Warstwa[1]][info.Warstwa[2]]=BiasValue;	//All possible biases (???)
     
     //Can we continue next time?
     eat_blanks(in);
+
     int test=in.get();
     if(test!=0 && test!=-1)
     {
@@ -340,7 +350,8 @@ int  jworld::_conditional_bias_information::read_one_bias_item(istream& in)
         return EOF;
 }
 
-int jworld::_sequentional_bias_information::IfBias::reg(int Index,int Wartosc)	//Rejestruje wartosc dla warstwy, pod warunkiem ze to po raz pierwszy
+
+int jworld::_sequentional_bias_information::IfBias::reg(int Index,int Wartosc)
 {                
     if(Index>=0 && Index<=2)
     {
@@ -361,6 +372,7 @@ int jworld::_sequentional_bias_information::IfBias::reg(int Index,int Wartosc)	/
         return -11;
     }
 }
+
 
 int jworld::_sequentional_bias_information::IfBias::set(int Index,int Wartosc,float Premia)
 {
@@ -386,6 +398,7 @@ int jworld::_sequentional_bias_information::IfBias::set(int Index,int Wartosc,fl
     }
     
 }
+
 
 ostream& operator << (ostream& o,const jworld::_sequentional_bias_information::IfBias& b)
 {
@@ -413,8 +426,8 @@ ostream& operator << (ostream& o,const jworld::_sequentional_bias_information::I
     return o;
 }   
 
+
 int  jworld::_sequentional_bias_information::read_one_bias_item(istream& in)
-//Wczytanie elementarnej definicji bias'u
 {
     char Separator;
     int    Index,Number;
@@ -427,18 +440,18 @@ int  jworld::_sequentional_bias_information::read_one_bias_item(istream& in)
     if(ret!=0) 
         return ret;
     
-    in>>Separator;	//Trzeba wczytac separator zeby zadecydowac
+    in>>Separator;	//You need to load the separator to decide.
     if(in.fail())
         return -10;
     
-    if(Separator!=':') //Jesli nie jest bezwarunkowy to jest warunkowy sekwencyjny - czyli OK
+    if(Separator!=':') //If it is not unconditional, it is conditional sequential - i.e. OK
     {
         assert(Separator=='&'||Separator=='?');                                                    
-        ret=Item.reg(Index,Number);	//Pierwszy zarejestrowany
+        ret=Item.reg(Index,Number);	//First registered.
         if(ret!=0)
             return ret;
         
-        if(Separator=='&') //jeszcze jeden
+        if(Separator=='&') //But one more...
         {              
             ret=_read_local(in,Index,Number);   
             if(ret!=0) 
@@ -452,7 +465,7 @@ int  jworld::_sequentional_bias_information::read_one_bias_item(istream& in)
             if(in.fail())
                 return -10;
             
-            if(Separator=='&') //i jeszcze jeden
+            if(Separator=='&') //And even one more!
             {
                 ret=_read_local(in,Index,Number);   
                 if(ret!=0) 
@@ -525,106 +538,95 @@ int  jworld::_sequentional_bias_information::read_one_bias_item(istream& in)
         return EOF;
 }
 
-//          IMPLEMENTACJE KROKOW SYMULACJI Z ROZNYMI BIAS'AMI
+//          IMPLEMENTATION OF SIMULATION STEPS WITH DIFFERENT BIAS
 // /////////////////////////////////////////////////////////////////////////
-void    jworld::_update_age()
-{
-    const geometry_base* MyGeom=Agenci.get_geometry();
-    iteratorh Iter=MyGeom->make_global_iterator();
-     while(Iter)
-    {   
-        size_t index=MyGeom->get_next(Iter);	//Uzyskujemy index agenta
-                                            assert(index!=MyGeom->FULL); //... tutaj nie powinno sie zdarzyc
-        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());	// Uzyskujemy referencje do agenta omijajac asercje na NULL
-        if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta komórka (NULL)
-            continue;                   // bo wtedy robic dalej byłoby bez sensu.
-        CenterAgent.Age++;
-     }
-}
 
 void    jworld::_one_step_no_bias()
 {
     int testowanie=0;
     const geometry_base* MyGeom=Agenci.get_geometry();
-    //TABLICE POMOCNICZE
+    //AUXILIARY BOARDS:
     wb_dynarray<int> Firsts(IleKate);
     wb_dynarray<int> Seconds(IleKate);
     wb_dynarray<int> Thirds(IleKate);
     assert(MyGeom && Firsts.IsOK() && Seconds.IsOK() && Thirds.IsOK());
     
-    //Alokujemy iterator Monte-Carlo
+    //We allocate the Monte-Carlo iterator:
     iteratorh Monte=MyGeom->make_random_global_iterator();
     
-    //Idziemy po agentach iteratorem Monte-Carlo. Niektórzy moga sie powtórzyc
+    //We go through the agents with a Monte-Carlo iterator. Some may repeat themselves.
     while(Monte)
     {   
-        size_t index=MyGeom->get_next(Monte);	//Uzyskujemy index losowo wybranego agenta
-        //if(index==FULL)                        //Ignorujemy jesli trafil za tablice (zdaza sie dla wycinkow?)
+        size_t index=MyGeom->get_next(Monte);	//We obtain the index of a randomly selected agent
+        //if(index==FULL)  //We ignore it if it goes behind the board (which happens with clippings, or happened in the past)
         //      continue;                        
-        assert(index!=MyGeom->FULL);               //... tutaj nie powinno sie zdarzyc
-        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());	// Uzyskujemy referencje do agenta omijajac asercje na NULL
-        if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta komórka (NULL)
-            continue;                   // bo wtedy robic dalej byłoby bez sensu.
+        assert(index!=MyGeom->FULL);               //This definitely shouldn't happen here!
+        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());	//We obtain references to the agent by bypassing NULL assertions.
+        if(Agenci.is_empty(CenterAgent))    // We check whether it is not an empty cell (NULL?).
+            continue;
         
         if(
-            (CenterAgent.Power>TrsSila)   // Czy nie ma juz immunitetu na zmiany
+            (CenterAgent.Power>TrsSila)   //Is there no immunity to change anymore?
             ||
-            (jagent::MutationLevel>0 && CenterAgent.try_mutate())     //Albo czy wlasnie nie zmutowal spontanicznie
+            (jagent::MutationLevel>0 && CenterAgent.try_mutate()) //Or didn't it just mutate spontaneously!
             )
-            goto STARZENIE;             // Ma - nie robimy nic
+            goto STARZENIE;             // It has immunity - we do nothing more than age.
         
-        {   //KOD NA SZUKANIA WPLYWOW
-            /////////////////////////////////////
-            // Alokujemy iterator sasiedztwa
+        {   // LOOKING FOR INFLUENCES:
+            // ////////////////////////
+
+            /// We allocate the neighborhood iterator...
             iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad);
-            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,OdlSasiad);
-            unsigned zliczanie=0;	//Zliczanie sasiadów
+            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,OdlSasiad); //A simpler alternative (non random).
+            unsigned zliczanie=0;	///< To count real neighbors.
             
-            //Czyszczenie licznikow
-            fill(Firsts,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*IleKate);
+            // Cleaning the counter arrays:
+            fill(Firsts,0); //Former: `memset(Firsts.get_ptr_val(),0,sizeof(int)*IleKate);`
             fill(Seconds,0);	//memset(Seconds.get_ptr_val(),0,sizeof(int)*IleKate);
             fill(Thirds,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*IleKate);
 
             if(use_SW_links)
-            {//REJESTROWANIE WPŁYWU OD PROTEKTORA
-            size_t a,b;
-            unsigned x,y;
-            dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b);//Odzyskac  x i y z indeksu agenta
-                assert("NOT TESTED AFTER PORTING!"==nullptr);
-            // if(_xy_of_far_link_of(a,b,x,y)) //Pobrać indeks "protektora" tego agenta  o ile go ma
-            // 	{
-            // 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-            // 	jagent& PeryfAgent=Agenci.get(x,y);//Uzyskujemy referencje do "protektora"
-            // 										assert(!Agenci.is_empty(PeryfAgent));//nie powinna to być pusta komórka (NULL) ale...
-            // 	Firsts[PeryfAgent.First]+=PeryfAgent.Power;
-            // 	Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
-            // 	Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
-            // 	zliczanie++;
-            // 	}
+            { //RECORDING INFLUENCE FROM THE PROTECTOR ON A FAR LINK:
+                size_t a,b;
+                unsigned x,y;
+                dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b); //You need to retrieve x and y from the agent index.
+                    assert("NOT TESTED AFTER PORTING!"==nullptr);
+                // if(_xy_of_far_link_of(a,b,x,y)) //Get the "protector" index of this agent, if it has one (?????)
+                // 	{
+                // 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
+                // 	jagent& PeryfAgent=Agenci.get(x,y); //We obtain references to the "protector".
+                // 										assert(!Agenci.is_empty(PeryfAgent));
+                // 	Firsts[PeryfAgent.First]+=PeryfAgent.Power;
+                // 	Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
+                // 	Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
+                // 	zliczanie++; //He's also kind of a neighbor.
+                // 	}
             }
 
-            while(Neigh)
+            // ORDINARY CLOSE NEIGHBORS (extended Moore):
+            while(Neigh) //Let's check if the iterator still has any neighboring agent to provide.
             {
-                size_t index2=MyGeom->get_next(Neigh);//Uzyskujemy index sasiada        
-                if(index2==MyGeom->FULL || index2==index)   //Jesli poza obszarem symulacji lub w 
-                    continue;               //centrum obszaru to dalej byloby bez sensu.
+                size_t index2=MyGeom->get_next(Neigh); //We obtain the neighbor's index from geometry.
+                if(index2==MyGeom->FULL || index2==index)   //If it was outside the simulation area or in the center of the area, it would still be pointless.
+                    continue; //TODO But does it happen?
 
-                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val());//Uzyskujemy referencje do sasiada omijajac asercje na NULL
-                if(Agenci.is_empty(PeryfAgent))     //Sprawdzamy czy nie jest to pusta komórka (NULL)
-                    continue;                      // bo wtedy robic dalej byłoby bez sensu.
+                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val()); //We obtain a reference to the neighbor by bypassing NULL assertions
+                if(Agenci.is_empty(PeryfAgent)) //We check whether it is not an empty cell.
+                    continue;
 
-                zliczanie++;
-                //Dodawanie sil sasiadow do licznikow w tablicach
+                zliczanie++; //This is a real neighbor, not an empty field.
+
+                //Adding neighbor forces to counters in tables:
                 Firsts[PeryfAgent.First]+=PeryfAgent.Power;
                 Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
                 Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
             }
+
+            //We make sure that the iterator that is no longer needed will be removed:
+            MyGeom->destroy_iterator(Neigh);
+            testowanie++;   //We count the number of randomly selected agents.
             
-            MyGeom->destroy_iterator(Neigh);    // upewniamy sie ze iterator zostanie usuniety
-            //Zlicza wylosowanych agentow
-            testowanie++;   
-            
-            //Dodawanie wlasnych sil do licznikow w tablicach
+            //Adding your own strength to counters in tables, but only when this option is active.
             if(UseSelf)
             {
                 Firsts[CenterAgent.First]+=CenterAgent.Power;
@@ -632,19 +634,26 @@ void    jworld::_one_step_no_bias()
                 Thirds[CenterAgent.Third]+=CenterAgent.Power;
             }
             
-            //Do szukanie maksimow
+            //Searching for influence maxima:
+            //-------------------------------
             int maxF=0,indF=-1;
             int maxS=0,indS=-1;
             int maxT=0,indT=-1;
-            int offset=RANDOM(IleKate);							//Jak IleKate==2 to 0 albo 1 itd...
+
+            //Multiple influences can be maximum (same value).
+            //Therefore, we must ensure that among them there will be a random selection.
+            const int offset=RANDOM(IleKate);					//If `IleKate==2` it comes out 0 or 1 etc...
                                                                 assert(0<=offset);
                                                                 assert(offset<IleKate);
-            //W petli dodawanie szumu i szukanie maksimow
-            //------------------------------------------------
+
+            //In this loop, adding noise and searching for maxima:
+            //----------------------------------------------------
             for(int g=0;g<IleKate;g++)
             {
+                /// Index with random shift:
                 int h=(g+offset)%IleKate;						assert(h>=0 && h<IleKate);
-                //Dodawanie szumu
+
+                //Now it's time to add noise:
                 if(Firsts[h]>0)
                     Firsts[h]+=long(DRAND()*Noise*(4.5*MaxSila));
                 if(Seconds[h]>0)
@@ -652,7 +661,7 @@ void    jworld::_one_step_no_bias()
                 if(Thirds[h]>0)
                     Thirds[h]+=long(DRAND()*Noise*(4.5*MaxSila));
                 
-                //Testowanie
+                //Testing if we have any new high values.
                 if(Firsts[h]>maxF)
                     {maxF=Firsts[h];indF=h;}
                 if(Seconds[h]>maxS)
@@ -661,115 +670,120 @@ void    jworld::_one_step_no_bias()
                     {maxT=Thirds[h];indT=h;}
             }
 
-            //assert(indF!=-1 && indS!=-1 && indT!=-1);
-            
+            //assert(indF!=-1 && indS!=-1 && indT!=-1); //Are we sure that a maximum has always been found? What if it's empty around?
+
+            //We change the value in the central agent to the same value in the one that had the maximum.
             if(indF!=-1 && CenterAgent.First!=indF)
-                { CenterAgent.First=indF; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+                { CenterAgent.First=indF; CenterAgent.Age=0;}
             if(indS!=-1 && CenterAgent.Second!=indS)
-                { CenterAgent.Second=indS;CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+                { CenterAgent.Second=indS;CenterAgent.Age=0;}
             if(indT!=-1 && CenterAgent.Third!=indT)
-                { CenterAgent.Third=indT; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+                { CenterAgent.Third=indT; CenterAgent.Age=0;}
             
-        }//KONIEC ZMIAN STANU
-        //////
-        
-        //Sila jako wiek
+        } //END OF NORMAL STATE CHANGE
+
 STARZENIE:
-        if(jagent::ruchsily)
+        if(jagent::ruchsily) //Strength as age. Incrementation, if this option is activated.
         {
             CenterAgent.Power+=jagent::ruchsily;
-            CenterAgent.Power%=jagent::max_sila;//Nigdy nie przekracza sily maksymalnej
+            CenterAgent.Power%=jagent::max_sila; //Never exceeds maximum force. This is where a "new", weak agent (child) is created.
         }
     }
-    // upewniamy sie ze iterator zostanie usuniety
+
+    // We make sure that the main iterator M-C is removed
     MyGeom->destroy_iterator(Monte);
-}  //NO BIAS
+}  //NO BIAS IMPLEMENTATION ENDED HERE.
+
 
 void    jworld::_one_step_simple_bias()
-{   
-                                                                                                      assert(BiasDefinition.OK());
+{                                                                                            assert(BiasDefinition.OK());
     _simple_bias_information* BiasData=dynamic_cast<_simple_bias_information*>
-                                                            (BiasDefinition.get_ptr_val());           assert(BiasData!=NULL);
-    const geometry_base* MyGeom=Agenci.get_geometry();                                                assert(MyGeom!=NULL);  
+                                                            (BiasDefinition.get_ptr_val());  assert(BiasData!=NULL);
+    const geometry_base* MyGeom=Agenci.get_geometry();                                       assert(MyGeom!=NULL);
 
-    //TABLICE POMOCNICZE
+    //AUXILIARY BOARDS OF COUNTERS:
     wb_dynarray<int> Firsts(IleKate);
     wb_dynarray<int> Seconds(IleKate);
     wb_dynarray<int> Thirds(IleKate);               assert(MyGeom && Firsts.IsOK() && Seconds.IsOK() && Thirds.IsOK());
     
-    //INNE ZMIENNE
-    int testowanie=0;
-    iteratorh Monte=MyGeom->make_random_global_iterator();//Alokujemy iterator Monte-Carlo
+    //OTHER AUXILIARY VARIABLES:
+    int testowanie=0; ///< counter.
+    iteratorh Monte=MyGeom->make_random_global_iterator(); ///< Monte-Carlo iterator (internal allocated)
     
-    //Idziemy po agentach iteratorem Monte-Carlo. Niektórzy moga sie powtórzyc
+    //We go through the agents with a Monte-Carlo iterator (some repetitions possible).
     while(Monte)
     {   
-        size_t index=MyGeom->get_next(Monte);//Uzyskujemy index losowo wybranego agenta 
-        //if(index==FULL)                        //Ignorujemy jesli trafil za tablice (zdaza sie dla wycinkow?)
+        size_t index=MyGeom->get_next(Monte);
+        //if(index==FULL)
         //      continue;
-        assert(index!=MyGeom->FULL);                //... tutaj nie powinno sie zdarzyc
-        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());// Uzyskujemy referencje do agenta omijajac asercje na NULL
-        if(Agenci.is_empty(CenterAgent))    // Sprawdzamy czy nie jest to pusta komórka (NULL)
-            continue;                   // bo wtedy robic dalej byłoby bez sensu.
+        assert(index!=MyGeom->FULL);
+        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());
+        if(Agenci.is_empty(CenterAgent))
+            continue;
 
          if(
-            (CenterAgent.Power>TrsSila)   // Czy nie ma juz immunitetu na zmiany
+            (CenterAgent.Power>TrsSila)   //Is there no immunity to change anymore?
             ||
-            (jagent::MutationLevel>0 && CenterAgent.try_mutate())     //Albo czy wlasnie nie zmutowal spontanicznie
+            (jagent::MutationLevel>0 && CenterAgent.try_mutate())
             )
-            goto STARZENIE;             // Ma - nie robimy nic
+            goto STARZENIE; //There is immunity or a fresh mutation - nothing to do.
 
-        {   //KOD NA SZUKANIA WPLYWOW
-            /////////////////////////////////////
-            // Alokujemy iterator sasiedztwa
+        {   // INFLUENCE CALCULATION CODE:
+            // ///////////////////////////
+
+            /// Neighborhood iterator (with internal allocation perhaps!).
             iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad);
-            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,OdlSasiad);
-            unsigned zliczanie=0;//Zliczanie sasiadów
+            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,OdlSasiad); ///< Non-random neighborhood iterator.
+            unsigned zliczanie=0; ///< To count real neighbors.
 
-            //Czyszczenie licznikow
+            // Cleaning the counter arrays:
             fill(Firsts,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*IleKate);
             fill(Seconds,0);//memset(Seconds.get_ptr_val(),0,sizeof(int)*IleKate);
             fill(Thirds,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*IleKate);
 
             if(use_SW_links)
-            {//REJESTROWANIE WPŁYWU OD PROTEKTORA
-            size_t a,b;
-            unsigned x,y;
-            dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b);//Odzyskac  x i y z indeksu agenta
-            if(_xy_of_far_link_of(a,b,x,y)) //Pobrać indeks "protektora" tego agenta  o ile go ma
+            { //RECORDING INFLUENCE FROM THE PROTECTOR ON A FAR LINK:
+                size_t a,b;
+                unsigned x,y;
+                dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b);
+                if(_xy_of_far_link_of(a,b,x,y))
                 {
-                                                    assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-                jagent& PeryfAgent=Agenci.get(x,y);//Uzyskujemy referencje do "protektora"
-                                                    assert(!Agenci.is_empty(PeryfAgent));//nie powinna to być pusta komórka (NULL) ale...
-                Firsts[PeryfAgent.First]+=PeryfAgent.Power;
-                Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
-                Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
-                zliczanie++;
+                                                        assert((y!=UINT_MAX)&&(x!=UINT_MAX));
+                    jagent& PeryfAgent=Agenci.get(x,y); ///< The references to "protector".
+                                                        assert(!Agenci.is_empty(PeryfAgent));
+                    //Adding protector strength to counters in arrays
+                    Firsts[PeryfAgent.First]+=PeryfAgent.Power;
+                    Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
+                    Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
+
+                    zliczanie++;
                 }
             }
 
-            while(Neigh)
+            // ORDINARY CLOSE NEIGHBORS (extended Moore):
+            while(Neigh) //Let's check if the iterator still has any neighboring agent to provide.
             {
-                size_t index2=MyGeom->get_next(Neigh);//Uzyskujemy index sasiada
-                if(index2==MyGeom->FULL || index2==index)   //Jesli poza obszarem symulacji lub w
-                    continue;               //centrum obszaru to dalej byloby bez sensu.
+                size_t index2=MyGeom->get_next(Neigh);
+                if(index2==MyGeom->FULL || index2==index)
+                    continue;  //TODO But does it happen?
 
-                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val());//Uzyskujemy referencje do sasiada omijajac asercje na NULL
-                if(Agenci.is_empty(PeryfAgent))     //Sprawdzamy czy nie jest to pusta komórka (NULL)
-                    continue;                      // bo wtedy robic dalej byłoby bez sensu.
+                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val()); ///< reference to the neighbor
+                if(Agenci.is_empty(PeryfAgent))
+                    continue;
 
-                zliczanie++;
-                //Dodawanie sil sasiadow do licznikow w tablicach
+                zliczanie++; //This is a real neighbor, not an empty field.
+
+                //Adding neighbor forces to counters in tables:
                 Firsts[PeryfAgent.First]+=PeryfAgent.Power;
                 Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
                 Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
             }
 
-            MyGeom->destroy_iterator(Neigh);    // upewniamy sie ze iterator zostanie usuniety
-            //Zlicza wylosowanych agentow
-            testowanie++;
+            //We make sure that the iterator that is no longer needed will be removed:
+            MyGeom->destroy_iterator(Neigh);
+            testowanie++;   //We count the number of randomly selected agents.
 
-            //Dodawanie wlasnych sil do licznikow w tablicach
+            //Adding your own strength to counters in tables, but only when this option is active.
             if(UseSelf)
             {
                 Firsts[CenterAgent.First]+=CenterAgent.Power;
@@ -777,20 +791,24 @@ void    jworld::_one_step_simple_bias()
                 Thirds[CenterAgent.Third]+=CenterAgent.Power;
             }
 
-            //Szukanie maksimow
+            //Searching for influence maxima:
+            //-------------------------------
             int maxF=0,indF=-1;
             int maxS=0,indS=-1;
             int maxT=0,indT=-1;
-            int offset=RANDOM(IleKate);             assert(0<=offset && offset<IleKate);//Jak IleKate==2 to 0 albo 1 itd..
 
+            //Multiple influences can be maximum (same value).
+            //Therefore, we must ensure that among them there will be a random selection.
+            int offset=RANDOM(IleKate);             assert(0<=offset && offset<IleKate);
 
-            //W petli dodawanie szumu i biasu i szukanie maksimow
+            //In this loop, adding noise and searching for maxima:
             //----------------------------------------------------
             for(int g=0;g<IleKate;g++)
             {
-                int h=(g+offset)%IleKate;
-                assert(h>=0 && h<IleKate);
-                //Dodawanie szumu
+                int h=(g+offset)%IleKate; ///< Index with random shift:
+                                          assert(h>=0 && h<IleKate);
+
+                //Now it's time to add noise AND BIAS:
                 if(Firsts[h]>0)
                     Firsts[h]+=long(DRAND()*Noise*(4.5*MaxSila))+BiasData->UncdBias[0][h];
                 if(Seconds[h]>0)
@@ -798,151 +816,157 @@ void    jworld::_one_step_simple_bias()
                 if(Thirds[h]>0)
                     Thirds[h]+=long(DRAND()*Noise*(4.5*MaxSila))+BiasData->UncdBias[2][h];
 
-                //Testowanie
+                //Testing if we have any new high values.
                 if(Firsts[h]>maxF)
                 {maxF=Firsts[h];indF=h;}
                 if(Seconds[h]>maxS)
                 {maxS=Seconds[h];indS=h;}
                 if(Thirds[h]>maxT)
                 {maxT=Thirds[h];indT=h;}
-            }
+            }//assert(indF!=-1 && indS!=-1 && indT!=-1); //But, what if it's empty around?
 
-            //assert(indF!=-1 && indS!=-1 && indT!=-1);
+            //We change the value in the central agent to the same value in the one that had the maximum.
             if(indF!=-1 && CenterAgent.First!=indF)
-                { CenterAgent.First=indF; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+                { CenterAgent.First=indF; CenterAgent.Age=0;}
             if(indS!=-1 && CenterAgent.Second!=indS)
-                { CenterAgent.Second=indS;CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+                { CenterAgent.Second=indS;CenterAgent.Age=0;}
             if(indT!=-1 && CenterAgent.Third!=indT)
-                { CenterAgent.Third=indT; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+                { CenterAgent.Third=indT; CenterAgent.Age=0;}
 
-        }//KONIEC ZMIAN STANU
-        //////
+        } //END OF NORMAL STATE CHANGE
 
-        //Sila jako wiek
 STARZENIE:
-        if(jagent::ruchsily)
+        if(jagent::ruchsily) //Strength as age. Incrementation, if this option is activated.
         {
             CenterAgent.Power+=jagent::ruchsily;
-            CenterAgent.Power%=jagent::max_sila;//Nigdy nie przekracza sily maksymalnej
+            CenterAgent.Power%=jagent::max_sila; //Never exceeds maximum force. This is where a "new", weak agent (child) is created.
         }
     }
-    // upewniamy sie ze iterator zostanie usuniety
-    MyGeom->destroy_iterator(Monte);
-}  //SIMPLE BIAS
 
-void jworld::_sequentional_bias_information::UseBiasForAgent(       //Implementacja uzycia biasu - tu dosyc skomplikowana, przypomina wykonanie programu
+    // We make sure that the main iterator M-C is removed
+    MyGeom->destroy_iterator(Monte);
+}  //SIMPLE BIAS IMPLEMENTATION ENDED HERE.
+
+
+//Auxiliary implementation of the use of sophisticated bias.
+//Quite complicated, it resembles the execution of a program
+void jworld::_sequentional_bias_information::UseBiasForAgent(
                                 int FirstVal,int SecondVal,int ThirdVal,
                                 wb_dynarray<int>& Firsts,
                                 wb_dynarray<int>& Seconds,
                                 wb_dynarray<int>& Thirds
                              )
 {
-    for(int a=0;a<for_use;a++)	//Dla kazdego rekordu "warunkowej instrukcji biasu"
+    for(int a=0;a<for_use;a++)	//For each record of the "conditional bias instruction" array.
     {
-       if( SeqBiases[a].much(FirstVal,SecondVal,ThirdVal))
+       if( SeqBiases[a].much(FirstVal,SecondVal,ThirdVal)) //If any condition is met...
        {
-           switch(SeqBiases[a].whatley){
+           // ...add bias to the correct state of the correct layer.
+           switch(SeqBiases[a].whatley){ //TODO Why `float` is used for bias values?
            case 0: Firsts[SeqBiases[a].lstate]+=SeqBiases[a].value;break;
            case 1: Seconds[SeqBiases[a].lstate]+=SeqBiases[a].value;break;
            case 2: Thirds[SeqBiases[a].lstate]+=SeqBiases[a].value;break;
            default:
-               assert("Invalid index of layer during bias processing."==0);
+               assert("Invalid index of layer during bias processing."==NULL);
                break;
            }
        }
     }
 }
 
-void    jworld::_one_step_sequentional_bias()
-{   
-                                                                                                      assert(BiasDefinition.OK());
-    _sequentional_bias_information* BiasData=dynamic_cast<_sequentional_bias_information*>
-                                                            (BiasDefinition.get_ptr_val());           assert(BiasData!=NULL);
-    const geometry_base* MyGeom=Agenci.get_geometry();                                                assert(MyGeom!=NULL);
 
-    //TABLICE POMOCNICZE
+void    jworld::_one_step_sequentional_bias()
+{                                                                                               assert(BiasDefinition.OK());
+    _sequentional_bias_information* BiasData=dynamic_cast<_sequentional_bias_information*>
+                                                            (BiasDefinition.get_ptr_val());     assert(BiasData!=NULL);
+    const geometry_base* MyGeom=Agenci.get_geometry();                                          assert(MyGeom!=NULL);
+
+    //AUXILIARY BOARDS OF COUNTERS:
     wb_dynarray<int> Firsts(IleKate);
     wb_dynarray<int> Seconds(IleKate);
     wb_dynarray<int> Thirds(IleKate);               assert(MyGeom && Firsts.IsOK() && Seconds.IsOK() && Thirds.IsOK());
 
-    //INNE ZMIENNE
-    int testowanie=0;
-    iteratorh Monte=MyGeom->make_random_global_iterator();//Alokujemy iterator Monte-Carlo
+    //OTHER AUXILIARY VARIABLES:
+    int testowanie=0; ///< counter.
+    iteratorh Monte=MyGeom->make_random_global_iterator(); ///< Iterator Monte-Carlo.
 
-    //Idziemy po agentach iteratorem Monte-Carlo. Niektórzy moga sie powtórzyc
+    //We go through the agents with a Monte-Carlo iterator (some repetitions possible).
     while(Monte)
     {
-        size_t index=MyGeom->get_next(Monte);//Uzyskujemy index losowo wybranego agenta
-        //if(index==MyGeom->FULL)            //Ignorujemy jesli trafil za tablice (zdaza sie dla wycinkow?)
+        size_t index=MyGeom->get_next(Monte); ///< index of a randomly selected agent.
+        //if(index==MyGeom->FULL)
         //      continue;
-        assert(index!=MyGeom->FULL);         //... tutaj nie powinno sie zdarzyc
-        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());// Uzyskujemy referencje do agenta omijajac asercje na NULL
-        if(Agenci.is_empty(CenterAgent))     // Sprawdzamy czy nie jest to pusta komórka (NULL)
-            continue;                        // bo wtedy robic dalej byłoby bez sensu.
+        assert(index!=MyGeom->FULL);
+        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());
+        if(Agenci.is_empty(CenterAgent))
+            continue;
 
          if(
-            (CenterAgent.Power>TrsSila)   // Czy nie ma juz immunitetu na zmiany
+            (CenterAgent.Power>TrsSila)    //Is there no immunity to change anymore?
             ||
-            (jagent::MutationLevel>0 && CenterAgent.try_mutate())     //Albo czy wlasnie nie zmutowal spontanicznie
+            (jagent::MutationLevel>0 && CenterAgent.try_mutate()) //Or didn't it just mutate spontaneously?
             )
-            goto STARZENIE;             // Ma - nie robimy nic
+            goto STARZENIE;   //There is immunity or a fresh mutation - nothing to do.
 
-        {   //KOD NA SZUKANIA WPLYWOW
-            /////////////////////////////////////
-            // Alokujemy iterator sasiedztwa
+        {   // INFLUENCE CALCULATION CODE:
+            // ///////////////////////////
+
+            /// Neighborhood iterator (with internal allocation perhaps!).
             iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad);
-            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,OdlSasiad);
-            unsigned zliczanie=0;//Zliczanie sasiadów
+            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,OdlSasiad); ///< Non-random neighborhood iterator.
+            unsigned zliczanie=0; ///< To count real neighbors.
 
-            //Czyszczenie licznikow
+            // Cleaning the counter arrays:
             fill(Firsts,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*IleKate);
             fill(Seconds,0);//memset(Seconds.get_ptr_val(),0,sizeof(int)*IleKate);
             fill(Thirds,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*IleKate);
 
             if(use_SW_links)
-            {//REJESTROWANIE WPŁYWU OD PROTEKTORA
+            { //RECORDING INFLUENCE FROM THE PROTECTOR ON A FAR LINK:
             size_t a,b;
             unsigned x,y;
-            dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b);//Odzyskac  x i y z indeksu agenta
+            dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b);
                 assert("Not tested after porting!"==nullptr);
-            // if(_xy_of_far_link_of(0,TODO,x,y)) //Pobrać indeks "protektora" tego agenta  o ile go ma
-            // 	{
+            // if(_xy_of_far_link_of(0,TODO,x,y)) //Download the "protector" index of this agent, if it has one
+            // {
             // 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-            // 	jagent& PeryfAgent=Agenci.get(x,y);//Uzyskujemy referencje do "protektora"
-            // 										assert(!Agenci.is_empty(PeryfAgent));//nie powinna to być pusta komórka (NULL) ale...
+            // 	jagent& PeryfAgent=Agenci.get(x,y); ///< The references to "protector".
+            // 										assert(!Agenci.is_empty(PeryfAgent));
             // 										assert("NOT TESTED IPLEMENTATION");
             //
-            // 	//Dodawanie sily protektora do licznikow w tablicach
+            // 	//Adding protector strength to counters in arrays
             // 	Firsts[PeryfAgent.First]+=PeryfAgent.Power;
             // 	Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
             // 	Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
             //
             // 	zliczanie++;
-            // 	}
+            // }
             }
 
-            while(Neigh)
+            // ORDINARY CLOSE NEIGHBORS (extended Moore):
+            while(Neigh) //Let's check if the iterator still has any neighboring agent to provide.
             {
-                size_t index2=MyGeom->get_next(Neigh);//Uzyskujemy index sasiada
-                if(index2==MyGeom->FULL || index2==index)   //Jesli poza obszarem symulacji lub w
-                    continue;               //centrum obszaru to dalej byloby bez sensu.
+                size_t index2=MyGeom->get_next(Neigh);
+                if(index2==MyGeom->FULL || index2==index)
+                    continue;
 
-                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val());//Uzyskujemy referencje do sasiada omijajac asercje na NULL
-                if(Agenci.is_empty(PeryfAgent))     //Sprawdzamy czy nie jest to pusta komórka (NULL)
-                    continue;                      // bo wtedy robic dalej byłoby bez sensu.
+                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val()); ///< reference to the neighbor
+                if(Agenci.is_empty(PeryfAgent))
+                    continue;
 
-                zliczanie++;
-                //Dodawanie sil sasiadow do licznikow w tablicach
+                zliczanie++; //This is a real neighbor, not an empty field.
+
+                //Adding neighbor forces to counters in tables:
                 Firsts[PeryfAgent.First]+=PeryfAgent.Power;
                 Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
                 Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
             }
 
-            MyGeom->destroy_iterator(Neigh);    // upewniamy sie ze iterator zostanie usuniety
-            //Zlicza wylosowanych agentow
-            testowanie++;
+            //We make sure that the iterator that is no longer needed will be removed:
+            MyGeom->destroy_iterator(Neigh);
+            testowanie++;   //We count the number of randomly selected agents.
 
-            //Dodawanie wlasnych sil do licznikow w tablicach
+            //Adding your own strength to counters in tables, but only when this option is active.
             if(UseSelf)
             {
                 Firsts[CenterAgent.First]+=CenterAgent.Power;
@@ -950,26 +974,31 @@ void    jworld::_one_step_sequentional_bias()
                 Thirds[CenterAgent.Third]+=CenterAgent.Power;
             }
 
-            //Szukanie maksimow
+            //Searching for influence maxima:
+            //-------------------------------
             int maxF=INT_MIN,indF=-1;
             int maxS=INT_MIN,indS=-1;
             int maxT=INT_MIN,indT=-1;
-            int offset=RANDOM(IleKate);             assert(0<=offset && offset<IleKate);//Jak IleKate==2 to 0 albo 1 itd..
 
-            //Dodawanie  biasu za pomocą procedury z BiasData - jesli stan agenta zgadza się z zadanym to do odpowiedniej tablicy jest dodawany bias
-            //-----------------------------------------------------------------------------------------------------------------------------------------
+            //Multiple influences can be maximum (same value).
+            //Therefore, we must ensure that among them there will be a random selection.
+            int offset=RANDOM(IleKate);             assert(0<=offset && offset<IleKate);
+
+            //Adding bias using the  procedure from `BiasData`.
+            //When the agent's state matches the given one, bias is added to the appropriate array:
+            //-------------------------------------------------------------------------------------
             BiasData->UseBiasForAgent(CenterAgent.First,CenterAgent.Second,CenterAgent.Third,
                                         Firsts,Seconds,Thirds);
 
 
-            //W petli dodawanie szumu i szukanie maksimow
-            //--------------------------------------------------------
+            //In one loop, adding noise and searching for maxima:
+            //---------------------------------------------------
             for(int g=0;g<IleKate;g++)
             {
                 int h=(g+offset)%IleKate;
                 assert(h>=0 && h<IleKate);
 
-                //Dodawanie szumu
+                //Adding noise:
                 if(Noise>0)
                 {
                     if(Firsts[h]>0)
@@ -980,111 +1009,108 @@ void    jworld::_one_step_sequentional_bias()
                         Thirds[h]+=long(DRAND()*Noise*(4.5*MaxSila));
                 }
 
-                //Testowanie
+                //Testing to the max:
                 if(Firsts[h]>maxF)
                 {
-                    maxF=Firsts[h];indF=h;
+                    maxF=Firsts[h]; indF=h;
                 }
                 if(Seconds[h]>maxS)
                 {
-                    maxS=Seconds[h];indS=h;
+                    maxS=Seconds[h]; indS=h;
                 }
                 if(Thirds[h]>maxT)
                 {
-                    maxT=Thirds[h];indT=h;
+                    maxT=Thirds[h]; indT=h;
                 }
             }
 
-            assert(indF!=-1 && indS!=-1 && indT!=-1);
+            assert(indF!=-1 && indS!=-1 && indT!=-1); //And how empty it is around?
 
+            //We change the value in the central agent to the same value in the one that had the maximum.
             if(indF!=-1 && CenterAgent.First!=indF)
-                { CenterAgent.First=indF; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+                { CenterAgent.First=indF; CenterAgent.Age=0;}
             if(indS!=-1 && CenterAgent.Second!=indS)
-                { CenterAgent.Second=indS;CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+                { CenterAgent.Second=indS;CenterAgent.Age=0;}
             if(indT!=-1 && CenterAgent.Third!=indT)
-                { CenterAgent.Third=indT; CenterAgent.Age=0;} //zmieniamy w agencie centralnym
+                { CenterAgent.Third=indT; CenterAgent.Age=0;}
 
-        }//KONIEC ZMIAN STANU
-        //////
+        } //END OF NORMAL STATE CHANGE
 
-        //Sila jako wiek
 STARZENIE:
-        if(jagent::ruchsily)
+        if(jagent::ruchsily) //Strength as age. Incrementation, if this option is activated.
         {
             CenterAgent.Power+=jagent::ruchsily;
-            CenterAgent.Power%=jagent::max_sila;//Nigdy nie przekracza sily maksymalnej
+            CenterAgent.Power%=jagent::max_sila; //Never exceeds maximum force. This is where a "new", weak agent (child) is created.
         }
     }
-    // upewniamy sie ze iterator zostanie usuniety
+
+    // We make sure that the main iterator M-C is removed
     MyGeom->destroy_iterator(Monte);
-} //SEQENTIONAL BIAS
+} //SEQENTIONAL BIAS IMPLEMENTATION ENDED HERE.
 
 
-/*
-friend 
-int sort(BiasInfo tab[],size_t N)
-{
-for(int i=0;i<N;i++)
-for(int j=0;j<N-1;j++)
-{
-
-  if( tab[j].Warstwa!=BIAS_FOR_ANY && 
-  tab[j+1].Warstwa!=BIAS_FOR_ANY && 
-  tab[j].Warstwa==tab[j+1].Warstwa )
-  {
-  cerr<<tab[j]<<" & "<<tab[j+1]<<" concern the same layer"<<endl;
-  return -11;//Invalid definition
-  }
-  else
-  if(tab[j].Warstwa>tab[j+1].Warstwa)
-  {
-  BiasInfo pom=tab[j];
-  tab[j]=tab[j+1];
-  tab[j+1]=pom;
-  }
-  else
-  {
-  //Nothing to do ????
-  }
-  }
-        return 0;
-        }
-
-          friend
-          int MakeOrder(wb_dynarray<BiasInfo> tab)
-          {
-          wb_dynarray<BiasInfo> old=tab;//Przemieszcza wektor
-          tab.alloc(old.get_size());    //Alokuje i wypelnia za pomoca konstruktora
-          //Poszukiwanie wspolrzednych i sprawdzenie czy najwyzej po jednej na kazda warstwe!!!
-          //------------------------------------------------------------------------------------
-          for(int i=0;i<tab.get_size();i++)
-          {
-          ???///...
-          }
-          return 0;
-          }
-
-            friend
-            ostream& PrintConditionalBias(ostream& o,wb_dynarray<BiasInfo> tab)
-            {
-            o<<tab[0];
-            for(int i=1;i<tab.get_size();i++)
-            if(tab[i].Warstwa!=BIAS_FOR_ANY)
-            {
-            o<<" "<<tab[i];
-            }
-
-              return o;
-              }
-
-                */
-
+// //friend
+// int sort(BiasInfo tab[], size_t N)
+// {
+//     for (int i = 0; i < N; i++)
+//         for (int j = 0; j < N - 1; j++)
+//         {
+//             if (tab[j].Warstwa != BIAS_FOR_ANY &&
+//                 tab[j + 1].Warstwa != BIAS_FOR_ANY &&
+//                 tab[j].Warstwa == tab[j + 1].Warstwa)
+//             {
+//                 cerr << tab[j] << " & " << tab[j + 1] << " concern the same layer" << endl;
+//                 return -11; //Invalid definition
+//             }
+//             else if (tab[j].Warstwa > tab[j + 1].Warstwa)
+//             {
+//                 BiasInfo pom = tab[j];
+//                 tab[j] = tab[j + 1];
+//                 tab[j + 1] = pom;
+//             }
+//             else
+//             {
+//                 //Nothing to do ????
+//             }
+//         }
+//     return 0;
+// }
+//
+// //friend
+// int MakeOrder(wb_dynarray<BiasInfo> tab)
+// {
+//     wb_dynarray<BiasInfo> old = tab; //Moves the entire vector.
+//     tab.alloc(old.get_size()); //Allocates and fills using the constructor.
+//
+//     //Search for coordinates and check if there is at most one for each layer!!!
+//     //------------------------------------------------------------------------------------
+//     for (int i = 0; i < tab.get_size(); i++)
+//     {
+//         // ?
+//         // ?
+//         // ? ///...
+//     }
+//     return 0;
+// }
+//
+// //friend
+// ostream& PrintConditionalBias(ostream& o, wb_dynarray<BiasInfo> tab)
+// {
+//     o << tab[0];
+//     for (int i = 1; i < tab.get_size(); i++)
+//         if (tab[i].Warstwa != BIAS_FOR_ANY)
+//         {
+//             o << " " << tab[i];
+//         }
+//
+//     return o;
+// }
 
 /* **************************************************************** */
-/*           THIS CODE IS DESIGNED & COPYRIGHT  BY:                 */
+/*           THIS CODE IS DESIGNED & COPYRIGHT BY:                  */
 /*            W O J C I E C H   B O R K O W S K I                   */
-/* Zaklad Systematyki i Geografii Roslin Uniwersytetu Warszawskiego */
-/*  & Instytut Studiow Spolecznych Uniwersytetu Warszawskiego       */
+/* Zakład Systematyki i Geografii Roślin Uniwersytetu Warszawskiego */
+/*  & Instytut Studiów Społecznych Uniwersytetu Warszawskiego       */
 /*        WWW:  http://moderato.iss.uw.edu.pl/~borkowsk             */
 /*        MAIL: borkowsk@iss.uw.edu.pl                              */
 /*                               (Don't change or remove this note) */

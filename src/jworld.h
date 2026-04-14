@@ -99,6 +99,7 @@ private:
     void	_one_step_simple_bias();			//!< Single step implementation with simple bias.
     void	_one_step_conditional_bias();		//!< Single step implementation with conditional bias.
     void	_one_step_sequentional_bias();		//!< Single step implementation with sequential bias.
+    void	_one_step_conditional_bias1();		//!< Alternative (more complete) implementation with conditional bias.
 
     // Simulation statistics directly calculated in the step:
     // //////////////////////////////////////////////////////
@@ -209,8 +210,10 @@ public:
         cout<<"SW: "<<bufor1<<'/'<<bufor2<<endl;
     }
 
-    /// Setting bias parameters from a text. The ":&?" characters define the `BiasInfo` object type and simulation mode.
-    void set_bias_from_str(const char* pom);
+    /// Setting bias parameters from a text.
+    /// The ":&?" characters define the `BiasInfo` object type and simulation mode.
+    /// @param lst defines bias. If the list is empty, just clear whole bias definition.
+    void set_bias_from_str(const char* lst);
 
 protected:
     // Auxiliary methods for setting bias:
@@ -327,7 +330,7 @@ public:
 
             int set(int Index,int Wartosc,float Premia); ///< Records target and bonus amount.
 
-            int much(int FirstVal,int SecondVal,int ThirdVal) ///< ???
+            int much(int FirstVal,int SecondVal,int ThirdVal) const ///< Checking the fulfillment of the conditional bias (???)
             {
                 return (leyer[0]==BIAS_FOR_ANY || leyer[0]==FirstVal) &&
                        (leyer[1]==BIAS_FOR_ANY || leyer[1]==SecondVal) &&

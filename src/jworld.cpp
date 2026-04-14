@@ -1126,6 +1126,22 @@ void jworld::dump_net_file(const char* core_name,unsigned long Step)
     Out.close();
 }
 
+void    jworld::_update_age()
+{
+    const geometry_base* MyGeom=Agenci.get_geometry();
+    iteratorh Iter=MyGeom->make_global_iterator();
+    while(Iter)
+    {
+        size_t index=MyGeom->get_next(Iter);	//We obtain the agent's index.
+        assert(index!=MyGeom->FULL); //It shouldn't happen here, but...
+        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());	//We obtain references to the agent by bypassing NULL assertion.
+        if(Agenci.is_empty(CenterAgent))    //We check whether it is not an empty cell (NULL)
+            continue;                   //Because then doing anything further would be pointless.
+
+        CenterAgent.Age++;
+    }
+}
+
 // Static fields require a separate definition in some cpp file. But why did I omit initialization?
 jworld* jworld::_far_link::MyWorld; //=NULL;
 
