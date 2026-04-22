@@ -1,7 +1,7 @@
 /// @file
 /// @brief ... (LANGUAGES PROJECT WITH P.Culicover)
 //  ===============================================
-/// @date 2026-04-14 (modified)
+/// @date 2026-04-22 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
 //#include <assert.h>
@@ -152,13 +152,13 @@ struct BiasInfo
             }
             else
             {
-                cerr<<"Second definition for layer "<<char('A'+Index)<<". ";
+                cerr<<"Second definition for layer "<<asserted<char>('A' + Index)<<". ";
                 return -11;
             }
         }
         else
         {
-            cerr<<"Invalid layer "<<char('A'+Index)<<". ";
+            cerr<<"Invalid layer "<<asserted<char>('A' + Index)<<". ";
             return -11;
         }
     }
@@ -362,13 +362,13 @@ int jworld::_sequentional_bias_information::IfBias::reg(int Index,int Wartosc)
         }       
         else
         {
-            cerr<<"Second definition for layer "<<char('A'+Index)<<". ";
+            cerr<<"Second definition for layer "<<asserted<char>('A'+Index)<<". ";
             return -11;
         }
     }
     else
     {
-        cerr<<"Invalid layer "<<char('A'+Index)<<". ";
+        cerr<<"Invalid layer "<<asserted<char>('A'+Index)<<". ";
         return -11;
     }
 }
@@ -387,13 +387,13 @@ int jworld::_sequentional_bias_information::IfBias::set(int Index,int Wartosc,fl
         }
         else
         {
-            cerr<<"Second definition for target layer "<<char('A'+Index)<<". ";
+            cerr<<"Second definition for target layer "<<asserted<char>('A'+Index)<<". ";
             return -11;
         }
     }
     else
     {
-        cerr<<"Invalid target layer "<<char('A'+Index)<<". ";
+        cerr<<"Invalid target layer "<<asserted<char>('A'+Index)<<". ";
         return -11;
     }
     
@@ -422,7 +422,7 @@ ostream& operator << (ostream& o,const jworld::_sequentional_bias_information::I
     }
     if(bylo)
         o<<'?';
-    o<<char('A'+b.whatley)<<b.lstate+1<<':'<<b.value;
+    o<<asserted<char>('A'+b.whatley)<<b.lstate+1<<':'<<b.value;
     return o;
 }   
 
@@ -642,7 +642,8 @@ void    jworld::_one_step_no_bias()
 
             //Multiple influences can be maximum (same value).
             //Therefore, we must ensure that among them there will be a random selection.
-            const int offset=RANDOM(IleKate);					//If `IleKate==2` it comes out 0 or 1 etc...
+            //Sometimes RANDOM returns IleKate instead of IleKate-1.
+            const int offset=RANDOM(IleKate)%IleKate;			//If `IleKate==2` it comes out 0 or 1 etc...
                                                                 assert(0<=offset);
                                                                 assert(offset<IleKate);
 
@@ -655,11 +656,11 @@ void    jworld::_one_step_no_bias()
 
                 //Now it's time to add noise:
                 if(Firsts[h]>0)
-                    Firsts[h]+=long(DRAND()*Noise*(4.5*MaxSila));
+                    Firsts[h]+=asserted<int>(DRAND()*Noise*(4.5*MaxSila));
                 if(Seconds[h]>0)
-                    Seconds[h]+=long(DRAND()*Noise*(4.5*MaxSila));
+                    Seconds[h]+=asserted<int>(DRAND()*Noise*(4.5*MaxSila));
                 if(Thirds[h]>0)
-                    Thirds[h]+=long(DRAND()*Noise*(4.5*MaxSila));
+                    Thirds[h]+=asserted<int>(DRAND()*Noise*(4.5*MaxSila));
                 
                 //Testing if we have any new high values.
                 if(Firsts[h]>maxF)
@@ -810,11 +811,11 @@ void    jworld::_one_step_simple_bias()
 
                 //Now it's time to add noise AND BIAS:
                 if(Firsts[h]>0)
-                    Firsts[h]+=long(DRAND()*Noise*(4.5*MaxSila))+BiasData->UncdBias[0][h];
+                    Firsts[h]+=asserted<int>(DRAND()*Noise*(4.5*MaxSila))+BiasData->UncdBias[0][h];
                 if(Seconds[h]>0)
-                    Seconds[h]+=long(DRAND()*Noise*(4.5*MaxSila))+BiasData->UncdBias[1][h];
+                    Seconds[h]+=asserted<int>(DRAND()*Noise*(4.5*MaxSila))+BiasData->UncdBias[1][h];
                 if(Thirds[h]>0)
-                    Thirds[h]+=long(DRAND()*Noise*(4.5*MaxSila))+BiasData->UncdBias[2][h];
+                    Thirds[h]+=asserted<int>(DRAND()*Noise*(4.5*MaxSila))+BiasData->UncdBias[2][h];
 
                 //Testing if we have any new high values.
                 if(Firsts[h]>maxF)
@@ -882,9 +883,9 @@ void    jworld::_one_step_sequentional_bias()
     const geometry_base* MyGeom=Agenci.get_geometry();                                          assert(MyGeom!=NULL);
 
     //AUXILIARY BOARDS OF COUNTERS:
-    wb_dynarray<int> Firsts(IleKate);
-    wb_dynarray<int> Seconds(IleKate);
-    wb_dynarray<int> Thirds(IleKate);               assert(MyGeom && Firsts.IsOK() && Seconds.IsOK() && Thirds.IsOK());
+    wb_dynarray<int> CFirst(IleKate); //!< Counters for firsts opinions.
+    wb_dynarray<int> CSecond(IleKate);
+    wb_dynarray<int> CThird(IleKate);               assert(MyGeom && CFirst.IsOK() && CSecond.IsOK() && CThird.IsOK());
 
     //OTHER AUXILIARY VARIABLES:
     int testowanie=0; ///< counter.
@@ -917,9 +918,9 @@ void    jworld::_one_step_sequentional_bias()
             unsigned zliczanie=0; ///< To count real neighbors.
 
             // Cleaning the counter arrays:
-            fill(Firsts,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*IleKate);
-            fill(Seconds,0);//memset(Seconds.get_ptr_val(),0,sizeof(int)*IleKate);
-            fill(Thirds,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*IleKate);
+            fill(CFirst,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*IleKate);
+            fill(CSecond,0);//memset(Seconds.get_ptr_val(),0,sizeof(int)*IleKate);
+            fill(CThird,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*IleKate);
 
             if(use_SW_links)
             { //RECORDING INFLUENCE FROM THE PROTECTOR ON A FAR LINK:
@@ -957,9 +958,9 @@ void    jworld::_one_step_sequentional_bias()
                 zliczanie++; //This is a real neighbor, not an empty field.
 
                 //Adding neighbor forces to counters in tables:
-                Firsts[PeryfAgent.First]+=PeryfAgent.Power;
-                Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
-                Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
+                CFirst[PeryfAgent.First]+=PeryfAgent.Power;
+                CSecond[PeryfAgent.Second]+=PeryfAgent.Power;
+                CThird[PeryfAgent.Third]+=PeryfAgent.Power;
             }
 
             //We make sure that the iterator that is no longer needed will be removed:
@@ -969,9 +970,9 @@ void    jworld::_one_step_sequentional_bias()
             //Adding your own strength to counters in tables, but only when this option is active.
             if(UseSelf)
             {
-                Firsts[CenterAgent.First]+=CenterAgent.Power;
-                Seconds[CenterAgent.Second]+=CenterAgent.Power;
-                Thirds[CenterAgent.Third]+=CenterAgent.Power;
+                CFirst[CenterAgent.First]+=CenterAgent.Power;
+                CSecond[CenterAgent.Second]+=CenterAgent.Power;
+                CThird[CenterAgent.Third]+=CenterAgent.Power;
             }
 
             //Searching for influence maxima:
@@ -988,51 +989,50 @@ void    jworld::_one_step_sequentional_bias()
             //When the agent's state matches the given one, bias is added to the appropriate array:
             //-------------------------------------------------------------------------------------
             BiasData->UseBiasForAgent(CenterAgent.First,CenterAgent.Second,CenterAgent.Third,
-                                        Firsts,Seconds,Thirds);
+                                        CFirst,CSecond,CThird);
 
 
             //In one loop, adding noise and searching for maxima:
             //---------------------------------------------------
             for(int g=0;g<IleKate;g++)
             {
-                int h=(g+offset)%IleKate;
-                assert(h>=0 && h<IleKate);
+                int h=(g+offset)%IleKate;                     assert(h>=0 && h<IleKate);
 
                 //Adding noise:
                 if(Noise>0)
                 {
-                    if(Firsts[h]>0)
-                        Firsts[h]+=long(DRAND()*Noise*(4.5*MaxSila));
-                    if(Seconds[h]>0)
-                        Seconds[h]+=long(DRAND()*Noise*(4.5*MaxSila));
-                    if(Thirds[h]>0)
-                        Thirds[h]+=long(DRAND()*Noise*(4.5*MaxSila));
+                    if(CFirst[h]>0)
+                        CFirst[h]+=asserted<int>(DRAND() * Noise * (4.5 * MaxSila));
+                    if(CSecond[h]>0)
+                        CSecond[h]+=asserted<int>(DRAND() * Noise * (4.5 * MaxSila));
+                    if(CThird[h]>0)
+                        CThird[h]+=asserted<int>(DRAND() * Noise * (4.5 * MaxSila));
                 }
 
                 //Testing to the max:
-                if(Firsts[h]>maxF)
+                if(CFirst[h]>maxF)
                 {
-                    maxF=Firsts[h]; indF=h;
+                    maxF=CFirst[h]; indF=h;
                 }
-                if(Seconds[h]>maxS)
+                if(CSecond[h]>maxS)
                 {
-                    maxS=Seconds[h]; indS=h;
+                    maxS=CSecond[h]; indS=h;
                 }
-                if(Thirds[h]>maxT)
+                if(CThird[h]>maxT)
                 {
-                    maxT=Thirds[h]; indT=h;
+                    maxT=CThird[h]; indT=h;
                 }
             }
 
-            assert(indF!=-1 && indS!=-1 && indT!=-1); //And how empty it is around?
+            //assert(indF!=-1 && indS!=-1 && indT!=-1); //And how empty it is around?
 
             //We change the value in the central agent to the same value in the one that had the maximum.
             if(indF!=-1 && CenterAgent.First!=indF)
-                { CenterAgent.First=indF; CenterAgent.Age=0;}
+                { CenterAgent.First=asserted<short>(indF); CenterAgent.Age=0;}
             if(indS!=-1 && CenterAgent.Second!=indS)
-                { CenterAgent.Second=indS;CenterAgent.Age=0;}
+                { CenterAgent.Second=asserted<short>(indS);CenterAgent.Age=0;}
             if(indT!=-1 && CenterAgent.Third!=indT)
-                { CenterAgent.Third=indT; CenterAgent.Age=0;}
+                { CenterAgent.Third=asserted<short>(indT); CenterAgent.Age=0;}
 
         } //END OF NORMAL STATE CHANGE
 

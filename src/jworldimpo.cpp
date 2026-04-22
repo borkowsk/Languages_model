@@ -1,7 +1,7 @@
 /// @file
 /// @brief Virtual output method implementation of the jworld class. (LANGUAGES PROJECT WITH P.Culicover)
 //  =====================================================================================================
-/// @date 2026-04-14 (modified)
+/// @date 2026-04-22 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Its is rather simply implementation. You can replace it if you need.
 // /////////////////////////////////////////////////////////////////////
@@ -10,7 +10,7 @@
 
 int jworld::implement_output(ostream& o) const
 {
-    int ret=world::implement_output(o);
+    const int ret=world::implement_output(o);
     if(ret!=1) return ret;
     o<<separator;
     o<<MyWidth<<separator;

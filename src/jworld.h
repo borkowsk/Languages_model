@@ -1,7 +1,7 @@
 /// @file
 /// @brief DECLARATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
 //  =======================================================================================
-/// @date 2026-04-14 (modified)
+/// @date 2026-04-22 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include <climits> //SHRT_MAX
@@ -113,7 +113,7 @@ private:
     // Single-valued parameters/attributes of the world:
     // /////////////////////////////////////////////////
 
-    size_t				MyWidth;	//!< Circumference of a torus.
+    unsigned			MyWidth;	//!< Circumference of a torus.
     short				MaxSila;	//!< Maximum agent power/strength.
     short				MinSila;	//!< Minimum agent strength.
     short				TrsSila;	//!< Threshold of strength above which there is no change.
@@ -204,8 +204,8 @@ public:
                 << "\nNoise %=" << sep << Noise * 100 << sep << " Spontanic %=" << sep << spontanic
                 << "\nSelf=" << sep << UseSelf
                 << "\nNeighborhood=" << sep << IleSasiad << "/(" << (1 + 2 * OdlSasiad) << "*" << (1 + 2 * OdlSasiad) << ")"
-                << "\nSmall World:" << sep << (!use_SW_links ? "NO" : ltoa(SW_reconect_percent, bufor1, 10))
-                << sep << (!use_SW_links ? "NO" : ltoa(SW_startconnect_percent, bufor2, 10))
+                << "\nSmall World:" << sep << (!use_SW_links ? "NO" : dtoa(SW_reconect_percent, bufor1))
+                << sep << (!use_SW_links ? "NO" : dtoa(SW_startconnect_percent, bufor2))
                 <<endl;
         cout<<"SW: "<<bufor1<<'/'<<bufor2<<endl;
     }

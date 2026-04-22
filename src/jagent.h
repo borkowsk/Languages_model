@@ -1,10 +1,11 @@
 /// @file
 /// @brief DECLARATION OF A G E N T FOR "LANGUAGES" SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
 //  ================================================================================================
-/// @date 2026-04-14 (modified)
+/// @date 2026-04-22 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "layer.hpp"
+#include "asserted.h"
 
 /// Language Evolution Simulation Agent.
 class jagent:public agent_base
@@ -72,9 +73,9 @@ public:
 
     void assign123(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading three attributes from one RGB pixel.
     {
-        First=Red>>kate_shift;
-        Second=Green>>kate_shift;
-        Third=Blue>>kate_shift;
+        First=asserted<short>(Red>>kate_shift);
+        Second=asserted<short>(Green>>kate_shift);
+        Third=asserted<short>(Blue>>kate_shift);
     }
 
     void assign1(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading the first attribute from one RGB/gray pixel.
@@ -103,6 +104,7 @@ public:
             _clean();
     }
 
+    // ReSharper disable once CppMemberFunctionMayBeConst
     long Classif() 	//!< Converting agent attributes to language classification number. NOLINT(*-make-member-function-const)
     {
         return First+ile_kate*(Second+ile_kate*Third);

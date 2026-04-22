@@ -1,7 +1,7 @@
 /// @file
 /// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover.
 //  ==============================================================
-/// @date 2026-04-14 (modified)
+/// @date 2026-04-22 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///  THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,8 +98,8 @@ using namespace std;
 #include "jworld.h"
 #include "lang_res.h"
 
-unsigned	SWIDTH=1440*0.6666;		///< Screen/window inside width. (720 or 1440);
-unsigned	SHEIGHT=1080*0.6666;	///< Screen/window inside height. (540 or 1080);
+unsigned	SWIDTH=asserted<unsigned>(1440*0.6666);		///< Screen/window inside width. (720 or 1440);
+unsigned	SHEIGHT=asserted<unsigned>(1080*0.6666);	///< Screen/window inside height. (540 or 1080);
 bool		Console=false;			///< Flag for working in console mode - no graphics.
 
 //No Object-wise passed to the source initialization method:
@@ -125,7 +125,7 @@ int		RuchomaSila=0;					///< Determines whether strength should increase "with a
 int		MaksymalnaSila=10000;			///< Determines what the agent's greatest strength can be.
 int		MinimalnaSila=10;				///< Determines what the minimum force can be.
                                         ///< If the min and max are the same, then the value is the same everywhere.
-int		TresProcent=10000;				///< Above what certain strength, changes in "attributes" become impossible.
+int		TresProcent=101;				///< Above what certain strength, changes in "attributes" become impossible.
 
 int		IloscKlas=128;		///<
 double	ProcentSzumu=0;		///<
@@ -331,9 +331,9 @@ int parse_options(const int argc,const char* argv[])
        if(pom3)
        {
        *(pom3)='\0';
-       SW_start_perc=atol(pom3+1);
+       SW_start_perc=asserted<double>(atol(pom3+1));
        }
-       SW_step_perc=atol(pom2.get());
+       SW_step_perc=asserted<double>(atol(pom2.get()));
        cerr<<"* SW links will be used. "<<SW_start_perc<<"% at start, and "
             <<SW_step_perc<<"% at every step"<<endl;
        SW_links=true;
@@ -347,15 +347,15 @@ int parse_options(const int argc,const char* argv[])
     else
     if((pom=strstr(rob,"TRSP="))!=NULL) //If not NULL then exists
     {
-    TresProcent=atol(pom+5);
+    TresProcent=asserted<int>(atol(pom+5));
     if(TresProcent<0 || TresProcent>100)
         {
-        cerr<<"!!! Bad TRSP = "<<int(TresProcent)<<"(must be in <0,100>"<<endl;
+        cerr<<"!!! Bad TRSP = "<<asserted<long>(TresProcent)<<"(must be in <0,100>"<<endl;
         return 0;
         }
         else
         {
-        cerr<<"* Immunisation strength threshold : TRSP= "<<int(TresProcent)<<"%"<<endl;
+        cerr<<"* Immunisation strength threshold : TRSP= "<<asserted<long>(TresProcent)<<"%"<<endl;
         if(RuchomaSila==0)	//There is no point in TRSP if there is no mobile force
             {
             RuchomaSila=1;
@@ -430,7 +430,7 @@ int parse_options(const int argc,const char* argv[])
     else
     if((pom=strstr(rob,"SRND="))!=NULL)  //If not NULL then exists
     {
-    My_Rand_seed=atol(pom+5);
+    My_Rand_seed=asserted<int>(atol(pom+5));
     if(My_Rand_seed<=0)
         {
         cerr<<"!!! Bad SRND (rand seed). Must be >=0, but 0 means time()"<<endl;
@@ -457,7 +457,7 @@ int parse_options(const int argc,const char* argv[])
     else
     if((pom=strstr(rob,"INDI="))!=NULL)  //If not NULL then exists
     {
-    RozmiarSasiedztwa=atol(pom+5);
+    RozmiarSasiedztwa=asserted<int>(atol(pom+5));
     if( RozmiarSasiedztwa>=1U &&
         RozmiarSasiedztwa<(iWidth/2-1))
         {
@@ -472,7 +472,7 @@ int parse_options(const int argc,const char* argv[])
     else
     if((pom=strstr(rob,"PRTR="))!=NULL)  //If not NULL then exists
     {
-    IleSasiadow=atol(pom+5);
+    IleSasiadow=asserted<int>(atol(pom+5));
     if(IleSasiadow>1 && IleSasiadow<=sqr(RozmiarSasiedztwa*2+1)-1)
         {
         cerr<<"* How many real neighbors: PRTR="<<IleSasiadow<<endl;
@@ -487,7 +487,7 @@ int parse_options(const int argc,const char* argv[])
     else
     if((pom=strstr(rob,"AUTO="))!=NULL)  //If not NULL then exists
     {
-    AUTOSTART=atol(pom+5);
+    AUTOSTART=asserted<int>(atol(pom+5));
     cerr<<"* AUTO="<<AUTOSTART<<endl;
     if(AUTOSTART)
         {
@@ -730,9 +730,9 @@ public:
     /// Constructor providing a manager with a specified list size.
     /// @warning: Calling more than one constructor will abort the process!!!
     my_area_menager(size_t size, ///< length of the list of possible areas.
-                int width,int height,
+                long int width,long int height,
                 unsigned ibkg=default_half_gray
-                ):main_area_menager(size,width,height,ibkg)
+                ):main_area_menager(size,asserted<int>(width),asserted<int>(height),ibkg)
                 {TheWorld=0;}
 
     // /// Constructor with a partially filled list (UNUSED!).
@@ -782,16 +782,16 @@ int main(const int argc,const char* argv[])
                                MapLName,
                                MapPName,
                                MaskName,
-                               DistributionLevel,
+                               asserted<short>(DistributionLevel),
                                ProcentSzumu/100.0,	//Noise from 0 to 1
-                               MaksymalnaSila,	//We want it to be within range
-                               MinimalnaSila,
-                               IloscKlas,
-                               RozmiarSasiedztwa,
-                               IleSasiadow,
-                               BranieSiebie,
-                               RuchomaSila,
-                               (MaksymalnaSila*TresProcent)/100.0,
+                               asserted<short>(MaksymalnaSila),	//We want it to be within range
+                               asserted<short>(MinimalnaSila),
+                               asserted<short>(IloscKlas),
+                               asserted<short>(RozmiarSasiedztwa),
+                               asserted<short>(IleSasiadow),
+                               asserted<short>(BranieSiebie),
+                               asserted<short>(RuchomaSila),
+                               asserted<short>((MaksymalnaSila*TresProcent)/100.0),
                                 MutacjeSpon,
                                 SW_links,
                                 SW_start_perc,

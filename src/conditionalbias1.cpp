@@ -2,7 +2,7 @@
 /// @brief ... (LANGUAGES PROJECT WITH P.Culicover)
 //  ===============================================
 /// Split from "jbias.cpp" by borkowsk on 14.04.2026.
-/// @date 2026-04-14 (created)
+/// @date 2026-04-22 (created)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
 //#include <assert.h>
@@ -13,15 +13,16 @@
 #include <strstream>
 
 //#include "compatyb.h"
-#include "histosou.hpp"
+//#include "compatyb.hpp"
+//#include "histosou.hpp"
 //#include "clstsour.hpp"
 #include "coincsou.hpp"
-//#include "compatyb.hpp"
 #include "gadgets.hpp"
 #include "wb_ptrio.h"
 
 #include "jrand.h"
 #include "jworld.h"
+#include "asserted.h"
 
 // ...
 void    jworld::_one_step_conditional_bias1()
@@ -144,7 +145,7 @@ void    jworld::_one_step_conditional_bias1()
                 {
                     double Rnd=DRAND();
                     if(Rnd>0)
-                    ((int*)Wplywy)[i]+=long(Rnd*Noise*(4.5*MaxSila));
+                    ((int*)Wplywy)[i]+=asserted<long>(Rnd*Noise*(4.5*MaxSila)); // NOLINT(*-narrowing-conversions)
                 }
                 ((int*)Wplywy)[i]+=((float*)BiasData->Biases)[i]; //cast!!! - trick to avoid triple nested loop
             }
@@ -211,11 +212,11 @@ void    jworld::_one_step_conditional_bias1()
                                                       //And like a lonely agent with no neighbors.
             //We change in the central agent:
             if(CenterAgent.First!=indF)
-                { CenterAgent.First=indF; CenterAgent.Age=0;}
+                { CenterAgent.First=asserted<short>(indF); CenterAgent.Age=0;}
             if(CenterAgent.Second!=indS)
-                { CenterAgent.Second=indS;CenterAgent.Age=0;}
+                { CenterAgent.Second=asserted<short>(indS);CenterAgent.Age=0;}
             if(CenterAgent.Third!=indT)
-                { CenterAgent.Third=indT; CenterAgent.Age=0;}
+                { CenterAgent.Third=asserted<short>(indT); CenterAgent.Age=0;}
 
             //cout<<FillStat[0]<<'='<<FillStat[1]<<'+'<<FillStat[2]<<'+'<<FillStat[3]<<flush<<endl; //Print out the loop recurrence statistics
         }
@@ -223,8 +224,7 @@ void    jworld::_one_step_conditional_bias1()
 STARZENIE:
         if(jagent::ruchsily) //Strength as age
         {
-            CenterAgent.Power+=jagent::ruchsily;
-            CenterAgent.Power%=jagent::max_sila; //Never exceeds maximum force
+            CenterAgent.Power=asserted<short>((CenterAgent.Power+jagent::ruchsily)%jagent::max_sila); //Never exceeds maximum force
         }
     }
 

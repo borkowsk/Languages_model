@@ -2,7 +2,7 @@
 /// @brief ... (LANGUAGES PROJECT WITH P.Culicover)
 //  ===============================================
 /// Created long time ago.
-/// @date 2026-04-14 (modified)
+/// @date 2026-04-22 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
 //#include <assert.h>
@@ -10,13 +10,13 @@
 //#include <math.h>
 #include <cstring>
 #include <cmath>
-#include <strstream>
+//#include <strstream>
 
-#include "compatyb.h"
+//#include "compatyb.h"
 #include "histosou.hpp"
-#include "clstsour.hpp" //Jest tez statsour
+//#include "clstsour.hpp" //Jest tez statsour
 #include "coincsou.hpp"
-#include "compatyb.hpp"
+//#include "compatyb.hpp"
 #include "gadgets.hpp"
 #include "wb_ptrio.h"
 
@@ -169,9 +169,9 @@ void	jworld::_one_step_conditional_bias()
 
                                                     assert(indF!=-1 && indS!=-1 && indT!=-1);//Po wyjsciu z petli wszystkie musza juz byc ustawione
 
-            CenterAgent.First=indF;			//zmieniamy w agencie centralnym
-            CenterAgent.Second=indS;		//zmieniamy w agencie centralnym
-            CenterAgent.Third=indT;			//zmieniamy w agencie centralnym
+            CenterAgent.First=asserted<short>(indF);		//zmieniamy w agencie centralnym
+            CenterAgent.Second=asserted<short>(indS);		//zmieniamy w agencie centralnym
+            CenterAgent.Third=asserted<short>(indT);		//zmieniamy w agencie centralnym
 
             //cout<<FillStat[0]<<'='<<FillStat[1]<<'+'<<FillStat[2]<<'+'<<FillStat[3]<<flush<<endl; //Print out the loop recurrence statistics
         }//END OF STATE CHANGES
@@ -179,8 +179,8 @@ void	jworld::_one_step_conditional_bias()
 STARZENIE:
         if(jagent::ruchsily) //Strength as age
         {
-            CenterAgent.Power+=jagent::ruchsily;
-            CenterAgent.Power%=jagent::max_sila; //Never exceeds maximum force
+            CenterAgent.Power=asserted<short>((static_cast<int>(CenterAgent.Power)
+                             +jagent::ruchsily)%jagent::max_sila); //Never exceeds maximum force
         }
     }
 

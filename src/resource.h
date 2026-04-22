@@ -2,6 +2,10 @@
 // Microsoft Developer Studio generated include file.
 // Used by languages.rc
 //
+/// @file
+/// @brief Menu messages (LANGUAGES PROJECT WITH P.Culicover)
+//  =========================================================
+/// @date 2026-04-22 (modified)
 #define IDS_APPNAME                     1
 #define IDS_DESCRIPTION                 2
 #define IDI_APPICON                     101

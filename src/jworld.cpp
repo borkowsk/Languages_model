@@ -2,7 +2,7 @@
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
 //  ============================================================================================
-/// @date 2026-04-10 (modified)
+/// @date 2026-04-22 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-use-nullptr"
@@ -986,7 +986,7 @@ void    jworld::_connect_far_links(double Percent)
         if(Agenci.filled(a,b)) //Note! Only for a non-empty cell!
         {
             const jagent& on=Agenci.get(a,b);
-            double r=on.Power/double(jagent::max_sila)*MyWidth/2; ///< Distance to random target.
+            double r=on.Power/asserted<double>(jagent::max_sila*MyWidth/2); ///< Distance to random target.
 //			r=OdlSasiad+r*DRAND(); // Usually radius is draw within a radius, but not less than `OdlSasiad`.
             r=OdlSasiad+r*DRAND()*DRAND()*DRAND(); // Randomisation of radius, which is now draw condensed, closer to the agent.
             double Angle=DRAND()*2*M_PI; ///< Drawing the angle is rather simple (flat distribution).

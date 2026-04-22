@@ -1,9 +1,9 @@
+//{{NO_DEPENDENCIES}}
 /// @file
 /// @brief Menu messages (LANGUAGES PROJECT WITH P.Culicover)
 //  =========================================================
-/// @date 2026-04-09 (modified)
+/// @date 2026-04-22 (modified)
 //
-//{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.
 // Used by languages.rc
 //
