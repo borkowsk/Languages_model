@@ -1,10 +1,9 @@
 /// @file
 /// @brief Virtual Input method implementation of the jworld class. (LANGUAGES PROJECT WITH P.Culicover)
-//  ====================================================================================================
-/// @date 2026-04-22 (modified)
+/// @date 2026-04-30 (modified)
+///
+///     Its is rather simply implementation. You can replace it if you need.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Its is rather simply implementation. You can replace it if you need.
-// ////////////////////////////////////////////////////////////////////
 #include "jrand.h"
 #include "jworld.h"
 
@@ -13,11 +12,11 @@ int jworld::implement_input(istream& i)
     int ret=world::implement_input(i);
     if(ret!=1) return ret;
     i>>MyWidth;
-    i>>MaxSila;
-    i>>MinSila;
-    i>>IleKate;
-    i>>IleSasiad;
-    i>>OdlSasiad;
+    i >> MaxStrength;
+    i >> MinStrength;
+    i >> NumOfCate;
+    i >> NeighDens;
+    i >> NeighRadius;
     i>>UseSelf;
     i>>Noise;
     rectangle_geometry* Geom=(rectangle_geometry*)Agenci.get_geometry();                         assert(Geom!=NULL);

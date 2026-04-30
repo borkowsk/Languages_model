@@ -1,10 +1,9 @@
 /// @file
 /// @brief Virtual output method implementation of the jworld class. (LANGUAGES PROJECT WITH P.Culicover)
-//  =====================================================================================================
-/// @date 2026-04-22 (modified)
+/// @date 2026-04-30 (modified)
+///
+///     Its is rather simply implementation. You can replace it if you need.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Its is rather simply implementation. You can replace it if you need.
-// /////////////////////////////////////////////////////////////////////
 #include "jrand.h"
 #include "jworld.h"  
 
@@ -14,11 +13,11 @@ int jworld::implement_output(ostream& o) const
     if(ret!=1) return ret;
     o<<separator;
     o<<MyWidth<<separator;
-    o<<MaxSila<<separator;
-    o<<MinSila<<separator;
-    o<<IleKate<<separator;
-    o<<IleSasiad<<separator;
-    o<<OdlSasiad<<separator;
+    o << MaxStrength << separator;
+    o << MinStrength << separator;
+    o << NumOfCate << separator;
+    o << NeighDens << separator;
+    o << NeighRadius << separator;
     o<<UseSelf<<separator;
     o<<Noise<<separator<<endl;
     o<<Agenci<<endl;

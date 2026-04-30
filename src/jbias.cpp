@@ -1,7 +1,6 @@
 /// @file
-/// @brief ... (LANGUAGES PROJECT WITH P.Culicover)
-//  ===============================================
-/// @date 2026-04-22 (modified)
+/// @brief SIMULATION STEP WITH BIAS IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
+/// @date 2026-04-30 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
 //#include <assert.h>
@@ -41,21 +40,21 @@ void jworld::set_bias_from_str(const char* lst)
     {
         cout<<"ASSUMED SEQUENTIAL BIAS\n"<<flush;
         BiasMode= SEQUENTIONAL_BIAS;
-        BiasDefinition=new _sequentional_bias_information(&IleKate);
+        BiasDefinition=new _sequentional_bias_information(&NumOfCate);
     }
     else
     if(strchr(lst,'&')!=NULL)
     {
         cout<<"ASSUMED CONDITIONAL BIAS\n"<<flush;
         BiasMode= CONDITIONAL_BIAS;
-        BiasDefinition=new _conditional_bias_information(&IleKate);
+        BiasDefinition=new _conditional_bias_information(&NumOfCate);
     }
     else
     if(strchr(lst,':')!=NULL)
     {
         cout<<"ASSUMED SIMPLE BIAS\n"<<flush;
         BiasMode= SIMPLE_BIAS;
-        BiasDefinition=new _simple_bias_information(&IleKate);
+        BiasDefinition=new _simple_bias_information(&NumOfCate);
     }
     else
     {
@@ -546,9 +545,9 @@ void    jworld::_one_step_no_bias()
     int testowanie=0;
     const geometry_base* MyGeom=Agenci.get_geometry();
     //AUXILIARY BOARDS:
-    wb_dynarray<int> Firsts(IleKate);
-    wb_dynarray<int> Seconds(IleKate);
-    wb_dynarray<int> Thirds(IleKate);
+    wb_dynarray<int> Firsts(NumOfCate);
+    wb_dynarray<int> Seconds(NumOfCate);
+    wb_dynarray<int> Thirds(NumOfCate);
     assert(MyGeom && Firsts.IsOK() && Seconds.IsOK() && Thirds.IsOK());
     
     //We allocate the Monte-Carlo iterator:
@@ -566,9 +565,9 @@ void    jworld::_one_step_no_bias()
             continue;
         
         if(
-            (CenterAgent.Power>TrsSila)   //Is there no immunity to change anymore?
+                (CenterAgent.Power > TrsStrength)   //Is there no immunity to change anymore?
             ||
-            (jagent::MutationLevel>0 && CenterAgent.try_mutate()) //Or didn't it just mutate spontaneously!
+                (jagent::mutation_level > 0 && CenterAgent.try_mutate()) //Or didn't it just mutate spontaneously!
             )
             goto STARZENIE;             // It has immunity - we do nothing more than age.
         
@@ -576,14 +575,14 @@ void    jworld::_one_step_no_bias()
             // ////////////////////////
 
             /// We allocate the neighborhood iterator...
-            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad);
-            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,OdlSasiad); //A simpler alternative (non random).
+            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,NeighRadius,NeighDens);
+            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,NeighRadius); //A simpler alternative (non random).
             unsigned zliczanie=0;	///< To count real neighbors.
             
             // Cleaning the counter arrays:
-            fill(Firsts,0); //Former: `memset(Firsts.get_ptr_val(),0,sizeof(int)*IleKate);`
-            fill(Seconds,0);	//memset(Seconds.get_ptr_val(),0,sizeof(int)*IleKate);
-            fill(Thirds,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*IleKate);
+            fill(Firsts,0); //Former: `memset(Firsts.get_ptr_val(),0,sizeof(int)*NumOfCate);`
+            fill(Seconds,0);	//memset(Seconds.get_ptr_val(),0,sizeof(int)*NumOfCate);
+            fill(Thirds,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*NumOfCate);
 
             if(use_SW_links)
             { //RECORDING INFLUENCE FROM THE PROTECTOR ON A FAR LINK:
@@ -642,25 +641,25 @@ void    jworld::_one_step_no_bias()
 
             //Multiple influences can be maximum (same value).
             //Therefore, we must ensure that among them there will be a random selection.
-            //Sometimes RANDOM returns IleKate instead of IleKate-1.
-            const int offset=RANDOM(IleKate)%IleKate;			//If `IleKate==2` it comes out 0 or 1 etc...
+            //Sometimes RANDOM returns NumOfCate instead of NumOfCate-1.
+            const int offset= RANDOM(NumOfCate) % NumOfCate;			//If `NumOfCate==2` it comes out 0 or 1 etc...
                                                                 assert(0<=offset);
-                                                                assert(offset<IleKate);
+                                                                assert(offset < NumOfCate);
 
             //In this loop, adding noise and searching for maxima:
             //----------------------------------------------------
-            for(int g=0;g<IleKate;g++)
+            for(int g=0; g < NumOfCate; g++)
             {
                 /// Index with random shift:
-                int h=(g+offset)%IleKate;						assert(h>=0 && h<IleKate);
+                int h= (g+offset) % NumOfCate;						assert(h >= 0 && h < NumOfCate);
 
                 //Now it's time to add noise:
                 if(Firsts[h]>0)
-                    Firsts[h]+=asserted<int>(DRAND()*Noise*(4.5*MaxSila));
+                    Firsts[h]+=asserted<int>(DRAND()*Noise*(4.5 * MaxStrength));
                 if(Seconds[h]>0)
-                    Seconds[h]+=asserted<int>(DRAND()*Noise*(4.5*MaxSila));
+                    Seconds[h]+=asserted<int>(DRAND()*Noise*(4.5 * MaxStrength));
                 if(Thirds[h]>0)
-                    Thirds[h]+=asserted<int>(DRAND()*Noise*(4.5*MaxSila));
+                    Thirds[h]+=asserted<int>(DRAND()*Noise*(4.5 * MaxStrength));
                 
                 //Testing if we have any new high values.
                 if(Firsts[h]>maxF)
@@ -684,10 +683,10 @@ void    jworld::_one_step_no_bias()
         } //END OF NORMAL STATE CHANGE
 
 STARZENIE:
-        if(jagent::ruchsily) //Strength as age. Incrementation, if this option is activated.
+        if(jagent::pow_move) //Strength as age. Incrementation, if this option is activated.
         {
-            CenterAgent.Power+=jagent::ruchsily;
-            CenterAgent.Power%=jagent::max_sila; //Never exceeds maximum force. This is where a "new", weak agent (child) is created.
+            CenterAgent.Power+=jagent::pow_move;
+            CenterAgent.Power%=jagent::max_pow; //Never exceeds maximum force. This is where a "new", weak agent (child) is created.
         }
     }
 
@@ -703,9 +702,9 @@ void    jworld::_one_step_simple_bias()
     const geometry_base* MyGeom=Agenci.get_geometry();                                       assert(MyGeom!=NULL);
 
     //AUXILIARY BOARDS OF COUNTERS:
-    wb_dynarray<int> Firsts(IleKate);
-    wb_dynarray<int> Seconds(IleKate);
-    wb_dynarray<int> Thirds(IleKate);               assert(MyGeom && Firsts.IsOK() && Seconds.IsOK() && Thirds.IsOK());
+    wb_dynarray<int> Firsts(NumOfCate);
+    wb_dynarray<int> Seconds(NumOfCate);
+    wb_dynarray<int> Thirds(NumOfCate);               assert(MyGeom && Firsts.IsOK() && Seconds.IsOK() && Thirds.IsOK());
     
     //OTHER AUXILIARY VARIABLES:
     int testowanie=0; ///< counter.
@@ -723,9 +722,9 @@ void    jworld::_one_step_simple_bias()
             continue;
 
          if(
-            (CenterAgent.Power>TrsSila)   //Is there no immunity to change anymore?
+                 (CenterAgent.Power > TrsStrength)   //Is there no immunity to change anymore?
             ||
-            (jagent::MutationLevel>0 && CenterAgent.try_mutate())
+                 (jagent::mutation_level > 0 && CenterAgent.try_mutate())
             )
             goto STARZENIE; //There is immunity or a fresh mutation - nothing to do.
 
@@ -733,14 +732,14 @@ void    jworld::_one_step_simple_bias()
             // ///////////////////////////
 
             /// Neighborhood iterator (with internal allocation perhaps!).
-            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad);
-            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,OdlSasiad); ///< Non-random neighborhood iterator.
+            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,NeighRadius,NeighDens);
+            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,NeighRadius); ///< Non-random neighborhood iterator.
             unsigned zliczanie=0; ///< To count real neighbors.
 
             // Cleaning the counter arrays:
-            fill(Firsts,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*IleKate);
-            fill(Seconds,0);//memset(Seconds.get_ptr_val(),0,sizeof(int)*IleKate);
-            fill(Thirds,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*IleKate);
+            fill(Firsts,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*NumOfCate);
+            fill(Seconds,0);//memset(Seconds.get_ptr_val(),0,sizeof(int)*NumOfCate);
+            fill(Thirds,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*NumOfCate);
 
             if(use_SW_links)
             { //RECORDING INFLUENCE FROM THE PROTECTOR ON A FAR LINK:
@@ -800,22 +799,22 @@ void    jworld::_one_step_simple_bias()
 
             //Multiple influences can be maximum (same value).
             //Therefore, we must ensure that among them there will be a random selection.
-            int offset=RANDOM(IleKate);             assert(0<=offset && offset<IleKate);
+            int offset=RANDOM(NumOfCate);             assert(0 <= offset && offset < NumOfCate);
 
             //In this loop, adding noise and searching for maxima:
             //----------------------------------------------------
-            for(int g=0;g<IleKate;g++)
+            for(int g=0; g < NumOfCate; g++)
             {
-                int h=(g+offset)%IleKate; ///< Index with random shift:
-                                          assert(h>=0 && h<IleKate);
+                int h= (g+offset) % NumOfCate; ///< Index with random shift:
+                                          assert(h>=0 && h < NumOfCate);
 
                 //Now it's time to add noise AND BIAS:
                 if(Firsts[h]>0)
-                    Firsts[h]+=asserted<int>(DRAND()*Noise*(4.5*MaxSila))+BiasData->UncdBias[0][h];
+                    Firsts[h]+= asserted<int>(DRAND()*Noise*(4.5 * MaxStrength)) + BiasData->UncdBias[0][h];
                 if(Seconds[h]>0)
-                    Seconds[h]+=asserted<int>(DRAND()*Noise*(4.5*MaxSila))+BiasData->UncdBias[1][h];
+                    Seconds[h]+= asserted<int>(DRAND()*Noise*(4.5 * MaxStrength)) + BiasData->UncdBias[1][h];
                 if(Thirds[h]>0)
-                    Thirds[h]+=asserted<int>(DRAND()*Noise*(4.5*MaxSila))+BiasData->UncdBias[2][h];
+                    Thirds[h]+= asserted<int>(DRAND()*Noise*(4.5 * MaxStrength)) + BiasData->UncdBias[2][h];
 
                 //Testing if we have any new high values.
                 if(Firsts[h]>maxF)
@@ -837,10 +836,10 @@ void    jworld::_one_step_simple_bias()
         } //END OF NORMAL STATE CHANGE
 
 STARZENIE:
-        if(jagent::ruchsily) //Strength as age. Incrementation, if this option is activated.
+        if(jagent::pow_move) //Strength as age. Incrementation, if this option is activated.
         {
-            CenterAgent.Power+=jagent::ruchsily;
-            CenterAgent.Power%=jagent::max_sila; //Never exceeds maximum force. This is where a "new", weak agent (child) is created.
+            CenterAgent.Power+=jagent::pow_move;
+            CenterAgent.Power%=jagent::max_pow; //Never exceeds maximum force. This is where a "new", weak agent (child) is created.
         }
     }
 
@@ -876,16 +875,16 @@ void jworld::_sequentional_bias_information::UseBiasForAgent(
 }
 
 
-void    jworld::_one_step_sequentional_bias()
+void    jworld::_one_step_sequentional_bias0()
 {                                                                                               assert(BiasDefinition.OK());
     _sequentional_bias_information* BiasData=dynamic_cast<_sequentional_bias_information*>
                                                             (BiasDefinition.get_ptr_val());     assert(BiasData!=NULL);
     const geometry_base* MyGeom=Agenci.get_geometry();                                          assert(MyGeom!=NULL);
 
     //AUXILIARY BOARDS OF COUNTERS:
-    wb_dynarray<int> CFirst(IleKate); //!< Counters for firsts opinions.
-    wb_dynarray<int> CSecond(IleKate);
-    wb_dynarray<int> CThird(IleKate);               assert(MyGeom && CFirst.IsOK() && CSecond.IsOK() && CThird.IsOK());
+    wb_dynarray<int> CFirst(NumOfCate); //!< Counters for firsts opinions.
+    wb_dynarray<int> CSecond(NumOfCate);
+    wb_dynarray<int> CThird(NumOfCate);               assert(MyGeom && CFirst.IsOK() && CSecond.IsOK() && CThird.IsOK());
 
     //OTHER AUXILIARY VARIABLES:
     int testowanie=0; ///< counter.
@@ -903,9 +902,9 @@ void    jworld::_one_step_sequentional_bias()
             continue;
 
          if(
-            (CenterAgent.Power>TrsSila)    //Is there no immunity to change anymore?
+                 (CenterAgent.Power > TrsStrength)    //Is there no immunity to change anymore?
             ||
-            (jagent::MutationLevel>0 && CenterAgent.try_mutate()) //Or didn't it just mutate spontaneously?
+                 (jagent::mutation_level > 0 && CenterAgent.try_mutate()) //Or didn't it just mutate spontaneously?
             )
             goto STARZENIE;   //There is immunity or a fresh mutation - nothing to do.
 
@@ -913,14 +912,14 @@ void    jworld::_one_step_sequentional_bias()
             // ///////////////////////////
 
             /// Neighborhood iterator (with internal allocation perhaps!).
-            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad);
-            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,OdlSasiad); ///< Non-random neighborhood iterator.
+            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,NeighRadius,NeighDens);
+            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,NeighRadius); ///< Non-random neighborhood iterator.
             unsigned zliczanie=0; ///< To count real neighbors.
 
             // Cleaning the counter arrays:
-            fill(CFirst,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*IleKate);
-            fill(CSecond,0);//memset(Seconds.get_ptr_val(),0,sizeof(int)*IleKate);
-            fill(CThird,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*IleKate);
+            fill(CFirst,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*NumOfCate);
+            fill(CSecond,0);//memset(Seconds.get_ptr_val(),0,sizeof(int)*NumOfCate);
+            fill(CThird,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*NumOfCate);
 
             if(use_SW_links)
             { //RECORDING INFLUENCE FROM THE PROTECTOR ON A FAR LINK:
@@ -983,7 +982,7 @@ void    jworld::_one_step_sequentional_bias()
 
             //Multiple influences can be maximum (same value).
             //Therefore, we must ensure that among them there will be a random selection.
-            int offset=RANDOM(IleKate);             assert(0<=offset && offset<IleKate);
+            int offset=RANDOM(NumOfCate);             assert(0 <= offset && offset < NumOfCate);
 
             //Adding bias using the  procedure from `BiasData`.
             //When the agent's state matches the given one, bias is added to the appropriate array:
@@ -994,19 +993,19 @@ void    jworld::_one_step_sequentional_bias()
 
             //In one loop, adding noise and searching for maxima:
             //---------------------------------------------------
-            for(int g=0;g<IleKate;g++)
+            for(int g=0; g < NumOfCate; g++)
             {
-                int h=(g+offset)%IleKate;                     assert(h>=0 && h<IleKate);
+                int h= (g+offset) % NumOfCate;                     assert(h >= 0 && h < NumOfCate);
 
                 //Adding noise:
                 if(Noise>0)
                 {
                     if(CFirst[h]>0)
-                        CFirst[h]+=asserted<int>(DRAND() * Noise * (4.5 * MaxSila));
+                        CFirst[h]+=asserted<int>(DRAND() * Noise * (4.5 * MaxStrength));
                     if(CSecond[h]>0)
-                        CSecond[h]+=asserted<int>(DRAND() * Noise * (4.5 * MaxSila));
+                        CSecond[h]+=asserted<int>(DRAND() * Noise * (4.5 * MaxStrength));
                     if(CThird[h]>0)
-                        CThird[h]+=asserted<int>(DRAND() * Noise * (4.5 * MaxSila));
+                        CThird[h]+=asserted<int>(DRAND() * Noise * (4.5 * MaxStrength));
                 }
 
                 //Testing to the max:
@@ -1037,10 +1036,10 @@ void    jworld::_one_step_sequentional_bias()
         } //END OF NORMAL STATE CHANGE
 
 STARZENIE:
-        if(jagent::ruchsily) //Strength as age. Incrementation, if this option is activated.
+        if(jagent::pow_move) //Strength as age. Incrementation, if this option is activated.
         {
-            CenterAgent.Power+=jagent::ruchsily;
-            CenterAgent.Power%=jagent::max_sila; //Never exceeds maximum force. This is where a "new", weak agent (child) is created.
+            CenterAgent.Power+=jagent::pow_move;
+            CenterAgent.Power%=jagent::max_pow; //Never exceeds maximum force. This is where a "new", weak agent (child) is created.
         }
     }
 

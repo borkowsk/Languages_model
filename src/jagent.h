@@ -1,11 +1,11 @@
 /// @file
 /// @brief DECLARATION OF A G E N T FOR "LANGUAGES" SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
-//  ================================================================================================
-/// @date 2026-04-22 (modified)
+/// @date 2026-04-30 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "layer.hpp"
 #include "asserted.h"
+#include "maybe_unused.h"
 
 /// Language Evolution Simulation Agent.
 class jagent:public agent_base
@@ -13,17 +13,17 @@ class jagent:public agent_base
     friend class jworld;	//To simplify access to the attributes of the world.
 
     // STATIC ATTRIBUTES - AGENT INITIATION PARAMETERS:
-    static short	ruchsily;	//!< Determines whether strength change (increase) with age.
-    static short	max_sila;	//!< Maximum agent strength.
-    static short	min_sila;	//!< Maximum agent strength.
-    static short	ile_kate;	//!< Number of categories in each language (or culture) attribute.
-    static short	kate_shift;	//!< Bit shift for loading from a graphics file.
-    static short	Distribution;	//!< Degree of power/strength distribution. 0->n distributions with multiplication, -n->-1 distributions using summation.
-    static double	MutationLevel;	//!< Probability of spontaneous change of a meme, i.e., an attribute of language/culture.
+    static short	pow_move;		//!< Determines whether strength change (increase) with age.
+    static short	max_pow;		//!< Maximum agent strength.
+    static short	min_pow;		//!< Maximum agent strength.
+    static short	cate_num;		//!< Number of categories in each language (or culture) attribute.
+    static short	cate_shift;		//!< Bit shift for loading from a graphics file.
+    static short	distribution;	//!< Degree of power/strength distribution. 0->n distributions with multiplication, -n->-1 distributions using summation.
+    static double	mutation_level;	//!< Probability of meme spontaneous change, i.e., an attribute of language/culture.
 
 
     //AGENT ATTRIBUTES IMPORTANT IN SIMULATION:
-    short	Power;	//!< The power/strength of this agent.
+    short			Power;		//!< The power/strength of this agent.
     unsigned long	Age;		//!< Age of the agent's current language/culture (i.e., how many steps since the last change).
     unsigned long	Politics;	//!< Political affiliation
 
@@ -34,6 +34,7 @@ class jagent:public agent_base
             short	Second;	//!< Second belief/meme/language attribute.
             short	Third;	//!< Third belief/meme/language attribute.
         };
+        //MAYBE_UNUSED
         short	FST[3]={0,0,0};	///< The entire union seen as an array of shorts.
     };
 
@@ -62,10 +63,10 @@ public:
     
     bool try_mutate()			//!< A rare, spontaneous change in language/culture attribute.
     {
-        if(DRAND()<=MutationLevel)
+        if(DRAND() <= mutation_level)
         {            
            int what=RANDOM(3);  assert(0<=what && what<3);
-           FST[what]=RANDOM(ile_kate);
+           FST[what]=RANDOM(cate_num);
             return true;
         }        
         else return false;
@@ -73,29 +74,29 @@ public:
 
     void assign123(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading three attributes from one RGB pixel.
     {
-        First=asserted<short>(Red>>kate_shift);
-        Second=asserted<short>(Green>>kate_shift);
-        Third=asserted<short>(Blue>>kate_shift);
+        First=asserted<short>(Red >> cate_shift);
+        Second=asserted<short>(Green >> cate_shift);
+        Third=asserted<short>(Blue >> cate_shift);
     }
 
     void assign1(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading the first attribute from one RGB/gray pixel.
     {
-        First=( (int(Red)+int(Green)+int(Blue))/3 ) >>kate_shift;	//Average color intensity classified. Best when `R = G = B`
+        First=( (int(Red)+int(Green)+int(Blue))/3 ) >> cate_shift;	//Average color intensity classified. Best when `R = G = B`
     }
     
     void assign2(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading a second attribute from one RGB pixel.
     {
-        Second=( (int(Red)+int(Green)+int(Blue))/3 ) >>kate_shift;	//Average color intensity classified. Best when `R = G = B`
+        Second=( (int(Red)+int(Green)+int(Blue))/3 ) >> cate_shift;	//Average color intensity classified. Best when `R = G = B`
     }
 
     void assign3(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading the third attribute from one RGB pixel.
     {
-        Third=( (int(Red)+int(Green)+int(Blue))/3 ) >>kate_shift;	//Average color intensity classified. Best when `R = G = B`
+        Third=( (int(Red)+int(Green)+int(Blue))/3 ) >> cate_shift;	//Average color intensity classified. Best when `R = G = B`
     }
 
     void assignPow(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading agent strength from one RGB pixel.
     {
-        Power=min_sila+short((int(Red)+int(Green)+int(Blue))/(3.*255)*(max_sila-min_sila));
+        Power= min_pow + short((int(Red) + int(Green) + int(Blue)) / (3. * 255) * (max_pow - min_pow));
     }
 
     void killBlack(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Agent cleaning in non-residential areas.
@@ -107,7 +108,7 @@ public:
     // ReSharper disable once CppMemberFunctionMayBeConst
     long Classif() 	//!< Converting agent attributes to language classification number. NOLINT(*-make-member-function-const)
     {
-        return First+ile_kate*(Second+ile_kate*Third);
+        return First + cate_num * (Second + cate_num * Third);
     }
 
     long RGB() const	//!< Agent color in true-color visualizations.

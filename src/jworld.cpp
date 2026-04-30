@@ -1,8 +1,6 @@
-
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
-//  ============================================================================================
-/// @date 2026-04-22 (modified)
+/// @date 2026-04-30 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-use-nullptr"
@@ -48,7 +46,7 @@ jagent::jagent(const jagent& ini)
     First=ini.First;
     Second=ini.Second;
     Third=ini.Third;
-    Power=RANDOM(max_sila+1);
+    Power=RANDOM(max_pow + 1);
     Age=0;
     Politics=RANDOM(0xffffff);
 }
@@ -60,7 +58,7 @@ jagent::jagent(const jagent* ini)
         First=ini->First;
         Second=ini->Second;
         Third=ini->Third;
-        Power=RANDOM(max_sila+1);
+        Power=RANDOM(max_pow + 1);
         Age=0;
         Politics=RANDOM(0xffffff);
     }
@@ -71,40 +69,41 @@ jagent::jagent(const jagent* ini)
 jagent::jagent()
 {
     _clean();
-    First=RANDOM(ile_kate);
-    Second=RANDOM(ile_kate);
-    Third=RANDOM(ile_kate);
+    First=RANDOM(cate_num);
+    Second=RANDOM(cate_num);
+    Third=RANDOM(cate_num);
     Age=0;
     Politics=RANDOM(0xffffff);
 
-    if(Distribution>=0)
+    if(distribution >= 0)
     {
         double Power_loc=1;
-        for(int i=0;i<Distribution;i++)
+        for(int i=0; i < distribution; i++)
             Power_loc*=DRAND();
-        Power_loc*= max_sila + 1;
-        this->Power=Power_loc;
+        Power_loc*= max_pow + 1;
+        this->Power=asserted<short>(Power_loc);
     }
     else
     {
         double Power_loc=0;
-        for(int i=0;i<(-Distribution);i++)
+        for(int i=0;i<(-distribution); i++)
             Power_loc+=DRAND();
-        Power_loc/=-Distribution;
-        this->Power= Power_loc * (max_sila + 1);
+        Power_loc/=-distribution;
+        this->Power=asserted<short>(Power_loc * (max_pow + 1));
     }
 }
 
 // Static "jagent-s" fields for initialization:
 // ////////////////////////////////////////////
 
-short jagent::ruchsily=1;
-short jagent::max_sila=256;
-short jagent::min_sila=1;
-short jagent::ile_kate=256;
-short jagent::kate_shift=0;
-double	jagent::MutationLevel=0;
-short jagent::Distribution=1;  //Degree of distribution. 0->n distributions with *, -1->-n distributions with + (Gaussian's like)
+short jagent::pow_move=1;
+short jagent::max_pow=256;
+short jagent::min_pow=1;
+short jagent::cate_num=256;
+short jagent::cate_shift=0;
+double	jagent::mutation_level=0;
+short jagent::distribution=1;  //!< Degree of distribution:
+                               //!< 0->n distributions with *, -1->-n distributions with + (Gaussian's like)
 
 // CONSTRUCTION OF THE WORLD:
 // //////////////////////////
@@ -118,20 +117,20 @@ jworld::jworld(size_t Width,
       char* mapl_name,
       char* mapp_name,
       char* live_mask,
-      short Distribution,
+      short distribution,
       double noise,
-      short	max_sila,
-      short min_sila,
-      short	ile_kate,
-      short	odl_sasiad,
-      short	ile_sasiad,
+      short	max_power,
+      short min_power,
+      short	number_of_categories,
+      short	neighborhood_radius,
+      short	neighborhood_fill,
       short need_use_self,
-      short walkpower,
-      short trespower,
-      double ispontanic,
+      short walk_power,
+      short tres_power,
+      double i_spontan,
       bool i_use_SW_links,
-      double i_SW_startconnect_percent,
-      double i_SW_reconect_percent
+      double i_SW_connect_percent_at_start,
+      double i_SW_reconnect_percent
         ):
         world(log_name,50),
         MaplName(clone_str(mapl_name)),
@@ -141,12 +140,12 @@ jworld::jworld(size_t Width,
         MyWidth(Width),
         Agenci(Width,Width,NULL),	//`iiniter == NULL`, so agents created by the constructor, not cloning.
         FarLinks(Width,Width),
-        MaxSila(max_sila),
-        MinSila(min_sila),
-        TrsSila(trespower),
-        IleKate(ile_kate),
-        IleSasiad(ile_sasiad),
-        OdlSasiad(odl_sasiad),
+        MaxStrength(max_power),
+        MinStrength(min_power),
+        TrsStrength(tres_power),
+        NumOfCate(number_of_categories),
+        NeighDens(neighborhood_fill),
+        NeighRadius(neighborhood_radius),
         Noise(noise),
         UseSelf(need_use_self),
         //Pointers to basic data series:
@@ -156,17 +155,21 @@ jworld::jworld(size_t Width,
         Powers(NULL),
         Classif(NULL),
         Politics(NULL),
+        Age(NULL),
+        FarA(NULL),
+        FarB(NULL),
+        FCount(NULL),
         BiasMode(NO_BIAS),
-        spontanic(ispontanic),
+        spontanic(i_spontan),
         use_SW_links(i_use_SW_links),
-        SW_startconnect_percent(i_SW_startconnect_percent),
-        SW_reconect_percent(i_SW_reconect_percent)
-{ //There is not too much that can be done because we cannot rely on virtual methods of the world class yet.
-        jagent::ruchsily=walkpower;
-        jagent::Distribution=Distribution;
+        SW_start_connect_percent(i_SW_connect_percent_at_start),
+        SW_reconnect_percent(i_SW_reconnect_percent)
+{ //There is not too much that can be done because we cannot rely on virtual methods of the `World` yet.
+        jagent::pow_move=walk_power;
+        jagent::distribution=distribution;
         world::set_simulation_name("Languages_v2 SW");
         set_bias_from_str("");
-        jagent::MutationLevel=spontanic;
+        jagent::mutation_level=spontanic;
 
         _far_link::MyWorld=this;	//Connection to read counters via arrays
 
@@ -183,15 +186,15 @@ void jworld::make_basic_sources()
     //Main series:
     Firsts=Agenci.make_source("First mem",&jagent::First);
     if(Firsts)
-        Firsts->setminmax(0,IleKate-1);
+        Firsts->setminmax(0, NumOfCate - 1);
 
     Seconds=Agenci.make_source("Second mem",&jagent::Second);
     if(Seconds)
-        Seconds->setminmax(0,IleKate-1);
+        Seconds->setminmax(0, NumOfCate - 1);
 
     Thirds=Agenci.make_source("Third mem",&jagent::Third);
     if(Thirds)
-        Thirds->setminmax(0,IleKate-1);
+        Thirds->setminmax(0, NumOfCate - 1);
 
     Powers=Agenci.make_source("Power",&jagent::Power);
     Age=Agenci.make_source("Lang. age",&jagent::Age);
@@ -199,7 +202,7 @@ void jworld::make_basic_sources()
 
     Classif=Agenci.make_source("Classification",&jagent::Classif);
     if(Classif)
-        Classif->setminmax(0,IleKate*IleKate*IleKate-1);	//'Max class ==IleKate^3',because three independent layers.
+        Classif->setminmax(0, NumOfCate * NumOfCate * NumOfCate - 1);	//'Max class ==NumOfCate^3',because three independent layers.
 
     //struct_matrix_source<_far_link,unsigned>		*
     FarA=FarLinks.make_source("F.links to A",&_far_link::a);
@@ -292,10 +295,10 @@ void jworld::make_default_visualisation()
     if(!ThirdStat) ON_ERROR_MAKE
     Sources.insert(ThirdStat);
 
-    //NOTE FOR HISTOGRAMS: If `IleKate > 16`, very large arrays are created, slowing down the program somewhat!
+    //NOTE FOR HISTOGRAMS: If `NumOfCate > 16`, very large arrays are created, slowing down the program somewhat!
 
     /// Histogram of language classification (sizes of particular languages).
-    generic_discrete_histogram_source*  ClassStat=new generic_discrete_histogram_source(0,IleKate*IleKate*IleKate,Classif,"DistrOf(%s[%d..%d])");
+    generic_discrete_histogram_source*  ClassStat=new generic_discrete_histogram_source(0, NumOfCate * NumOfCate * NumOfCate, Classif, "DistrOf(%s[%d..%d])");
     if(!ClassStat) ON_ERROR_MAKE
     Sources.insert(ClassStat);
 
@@ -498,7 +501,7 @@ void jworld::make_default_visualisation()
 
         if(OutArea)
         {
-            OutArea->set(1,1,szer/2-1,wyso/2-1);
+            OutArea->set(1,1,szer/2.-1,wyso/2.-1);
             Menager.as_orginal(Menager.search(OutArea->name()));
         }
 
@@ -609,7 +612,7 @@ void jworld::make_default_visualisation()
         pom->settitle("Strength of agents versus RGB view of languages");
         Menager.insert(pom);
 
-        if(IleKate*IleKate*IleKate<=256) //For more languages, the following visualization does not make sense.
+        if(NumOfCate * NumOfCate * NumOfCate <= 256) //For more languages, the following visualization does not make sense.
         {
             pom=new manhattan_graph(MLeft,5*MStep,szer,6*MStep,
                                     Powers,0,	//Bar height data source (unmanaged)
@@ -635,7 +638,7 @@ void jworld::make_default_visualisation()
         pom->settitle("Age of agent's language");
         Menager.insert(pom);
 
-        if(IleKate*IleKate*IleKate<=256) //For more languages, the following visualization does not make sense.
+        if(NumOfCate * NumOfCate * NumOfCate <= 256) //For more languages, the following visualization does not make sense.
         {
             pom=new carpet_graph(MLeft,6*MStep,szer,7*MStep,
                 Classif	//Artificial color data source, no more than 256
@@ -843,23 +846,23 @@ void jworld::make_default_visualisation()
 
 void jworld::after_read_from_image()
 {
-    jagent::max_sila=MaxSila; // Sets the maximum agent strength
-    jagent::min_sila=MinSila; // Sets the minimum agent strength
-    jagent::ile_kate=IleKate; // Sets the number of categories
+    jagent::max_pow=MaxStrength; // Sets the maximum agent strength
+    jagent::min_pow=MinStrength; // Sets the minimum agent strength
+    jagent::cate_num=NumOfCate; // Sets the number of categories
 
-    switch(IleKate) //Sets the bit offset for reading categories
+    switch(NumOfCate) //Sets the bit offset for reading categories
     {
-    case   2:jagent::kate_shift=7;break;
-    case   4:jagent::kate_shift=6;break;
-    case   8:jagent::kate_shift=5;break;
-    case  16:jagent::kate_shift=4;break;
-    case  32:jagent::kate_shift=3;break;
-    case  64:jagent::kate_shift=2;break;
-    case 128:jagent::kate_shift=1;break;
-    case 256:jagent::kate_shift=0;break;
+    case   2:jagent::cate_shift=7;break;
+    case   4:jagent::cate_shift=6;break;
+    case   8:jagent::cate_shift=5;break;
+    case  16:jagent::cate_shift=4;break;
+    case  32:jagent::cate_shift=3;break;
+    case  64:jagent::cate_shift=2;break;
+    case 128:jagent::cate_shift=1;break;
+    case 256:jagent::cate_shift=0;break;
     default:
-        jagent::ile_kate=IleKate=256;
-        jagent::kate_shift=0;
+        jagent::cate_num= NumOfCate=256;
+        jagent::cate_shift=0;
         cerr<<"Invalid number of class (not power of 2 less than 256). Using default.\n";
         Log.GetStream()<<"Invalid number of class (not power of 2). Using default.\n";
         break;
@@ -874,23 +877,23 @@ void jworld::initialize_layers()
     if(first)
         Log.GetStream()<<"LANGUAGE SIMULATION:"; //There are a lot of prints in the first initialization.
 
-    jagent::max_sila=MaxSila; // Sets the maximum agent strength
-    jagent::min_sila=MinSila; // Sets the minimum agent strength
-    jagent::ile_kate=IleKate; // Sets the number of categories
+    jagent::max_pow=MaxStrength; // Sets the maximum agent strength
+    jagent::min_pow=MinStrength; // Sets the minimum agent strength
+    jagent::cate_num=NumOfCate; // Sets the number of categories
 
-    switch(IleKate) //Sets the bit offset for reading categories
+    switch(NumOfCate) //Sets the bit offset for reading categories
     {
-    case   2:jagent::kate_shift=7;break;
-    case   4:jagent::kate_shift=6;break;
-    case   8:jagent::kate_shift=5;break;
-    case  16:jagent::kate_shift=4;break;
-    case  32:jagent::kate_shift=3;break;
-    case  64:jagent::kate_shift=2;break;
-    case 128:jagent::kate_shift=1;break;
-    case 256:jagent::kate_shift=0;break;
+    case   2:jagent::cate_shift=7;break;
+    case   4:jagent::cate_shift=6;break;
+    case   8:jagent::cate_shift=5;break;
+    case  16:jagent::cate_shift=4;break;
+    case  32:jagent::cate_shift=3;break;
+    case  64:jagent::cate_shift=2;break;
+    case 128:jagent::cate_shift=1;break;
+    case 256:jagent::cate_shift=0;break;
     default:
-        jagent::ile_kate=IleKate=256;
-        jagent::kate_shift=0;
+        jagent::cate_num= NumOfCate=256;
+        jagent::cate_shift=0;
         cerr<<"Invalid number of class (not power of 2 less than 256). Using default.\n";
         Log.GetStream()<<"Invalid number of class (not power of 2). Using default.\n";
         break;
@@ -947,7 +950,7 @@ void jworld::initialize_layers()
         Agenci.deallocate_not_OK();
 
     if(use_SW_links)
-        _connect_far_links(SW_startconnect_percent); //I try to connect some percentage of distant links before starting
+        _connect_far_links(SW_start_connect_percent); //I try to connect some percentage of distant links before starting
 
     first=0; //End of the first call, the next ones will not be so eloquent.
 }
@@ -959,14 +962,14 @@ void jworld::simulate_one_step()
 
     if(use_SW_links)
     {
-        _connect_far_links(SW_reconect_percent); //Trying to connect some percentage of far distant links.
+        _connect_far_links(SW_reconnect_percent); //Trying to connect some percentage of far distant links.
     }
 
     switch(BiasMode){ //Depending on the bias mode, we use one of the auxiliary implementations.
     case NO_BIAS:	        _one_step_no_bias();       break;
     case SIMPLE_BIAS:	    _one_step_simple_bias();    break;
-    case CONDITIONAL_BIAS:  _one_step_conditional_bias();break;
-    case SEQUENTIONAL_BIAS: _one_step_sequentional_bias();break;
+    case CONDITIONAL_BIAS:  _one_step_conditional_bias1();break;
+    case SEQUENTIONAL_BIAS: _one_step_sequentional_bias0();break;
     case INVALID_BIAS_MODE:
     default:
         assert("This code should never be reached.\nPROBABLY INVALID BIAS MODE!"==0);
@@ -976,7 +979,7 @@ void jworld::simulate_one_step()
 
 void    jworld::_connect_far_links(double Percent)
 {
-    unsigned N=(double(MyWidth)*double(MyWidth)*Percent)/100; ///< Number of attempts.
+    unsigned N=asserted<unsigned>((double(MyWidth)*double(MyWidth)*Percent)/100); ///< Number of attempts.
     unsigned Counter=0; ///< Successful attempts counter.
     for(unsigned i=0;i<N;i++)	//Makes N attempts - although sometimes it can hit double or even triple
     {
@@ -986,12 +989,12 @@ void    jworld::_connect_far_links(double Percent)
         if(Agenci.filled(a,b)) //Note! Only for a non-empty cell!
         {
             const jagent& on=Agenci.get(a,b);
-            double r=on.Power/asserted<double>(jagent::max_sila*MyWidth/2); ///< Distance to random target.
-//			r=OdlSasiad+r*DRAND(); // Usually radius is draw within a radius, but not less than `OdlSasiad`.
-            r=OdlSasiad+r*DRAND()*DRAND()*DRAND(); // Randomisation of radius, which is now draw condensed, closer to the agent.
+            double r=on.Power/asserted<double>(jagent::max_pow * MyWidth / 2); ///< Distance to random target.
+//			r=NeighRadius+r*DRAND(); // Usually radius is draw within a radius, but not less than `NeighRadius`.
+            r= NeighRadius + r * DRAND() * DRAND() * DRAND(); // Randomisation of radius, which is now draw condensed, closer to the agent.
             double Angle=DRAND()*2*M_PI; ///< Drawing the angle is rather simple (flat distribution).
-            int ta=a+r*sin(Angle); ///< Calculated target coordinate `a`.
-            int tb=b+r*cos(Angle); ///< Calculated target coordinate `b`.
+            int ta=asserted<int>(a+r*sin(Angle)); ///< Calculated target coordinate `a`.
+            int tb=asserted<int>(b+r*cos(Angle)); ///< Calculated target coordinate `b`.
 
             //Adjustment to TORUS - always necessary!!!
             ta=(ta+MyWidth)%MyWidth;

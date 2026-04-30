@@ -1,7 +1,6 @@
 /// @file
 /// @brief DECLARATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
-//  =======================================================================================
-/// @date 2026-04-22 (modified)
+/// @date 2026-04-30 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include <climits> //SHRT_MAX
@@ -11,7 +10,7 @@
 #include "layer.hpp"
 #include "jagent.h" //Agent definition
 
-extern bool			Console;	///< Flag for working in console mode - without any graphics. By default,: `==false`.
+extern bool			Console;	///< Flag for working in console mode - without any graphics. By default, it is `false`.
 extern const int	BIAS_FOR_ANY;	///< The value that represents "all-the-same" in conditional biases.
                                     ///< Always greater than the largest value in the layer. Default `==8`.
 /// The Whole World of Simulation.
@@ -43,7 +42,7 @@ public:
         virtual int read_one_bias_item(istream& i)	//!< Reading the elementary bias definition from a stream (required).
         {
             assert("Pure virtual _bias_information_base::read_one_bias_item() was called"==nullptr);
-            return EOF;
+            return EOF; //Unreachable code, but only in DEBUG mode.
         }
     };
 
@@ -55,7 +54,7 @@ public:
         unsigned int	a,b;	//!< World location [a,b]
         unsigned int	count;	//!< Statistic counter.
 
-        unsigned get_target_count();	//!< Main accessor which reads `count` from a,b location on far links layer.
+        unsigned get_target_count();	//!< Main accessor which reads `count` from (a,b) location on far links layer.
 
         _far_link():a(UINT_MAX),b(UINT_MAX),count(0){}		//!< DEFAULT CONSTRUCTOR (sole).
 
@@ -97,9 +96,9 @@ private:
     //-------------------------------------------------------------------------------------------------
     void	_one_step_no_bias();				//!< Single step implementation without bias.
     void	_one_step_simple_bias();			//!< Single step implementation with simple bias.
-    void	_one_step_conditional_bias();		//!< Single step implementation with conditional bias.
-    void	_one_step_sequentional_bias();		//!< Single step implementation with sequential bias.
+    void	_one_step_conditional_bias0();		//!< Single step implementation with conditional bias.
     void	_one_step_conditional_bias1();		//!< Alternative (more complete) implementation with conditional bias.
+    void	_one_step_sequentional_bias0();		//!< Single step implementation with sequential bias.
 
     // Simulation statistics directly calculated in the step:
     // //////////////////////////////////////////////////////
@@ -107,6 +106,7 @@ private:
 
 public:
     /// Reads the percentage of the Small Worlds dynamics in the last step.
+    MAYBE_UNUSED
     double get_last_SW_dynamic() const { return SW_dynamic_perc;}
 
 private:
@@ -114,18 +114,18 @@ private:
     // /////////////////////////////////////////////////
 
     unsigned			MyWidth;	//!< Circumference of a torus.
-    short				MaxSila;	//!< Maximum agent power/strength.
-    short				MinSila;	//!< Minimum agent strength.
-    short				TrsSila;	//!< Threshold of strength above which there is no change.
-    short				IleKate;	//!< Number of categories.
-    short				IleSasiad;	//!< The density of the neighborhood (1-8 is random, -1 means all not randomly).
-    short				OdlSasiad;	//!< Neighborhood radius.
+    short				MaxStrength;	//!< Maximum agent power/strength.
+    short				MinStrength;	//!< Minimum agent strength.
+    short				TrsStrength;	//!< Threshold of strength above which there is no change.
+    short				NumOfCate;	//!< Number of categories.
+    short				NeighDens;	//!< The density of the neighborhood (1-8 is random, -1 means all not randomly).
+    short				NeighRadius;	//!< Neighborhood radius.
     short				UseSelf;	//!< Determines whether to take himself into consideration.
     double				Noise;		//!< Information noise at the contacts.
     double				spontanic;	//!< Spontaneous mutations - random changes in language attributes.
     bool 				use_SW_links;	//!< Determines whether we use far links.
-    double				SW_startconnect_percent;	//!< Determines percentage of far link change attempts to perform before attitude dynamic launch.
-    double				SW_reconect_percent;	//!< Specifies the percentage of far link (SW structure) changes per step.
+    double				SW_start_connect_percent;	//!< Determines percentage of far link change attempts to perform before attitude dynamic launch.
+    double				SW_reconnect_percent;	//!< Specifies the percentage of far links (SW structure) changes "per step".
     wb_pchar			MappName;	//!< Force initialization bitmap filename.
     wb_pchar			MaplName;	//!< The name of the bitmap file that initializes the language attributes.
     wb_pchar			MaskName;	//!< The name of the bitmap file that initializes the uninhabitable areas.
@@ -141,7 +141,7 @@ private:
     // /////////////////////////////
 
     // !< The layer defines the suitability for habitation.
-    //rectangle_unilayer<unsigned char>			livability; //livability layer.
+    //rectangle_unilayer<unsigned char> livability; //livability layer.
 
     /// The layer of colonizing agents.
     rectangle_layer_of_ptr_to_agents<jagent>	Agenci;
@@ -196,23 +196,23 @@ public:
         char bufor1[100];
         char bufor2[100];
         out
-                << "\nNum of Kl=" << sep << IleKate
+                << "\nNum of Kl=" << sep << NumOfCate
                 << "\n" << this->MyWidth << sep << "x" << sep << MyWidth << sep << "=" << sep << MyWidth * MyWidth
-                << "\nPower range:" << sep << MinSila << '-' << MaxSila
-                << "\nDistribution:" << sep << (jagent::Distribution < 0 ? "G" : "P") << jagent::Distribution
-                << "\nTresh of Power=" << sep << TrsSila
+                << "\nPower range:" << sep << MinStrength << '-' << MaxStrength
+                << "\nDistribution:" << sep << (jagent::distribution < 0 ? "G" : "P") << jagent::distribution
+                << "\nTresh of Power=" << sep << TrsStrength
                 << "\nNoise %=" << sep << Noise * 100 << sep << " Spontanic %=" << sep << spontanic
                 << "\nSelf=" << sep << UseSelf
-                << "\nNeighborhood=" << sep << IleSasiad << "/(" << (1 + 2 * OdlSasiad) << "*" << (1 + 2 * OdlSasiad) << ")"
-                << "\nSmall World:" << sep << (!use_SW_links ? "NO" : dtoa(SW_reconect_percent, bufor1))
-                << sep << (!use_SW_links ? "NO" : dtoa(SW_startconnect_percent, bufor2))
+                << "\nNeighborhood=" << sep << NeighDens << "/(" << (1 + 2 * NeighRadius) << "*" << (1 + 2 * NeighRadius) << ")"
+                << "\nSmall World:" << sep << (!use_SW_links ? "NO" : dtoa(SW_reconnect_percent, bufor1))
+                << sep << (!use_SW_links ? "NO" : dtoa(SW_start_connect_percent, bufor2))
                 <<endl;
         cout<<"SW: "<<bufor1<<'/'<<bufor2<<endl;
     }
 
     /// Setting bias parameters from a text.
     /// The ":&?" characters define the `BiasInfo` object type and simulation mode.
-    /// @param lst defines bias. If the list is empty, just clear whole bias definition.
+    /// @param lst defines bias. If the list is empty, only clear a whole bias definition.
     void set_bias_from_str(const char* lst);
 
 protected:
@@ -255,8 +255,12 @@ public:
     class _no_bias_information:public _bias_information_base
     {
     public:
+        MAYBE_UNUSED /// Constructor.
         explicit _no_bias_information(short* ini):_bias_information_base(ini){}
-        int read_one_bias_item(istream& i) override { return EOF;} //!< Data loading dummy.
+        /// Data loading dummy.
+        int read_one_bias_item(istream& i) override {
+            return EOF;
+        }
     };
 
     /// Information about simple unconditional additive bias.
@@ -264,7 +268,7 @@ public:
     {
     public:
         /// Unconditional additive bias table.
-        short	UncdBias[3][8];
+        short	UncdBias[3][8]={};
 
         explicit _simple_bias_information(short* ini):_bias_information_base(ini) ///< Constructor (sole).
         { _simple_bias_information::clean();}
@@ -283,7 +287,7 @@ public:
     public:
         /// Table of conditional conservative biases.
         /// Position 9 in the table means arbitrariness in a given coordinate.
-        float	Biases[9][9][9]; /*TODO short	CnsrBias[9][9][9]; ????? */
+        float	Biases[9][9][9]={}; /*TODO short	CnsrBias[9][9][9]; ????? */
 
         explicit _conditional_bias_information(short* ini):_bias_information_base(ini) ///< Constructor (sole).
         {_conditional_bias_information::clean();}
@@ -306,13 +310,13 @@ public:
         /// Single conditional bias data.
         struct IfBias
         {
-            int		leyer[3];	//!< Condition states for individual layers, e.g. a=1 b=3 c=*
+            int		leyer[3];	//!< Condition states for individual layers, e.g., a=1 b=3 c=*
             int		 whatley;	//!< Specifies which layer will be modified
             int		  lstate;	//!< For what state.
             float	   value;	//!< And what added value
 
             /// Checks if the conditional bias is defined correctly.
-            bool IsOK(int IleKate=256) const
+            bool IsOK(int n_of_cate=256) const
             {
                 return  whatley!=BIAS_FOR_ANY &&
                         lstate!=-1 &&
@@ -421,7 +425,7 @@ void	jworld::_connect_flink_to(	unsigned aa,
 }
 
 /* **************************************************************** */
-/*           THIS CODE IS DESIGNED & COPYRIGHT  BY:                 */
+/*            THIS CODE IS DESIGNED & COPYRIGHT BY:                 */
 /*            W O J C I E C H   B O R K O W S K I                   */
 /* Zakład Systematyki i Geografii Roślin Uniwersytetu Warszawskiego */
 /*  & Instytut Studiów Społecznych Uniwersytetu Warszawskiego       */

@@ -1,8 +1,7 @@
 /// @file
-/// @brief ... (LANGUAGES PROJECT WITH P.Culicover)
-//  ===============================================
-/// Split from "jbias.cpp" by borkowsk on 14.04.2026.
-/// @date 2026-04-22 (created)
+/// @brief ALTERNATIVE CONDITIONAL BIAS SIMULATION STEP IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
+/// @date 2026-04-30 (created)
+///     Split from "jbias.cpp" by borkowsk on 14.04.2026.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
 //#include <assert.h>
@@ -37,7 +36,7 @@ void    jworld::_one_step_conditional_bias1()
 
     /// THREE-DIMENSIONAL TABLE FOR COUNTING INFLUENCES.
     /// Number of allowable categories in each meme + positions for single biases and double combinations.
-    int Wplywy[BIAS_FOR_ANY+1][BIAS_FOR_ANY+1][BIAS_FOR_ANY+1];                           assert(IleKate<=BIAS_FOR_ANY); //Aren't there too many categories for such an influence board?
+    int Wplywy[BIAS_FOR_ANY+1][BIAS_FOR_ANY+1][BIAS_FOR_ANY+1];                           assert(NumOfCate <= BIAS_FOR_ANY); //Aren't there too many categories for such an influence board?
 
     /// Monte-Carlo iterator (may have data allocations inside).
     iteratorh Monte=MyGeom->make_random_global_iterator();
@@ -55,15 +54,15 @@ void    jworld::_one_step_conditional_bias1()
                 continue;
 
         if(
-            (CenterAgent.Power>TrsSila) // Is there no immunity to change anymore?
+                (CenterAgent.Power > TrsStrength) // Is there no immunity to change anymore?
             ||
-            (jagent::MutationLevel>0 && CenterAgent.try_mutate()) //Or didn't it just mutate spontaneously
+                (jagent::mutation_level > 0 && CenterAgent.try_mutate()) //Or didn't it just mutate spontaneously
           )
             goto STARZENIE;
 
         {   // INFLUENCE CALCULATION CODE:
             //////////////////////////////
-            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,OdlSasiad,IleSasiad); // We allocate the neighborhood iterator
+            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,NeighRadius,NeighDens); // We allocate the neighborhood iterator
             unsigned zliczanie=0;           //For counting neighbors
 
             //The counter table need to be reset.
@@ -145,7 +144,7 @@ void    jworld::_one_step_conditional_bias1()
                 {
                     double Rnd=DRAND();
                     if(Rnd>0)
-                    ((int*)Wplywy)[i]+=asserted<long>(Rnd*Noise*(4.5*MaxSila)); // NOLINT(*-narrowing-conversions)
+                    ((int*)Wplywy)[i]+=asserted<long>(Rnd*Noise*(4.5 * MaxStrength)); // NOLINT(*-narrowing-conversions)
                 }
                 ((int*)Wplywy)[i]+=((float*)BiasData->Biases)[i]; //cast!!! - trick to avoid triple nested loop
             }
@@ -165,15 +164,15 @@ void    jworld::_one_step_conditional_bias1()
                 ////////////////////////////////////////////////////////////////
                 int width=BIAS_FOR_ANY+1;    ///< "Width" of the cube array for counters.
 
-                int offsetA=RANDOM(IleKate);            assert(0<=offsetA && offsetA<IleKate);
-                int offsetB=RANDOM(IleKate);            assert(0<=offsetB && offsetB<IleKate);
-                int offsetC=RANDOM(IleKate);            assert(0<=offsetC && offsetC<IleKate);
+                int offsetA=RANDOM(NumOfCate);            assert(0 <= offsetA && offsetA < NumOfCate);
+                int offsetB=RANDOM(NumOfCate);            assert(0 <= offsetB && offsetB < NumOfCate);
+                int offsetC=RANDOM(NumOfCate);            assert(0 <= offsetC && offsetC < NumOfCate);
 
                 int Max=-1,pA=-1,pB=-1,pC=-1;
                 FillStat[0]++; //Relapse counting
 
                 //Searching for the current maximum:
-                //(a bit wasteful, you can speed it up a bit if BIAS_FOR_ANY is a variable == IleKate) (???)
+                //(a bit wasteful, you can speed it up a bit if BIAS_FOR_ANY is a variable == NumOfCate) (???)
                 for(int i=0;i<width;i++)
                 {
                     int a=(i+offsetA)%width;            assert(a>=0 && a<width);
@@ -222,9 +221,9 @@ void    jworld::_one_step_conditional_bias1()
         }
 
 STARZENIE:
-        if(jagent::ruchsily) //Strength as age
+        if(jagent::pow_move) //Strength as age
         {
-            CenterAgent.Power=asserted<short>((CenterAgent.Power+jagent::ruchsily)%jagent::max_sila); //Never exceeds maximum force
+            CenterAgent.Power=asserted<short>((CenterAgent.Power+jagent::pow_move) % jagent::max_pow); //Never exceeds maximum force
         }
     }
 

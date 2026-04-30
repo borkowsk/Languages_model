@@ -1,20 +1,20 @@
 /// @file
 /// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover.
-//  ==============================================================
-/// @date 2026-04-22 (modified)
-// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///  THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
+/// @date 2026-04-30 (modified)
+///
+///     THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-use-nullptr"
 #pragma ide diagnostic ignored "modernize-use-auto"
+
 #include "compatyb.h"
-const char* WINDOW_HEADER="LANGUAGES version SW 2.20c, compilation " __DATE__ ", " __TIME__ ;
+const char* WINDOW_HEADER="LANGUAGES version SW 2.20d, compilation " __DATE__ ", " __TIME__ ;
 const char* Authors="(programed by W. Borkowski for ISS UW & Ohio State Univ.)";
-const char* SCREENDUMPNAME="LANGUAGES";
+const char* SCREEN_DUMP_NAME="LANGUAGES";
 /// @details
 /// Simulation of the spread of linguistic behavior using the multi-layered meme/belief transmission method.
-///	Polish word "JEZYK" means LANGUAGE.
+///	Polish word "JĘZYK" means LANGUAGE.
 /// #HISTORY:
 //  ////////////////////////
 ///			ver.  2.20c - English-language comments.
@@ -62,7 +62,7 @@ const char* SCREENDUMPNAME="LANGUAGES";
 ///						- Introducing the ability to disable spatial correlation calculation (UseSpatialCorr) from CODE!!!
 ///						- Introduction of a log-log plot of the distribution of language sizes (type "dhistosou.h").
 ///						- Introduction of writing this histogram to the log.
-///						- Supplementing some of the messages about parameter settings (but some were left without).
+///						- Supplementing some messages about parameter settings (but some were left without).
 ///						- Entering the `DSTB` parameter that determines the type and degree of force distribution (obtained by * or +).
 ///			TEST:
 ///			```
@@ -70,10 +70,10 @@ const char* SCREENDUMPNAME="LANGUAGES";
 ///			```
 ///
 ///			version 1.35a - ???
-///			version 1.34a - Remove assertions against zero-strength agents and introduce a minimal strength (def. = 1).
+///			version 1.34a - Remove assertions against zero-strength agents and introduce minimal strength (def. = 1).
 ///			version 1.33a - Recompiling to a new library and adding a menu for MSWindows.
 ///			version 1.32a - Recompiling with a new version of the visualization library and introducing
-///						    the "about_languages.cpp" file with time control for DEBUG.
+///						    the "about_languages.cpp" file with time control for DEBUG mode.
 ///			version 1.31a - Implemented initialization of language attributes from three grayscale image files.
 ///			version 1.30a - Double bias introduced in the follow-up version, but a parallel bias version still works poorly
 ///						    requires intelligent counter rebalancing.
@@ -98,8 +98,8 @@ using namespace std;
 #include "jworld.h"
 #include "lang_res.h"
 
-unsigned	SWIDTH=asserted<unsigned>(1440*0.6666);		///< Screen/window inside width. (720 or 1440);
-unsigned	SHEIGHT=asserted<unsigned>(1080*0.6666);	///< Screen/window inside height. (540 or 1080);
+unsigned	SCR_WIDTH=asserted<unsigned>(1440 * 0.6666);		///< Screen/window inside width. (720 or 1440);
+unsigned	SCR_HEIGHT=asserted<unsigned>(1080 * 0.6666);	///< Screen/window inside height. (540 or 1080);
 bool		Console=false;			///< Flag for working in console mode - no graphics.
 
 //No Object-wise passed to the source initialization method:
@@ -160,9 +160,9 @@ new OptionalCheckFunction(SWLinksCheck(),"if(SWBE>0 || SWST>0) SW_links=true;"),
 new OptionalParameter<bool>(ZrzucajNET,false,true,"NETD","dump network every step"),
 new OptionalParameter<long>(TresProcent,0,100,"TRSP","Immunisation strength threshold"),
 new OptionalCheckFunction(MovingSghCheck(),"if(TRSP>0 && RuchomaSila==0) RuchomaSila=1;");
-new OptionalParameter<long>(SWIDTH,50,4096,"WIDTHWIN","Window width"),
-new OptionalParameter<long>(SHEIGHT,50,4096,"HEIGHTWIN","Window height"),
-new OptionalParameter<long>(iWidth,3,SWIDTH,"WIDTH","World width. Can't be larger than window/screen!"),
+new OptionalParameter<long>(SCR_WIDTH,50,4096,"WIDTHWIN","Window width"),
+new OptionalParameter<long>(SCR_HEIGHT,50,4096,"HEIGHTWIN","Window height"),
+new OptionalParameter<long>(iWidth,3,SCR_WIDTH,"WIDTH","World width. Can't be larger than window/screen!"),
 new OptionalParameter<long>(iMaxIterations,0,0x7FFFFFFF,"MAXI","Maximal number of steps"),
 new OptionalParameter<long>(iMaxIterations,0,0x7FFFFFFF,"MAX",NULL),	//hidden alias
 new OptionalParameter<long>(iLogRatio,1,iMaxIterations,"LOGC","Writing to log frequency (not higher than MAXI)"),
@@ -176,7 +176,7 @@ new OptionalParameter<long>(IleSasiadow,2,sqr(RozmiarSasiedztwa*2+1)-1,"PRTR","H
 new OptionalParameter<bool>(AUTOSTART,false,true,"AUTO","Automatically start the simulation"),
 new OptionalParameter<bool>(iWychodzenie,false,true,"STOP","Automatic exit when done"),
 new OptionalParameter<long>(internal_log,50,iMaxIterations,"ILOG","yyy"),
-new OptionalParameter<int>(DistributionLevel,-100,100,"DSTB","Distribution Level/Kind"),
+new OptionalParameter<int>(DistributionLevel,-100,100,"DSTB","distribution Level/Kind"),
 new OptionalParameter<wb_pchar>(LogName,"*.log","*.txt","LOGF","name for log file"),
 new OptionalParameter<wb_pchar>(MapLName,"*.jpg","*.gif","MAPL","Map of languages from file"),
 new OptionalParameter<wb_pchar>(MapPName,"*.jpg","*.gif","MAPP","Map of individual power from file"),
@@ -222,7 +222,7 @@ cerr<<"YOU CAN USE:\n";
         cerr<<"\tLOGC=N - log file saving frequency ("<<iLogRatio<<")\n";
         cerr<<"\tLOGF=name.log - file for simulation log ("<<LogName<<")\n";
         cerr<<"\tHIST=hist.otx - file for full history of simulation.\n";
-        cerr<<"\tWIDTHWIN,HEIGHTWIN=XXX - initial window size.("<<SWIDTH<<'x'<<SHEIGHT<<"\n";
+        cerr<<"\tWIDTHWIN,HEIGHTWIN=XXX - initial window size.("<<SCR_WIDTH<<'x'<<SCR_HEIGHT<<"\n";
         cerr<<"\nAUTO=XXX - number of auto-repetition of simulation.("<<AUTOSTART<<")\n";
 */
 
@@ -246,54 +246,54 @@ int parse_options(const int argc,const char* argv[])
 
     if(strcmp(rob,"HELP")==0)
     {
-        goto HELPPRINT;
+        goto HELP_PRINT;
     }
     else
-    if((pom=strstr(rob,"SPCH="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"SPCH="))!=NULL) //If not NULL, then exists
     {
     MutacjeSpon=atof(pom+5);
     if(MutacjeSpon<=0 || MutacjeSpon>100)
         {
-        cerr<<"!!! Bad SPCH ="<<MutacjeSpon<<" (must be in <0,100> )"<<endl;
+        cerr<<"!!! Bad SPCH ="<<MutacjeSpon<<" (must be in <0,100>)"<<endl;
         return 0;
         }
     cerr<<"* Spontaneous change ratio in %: SPCH= "<<MutacjeSpon<<endl;
     MutacjeSpon/=100;	//A fraction, not a percentage, really.
     }
     else
-    if((pom=strstr(rob,"NOIP="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"NOIP="))!=NULL) //If not NULL, then exists
     {
     ProcentSzumu=atof(pom+5);
     if(ProcentSzumu<=0 || ProcentSzumu>100)
         {
-            cerr<<"!!! Bad NOIP ="<<ProcentSzumu<<" (must be in <0,100> )"<<endl;
+            cerr<<"!!! Bad NOIP ="<<ProcentSzumu<<" (must be in <0,100>)"<<endl;
             return 0;
         }
-        else
+    else
         {
             cerr<<"* Noise in decision in %: NOIP= "<<ProcentSzumu<<"%"<<endl;
         }
     }
     else
-    if((pom=strstr(rob,"CLSS="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"CLSS="))!=NULL) //If not NULL, then exists
     {
-    IloscKlas=atol(pom+5);
+    IloscKlas=asserted<int>(atol(pom+5));
     if(IloscKlas<2)
         {
-        cerr<<"!!! Bad CLSS ="<<IloscKlas<<" (must be greater than 2 )"<<endl;
+        cerr<<"!!! Bad CLSS ="<<IloscKlas<<" (must be greater than 2)"<<endl;
         return 0;
         }
     if(IloscKlas>256)
         {
-        cerr<<"!!! Bad CLSS ="<<IloscKlas<<" (must be less or equal to 8 )"<<endl;
+        cerr<<"!!! Bad CLSS ="<<IloscKlas<<" (must be less or equal to 8)"<<endl;
         return 0;
         }
     cerr<<"* Number of classes in each mem: CLSS= "<<IloscKlas<<endl;
     }
     else
-    if((pom=strstr(rob,"MIPO="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"MIPO="))!=NULL)  //If not NULL, then exists
     {
-    MinimalnaSila=atol(pom+5);
+    MinimalnaSila=asserted<int>(atol(pom+5));
     if(MinimalnaSila<0)	//0 czy 1???
         {
         cerr<<"!!! Bad MIPO ="<<MinimalnaSila<<" (must be >=1 )"<<endl;
@@ -302,9 +302,9 @@ int parse_options(const int argc,const char* argv[])
     cerr<<"* Minimal strength: MIPO= "<<MinimalnaSila<<endl;
     }
     else
-    if((pom=strstr(rob,"MPOW="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"MPOW="))!=NULL) //If not NULL, then exists
     {
-    MaksymalnaSila=atol(pom+5);
+    MaksymalnaSila=asserted<int>(atol(pom+5));
     if(MaksymalnaSila<0)	//0 or 1???
         {
         cerr<<"!!! Bad MPOW ="<<MaksymalnaSila<<" (must be >=1 )"<<endl;
@@ -313,9 +313,9 @@ int parse_options(const int argc,const char* argv[])
     cerr<<"* Max strenght: MPOW= "<<MaksymalnaSila<<endl;
     }
     else
-    if((pom=strstr(rob,"WPOW="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"WPOW="))!=NULL) //If not NULL, then exists
     {
-    RuchomaSila=atol(pom+5);
+    RuchomaSila=asserted<int>(atol(pom+5));
     if(RuchomaSila<0)
         {
         cerr<<"!!! Bad WPOW ="<<RuchomaSila<<" (must be >=0 )"<<endl;
@@ -324,7 +324,7 @@ int parse_options(const int argc,const char* argv[])
     cerr<<"* Moving strength: WPOW= "<<RuchomaSila<<endl;
     }
     else
-    if((pom=strstr(rob,"SWST="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"SWST="))!=NULL) //If not NULL, then exists
     {
        wb_pchar pom2(pom+5);
        char* pom3=strchr(pom2.get_ptr_val(),'/');
@@ -339,21 +339,21 @@ int parse_options(const int argc,const char* argv[])
        SW_links=true;
     }
     else
-    if((pom=strstr(rob,"NETD="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"NETD="))!=NULL) //If not NULL, then exists
     {
         ZrzucajNET=(toupper(pom[5])=='Y');
         cerr<<"* NETD="<<(ZrzucajNET?"Yes":"No")<<endl;
     }
     else
-    if((pom=strstr(rob,"TRSP="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"TRSP="))!=NULL) //If not NULL, then exists
     {
     TresProcent=asserted<int>(atol(pom+5));
     if(TresProcent<0 || TresProcent>100)
         {
-        cerr<<"!!! Bad TRSP = "<<asserted<long>(TresProcent)<<"(must be in <0,100>"<<endl;
+        cerr<<"!!! Bad TRSP = "<<TresProcent<<"(must be in <0,100>"<<endl;
         return 0;
         }
-        else
+    else
         {
         cerr<<"* Immunisation strength threshold : TRSP= "<<asserted<long>(TresProcent)<<"%"<<endl;
         if(RuchomaSila==0)	//There is no point in TRSP if there is no mobile force
@@ -364,40 +364,40 @@ int parse_options(const int argc,const char* argv[])
         }
     }
     else
-    if((pom=strstr(rob,"WIDTH="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"WIDTH="))!=NULL) //If not NULL, then exists
     {
     iWidth=atol(pom+6);
     if(iWidth<3)
         {
-        cerr<<"!!! Bad WIDTH = "<<iWidth<<"(must be in <3,"<<SWIDTH<<">"<<endl;
+        cerr << "!!! Bad WIDTH = " << iWidth << "(must be in <3," << SCR_WIDTH << ">" << endl;
         return 0;
         }
-    if(iWidth>=SWIDTH)
+    if(iWidth >= SCR_WIDTH)
         cerr<<"WIDTH ("<<iWidth<<") is really high!\n Simulation world may be larger than the window or even the screen."<<endl;
     cerr<<"* World width: WIDTH= "<<iWidth<<'x'<<iWidth<<endl;
     }
     else
-    if((pom=strstr(rob,"WIDTHWIN="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"WIDTHWIN="))!=NULL) //If not NULL, then exists
     {
-    SWIDTH=atol(pom+9);
-    if(SWIDTH<50)
+        SCR_WIDTH=atol(pom + 9);
+    if(SCR_WIDTH < 50)
         {
-        cerr<<"!!! Bad WIDTHWIN = "<<SWIDTH<<" (must be >50)"<<endl;
+        cerr << "!!! Bad WIDTHWIN = " << SCR_WIDTH << " (must be >50)" << endl;
         return 0;
         }
     }
     else
-    if((pom=strstr(rob,"HEIGHTWIN="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"HEIGHTWIN="))!=NULL) //If not NULL, then exists
     {
-    SHEIGHT=atol(pom+10);
-    if(SHEIGHT<50)
+        SCR_HEIGHT=atol(pom + 10);
+    if(SCR_HEIGHT < 50)
         {
-        cerr<<"!!! Bad HEIGHTWIN = "<<SHEIGHT<<" (must be >50)"<<endl;
+        cerr << "!!! Bad HEIGHTWIN = " << SCR_HEIGHT << " (must be >50)" << endl;
         return 0;
         }
     }
     else
-    if((pom=strstr(rob,"MAX="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"MAX="))!=NULL) //If not NULL, then exists
     {
     iMaxIterations=atol(pom+4);
     if(iMaxIterations<=0)
@@ -408,7 +408,7 @@ int parse_options(const int argc,const char* argv[])
     cerr<<"Maximal number of steps: MAX= "<<iMaxIterations<<endl;
     }
     else
-    if((pom=strstr(rob,"LOGC="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"LOGC="))!=NULL)  //If not NULL, then exists
     {
     iLogRatio=atol(pom+5);
     if(iLogRatio<=0)
@@ -418,7 +418,7 @@ int parse_options(const int argc,const char* argv[])
         }
     }
     else
-    if((pom=strstr(rob,"VIEW="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"VIEW="))!=NULL) //If not NULL, then exists
     {
     iViewRatio=atol(pom+5);
     if(iViewRatio<=0)
@@ -428,7 +428,7 @@ int parse_options(const int argc,const char* argv[])
         }
     }
     else
-    if((pom=strstr(rob,"SRND="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"SRND="))!=NULL)  //If not NULL, then exists
     {
     My_Rand_seed=asserted<int>(atol(pom+5));
     if(My_Rand_seed<=0)
@@ -436,48 +436,48 @@ int parse_options(const int argc,const char* argv[])
         cerr<<"!!! Bad SRND (rand seed). Must be >=0, but 0 means time()"<<endl;
         return 0;
         }
-        else
+    else
         {
             clog<<" SRAND was set to "<<My_Rand_seed<<endl;
         }
     }
     else
-    if((pom=strstr(rob,"DUMP="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"DUMP="))!=NULL)  //If not NULL, then exists
     {
     jworld::continous_dump=(toupper(pom[5])=='Y');
     cerr<<"DUMP="<<(jworld::continous_dump?"Yes":"No")<<endl;
     }
     //continuous dump
     else
-    if((pom=strstr(rob,"SELF="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"SELF="))!=NULL)  //If not NULL, then exists
     {
     BranieSiebie=(toupper(pom[5])=='Y');
     cerr<<"SELF="<<(BranieSiebie?"Yes":"No")<<endl;
     }
     else
-    if((pom=strstr(rob,"INDI="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"INDI="))!=NULL)  //If not NULL, then exists
     {
     RozmiarSasiedztwa=asserted<int>(atol(pom+5));
     if( RozmiarSasiedztwa>=1U &&
         RozmiarSasiedztwa<(iWidth/2-1))
         {
-        cerr<<"* Radius of a neighborhood: INDI="<<RozmiarSasiedztwa<<endl;;
+        cerr<<"* Radius of a neighborhood: INDI="<<RozmiarSasiedztwa<<endl;
         }
-        else
+    else
         {
         cerr<<"!!! Bad INDI="<<RozmiarSasiedztwa<<" Must from 1 to "<<iWidth/2-1<<endl;
         return 0;
         }
     }
     else
-    if((pom=strstr(rob,"PRTR="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"PRTR="))!=NULL)  //If not NULL, then exists
     {
     IleSasiadow=asserted<int>(atol(pom+5));
     if(IleSasiadow>1 && IleSasiadow<=sqr(RozmiarSasiedztwa*2+1)-1)
         {
         cerr<<"* How many real neighbors: PRTR="<<IleSasiadow<<endl;
         }
-        else
+    else
         {
         cerr<<"!!! Bad PRTR="<<IleSasiadow
             <<"! Must from 2 to "<<sqr(RozmiarSasiedztwa*2+1)-1<<endl;
@@ -485,18 +485,18 @@ int parse_options(const int argc,const char* argv[])
         }
     }
     else
-    if((pom=strstr(rob,"AUTO="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"AUTO="))!=NULL)  //If not NULL, then exists
     {
     AUTOSTART=asserted<int>(atol(pom+5));
     cerr<<"* AUTO="<<AUTOSTART<<endl;
     if(AUTOSTART)
         {
         iWychodzenie=1;
-        cerr<<"** STOP="<<(iWychodzenie?"Yes":"No")<<endl;
+        cerr<<"** STOP=Yes"<<endl;
         }
     }
     else 	//Console
-    if((pom=strstr(rob,"CONS="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"CONS="))!=NULL)  //If not NULL, then exists
     {
     Console=(atol(pom+5)!=0) || pom[5]=='Y' || pom[5]=='y' || pom[5]=='T' || pom[5]=='t';
     cerr<<"* CONSole="<<Console<<"!!!"<<endl;
@@ -506,11 +506,11 @@ int parse_options(const int argc,const char* argv[])
         iWychodzenie=1;
         AUTOSTART=1;
         cerr<<"** AUTO="<<AUTOSTART<<endl;
-        cerr<<"** STOP="<<(iWychodzenie?"Yes":"No")<<endl;
+        cerr<<"** STOP=Yes"<<endl;
         }
     }
     else
-    if((pom=strstr(rob,"BIAS="))!=NULL)  //If not NULL then exists
+    if((/*pom=*/strstr(rob,"BIAS="))!=NULL)  //If not NULL, then exists
     {
     BIAS_STR=rob+5;
     cerr<<"* BIAS = "<<BIAS_STR<<endl;
@@ -518,13 +518,13 @@ int parse_options(const int argc,const char* argv[])
     taker=hand.give();	//Takes away the management. Dismissal at the end of the program.
     }
     else
-    if((pom=strstr(rob,"STOP="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"STOP="))!=NULL)  //If not NULL, then exists
     {
     iWychodzenie=(toupper(pom[5])=='Y');
     cerr<<"* Automatic exit when done: STOP="<<(iWychodzenie?"Yes":"No")<<endl;
     }
     else
-    if((pom=strstr(rob,"ILOG="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"ILOG="))!=NULL)  //If not NULL, then exists
     {
     internal_log=atol(pom+5);
     if(internal_log<50)
@@ -534,47 +534,46 @@ int parse_options(const int argc,const char* argv[])
             }
     }
     //cerr<<"\tDSTB=N - level and kind of strength distribution ("<<DistributionLevel<<")\n";
-     else
-    if((pom=strstr(rob,"DSTB="))!=NULL)  //If not NULL then exists
+    else
+    if((pom=strstr(rob,"DSTB="))!=NULL)  //If not NULL, then exists
     {
     DistributionLevel=atoi(pom+5);
     if(DistributionLevel==0 || abs(DistributionLevel)>100)
             {
-            cerr<<"!!! Invalid value of Distribution Level/Kind ="<<DistributionLevel<<endl;
+            cerr<<"!!! Invalid value of distribution Level/Kind ="<<DistributionLevel<<endl;
             }
-            else
-            cerr<<"* Distribution Level/Kind DSTB="<<DistributionLevel<<endl;
+    else cerr<<"* distribution Level/Kind DSTB="<<DistributionLevel<<endl;
     }
     else
-    if((pom=strstr(rob,"LOGF="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"LOGF="))!=NULL)  //If not NULL, then exists
     {
     strcpy(LogName,pom+5);
     }else
-    if((pom=strstr(rob,"MAPL="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"MAPL="))!=NULL)  //If not NULL, then exists
     {
     strcpy(MapLName,pom+5);
     cerr<<"* Map of languages from file \""<<MapLName<<"\"\n";
     }
     else
-    if((pom=strstr(rob,"MAPP="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"MAPP="))!=NULL)  //If not NULL, then exists
     {
     strcpy(MapPName,pom+5);
     cerr<<"* Map of individual power from file \""<<MapPName<<"\"\n";
     }
     else
-    if((pom=strstr(rob,"MASK="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"MASK="))!=NULL)  //If not NULL, then exists
     {
     strcpy(MaskName,pom+5);
-    cerr<<"* Mask for alive agents from file \""<<MaskName<<"\"\n";
+    cerr<<"* Mask for living agents from file \""<<MaskName<<"\"\n";
     }
     else
-    if((pom=strstr(rob,"HIST="))!=NULL)  //If not NULL then exists
+    if((pom=strstr(rob,"HIST="))!=NULL)  //If not NULL, then exists
     {
     strcpy(HistName,pom+5);
     cerr<<"* History of the simulation will be saved to \""<<HistName<<"\"\n";
     }
     else
-    if((pom=strstr(rob,"REPL="))!=NULL) //If not NULL then exists
+    if((pom=strstr(rob,"REPL="))!=NULL) //If not NULL, then exists
     {
     strcpy(HistName,pom+5);
     Replay=1;
@@ -609,13 +608,13 @@ int parse_options(const int argc,const char* argv[])
                 UseSpatialCorr=true;
             }
             else
-            cerr<<"!!! Sorry but spatial correlation is disabled, RSPC was ignored."<<endl;
+            cerr<<"!!! Sorry, but spatial correlation is disabled, RSPC was ignored."<<endl;
         }
     }
     else
-    if((pom=strstr(rob,"HELP"))!=NULL) //Nie NULL czyli jest
+    if((/*pom=*/strstr(rob,"HELP"))!=NULL) //Nie NULL, czyli jest
     {
-HELPPRINT:
+HELP_PRINT:
         cerr<<"Unknown parameter \""<<argv[i]<<"\"\n";
         cerr<<"YOU CAN USE:\n";
         cerr<<"\tREPL=hist.otx - not simulate, but replay simulation history file.\n";
@@ -625,7 +624,7 @@ HELPPRINT:
         cerr<<"\tMASK=mask.gif	(or BMP)- mask file for alive (not black) agents (ALL ALIVE)\n";
         cerr<<"\tWIDTH=NN - matrix size ("<<iWidth<<")\n";
         cerr<<"\tSRND=NNNN - random seed if you want particular one\n";
-        cerr<<"\tBIAS=item item ... - setting bias by items string (NO BIAS)\n"<<
+        cerr<<"\tBIAS=\"item item\" - setting bias using item string (NO BIAS)\n"<<
               "\t\the item string example: \"A1:1 A2:4 B2:2 C2:4 A4&C3:10 A5&B5&C5:12\"\n";
         cerr<<"\tCLSS=NN - number of class. Must be power of 2. ("<<IloscKlas<<")\n";
         cerr<<"\tMPOW=NN - max strength for initialization ("<<MaksymalnaSila<<")\n"	;
@@ -641,7 +640,7 @@ HELPPRINT:
         cerr<<"\tNOIP=NN - percent of noise ("<<ProcentSzumu<<")\n";
         cerr<<"\tSPCH=NN - percent of spontaneous change of attitudes ("<<MutacjeSpon*100<<")\n";
         cerr<<"\tMAX=NNNN - max simulation step ("<<iMaxIterations<<")\n";
-        cerr<<"\tILOG=NNNN - length of internal statistic logs  ("<<internal_log<<")\n";
+        cerr<<"\tILOG=NNNN - length of internal statistic logs ("<<internal_log<<")\n";
         cerr<<"\tSTOP=N/Y - exit after MAX steps ("<<(iWychodzenie?"Yes":"No")<<")\n";
         cerr<<"\tVIEV=NNN - visualisation frequency ("<<iViewRatio<<")\n";
         cerr<<"\tDUMP=Y/N - dump, or not, screen at every simulation step\n";
@@ -649,7 +648,7 @@ HELPPRINT:
         cerr<<"\tLOGC=N - log file saving frequency ("<<iLogRatio<<")\n";
         cerr<<"\tLOGF=name.log - file for simulation log ("<<LogName<<")\n";
         cerr<<"\tHIST=hist.otx - file for full history of simulation.\n";
-        cerr<<"\tWIDTHWIN,HEIGHTWIN=XXX - initial window size.("<<SWIDTH<<'x'<<SHEIGHT<<"\n";
+        cerr << "\tWIDTHWIN,HEIGHTWIN=XXX - initial window size.(" << SCR_WIDTH << 'x' << SCR_HEIGHT << "\n";
         cerr<<"\nAUTO=XXX - number of auto-repetition of simulation.("<<AUTOSTART<<")\n";
         cerr<<"\nCONS=N/Y - switch on/off console mode.("<<Console<<")\n";
     return 0;
@@ -685,7 +684,7 @@ public:
         {
         case ID_VIEWOPT_DUMPCO:	//               60100
             world::continous_dump=!world::continous_dump;
-            clog<<"Screen dumping was set to "<<world::continous_dump<<endl;;
+            clog<<"Continuous screen dumping was set to "<<(world::continous_dump?"Y":"N")<<endl;
         break;
         case ID_VIEWOPT_LESSOFT:	//              60101
             TheWorld->InputRatio*=2;
@@ -747,7 +746,8 @@ public:
 int main(const int argc,const char* argv[])
 {
     cout<<WINDOW_HEADER<<endl;
-    cout<<Authors<<endl;											assert((cerr<<"All assertions are active!"<<endl));
+    cout<<Authors<<endl;
+    assert((cerr<<"All assertions are active!"<<endl)); //THE SIDE EFFECT ON ASSERTION IS intended!
     cout<<endl<<flush;
 
     if(!parse_options(argc,argv))
@@ -755,12 +755,12 @@ int main(const int argc,const char* argv[])
 
     //INITIALIZE global randomizer:
     if(My_Rand_seed==0)
-        {RANDOMIZE();}
+        {RANDOMIZE()}
     else
-        {SRAND(My_Rand_seed);}
+        {SRAND(My_Rand_seed)}
 
     //INITIALIZATION of the sub-window system:
-    my_area_menager Lufciki(24,SWIDTH,SHEIGHT,28);  //Or just a dummy if you don't want graphics
+    my_area_menager Lufciki(24, SCR_WIDTH, SCR_HEIGHT, 28);  //Or just a placeholder if you don't want graphics.
 
     if( Console || !Lufciki.start(WINDOW_HEADER,argc,argv,1) )
     {
@@ -771,8 +771,8 @@ int main(const int argc,const char* argv[])
     //Creating a meaningful name for your screenshot file(s):
     if(!Console)
     {
-        wb_pchar buf(strlen(SCREENDUMPNAME)+20);
-        buf.prn("%s_%ld",SCREENDUMPNAME,time(NULL));
+        wb_pchar buf(strlen(SCREEN_DUMP_NAME) + 20);
+        buf.prn("%s_%ld", SCREEN_DUMP_NAME, time(NULL));
         Lufciki.set_dump_name(buf.get());
     }
 
@@ -883,7 +883,7 @@ int main(const int argc,const char* argv[])
 
 
 /* STATIC ALLOCATION */
-//unsigned agent::max=0; //what is the largest class.
+/// `unsigned agent::max=0;` - what is the largest class.
 
 #pragma clang diagnostic pop
 /* **************************************************************** */

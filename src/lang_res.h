@@ -1,8 +1,8 @@
 //{{NO_DEPENDENCIES}}
 /// @file
 /// @brief Menu messages (LANGUAGES PROJECT WITH P.Culicover)
+/// @date 2026-04-30 (modified)
 //  =========================================================
-/// @date 2026-04-22 (modified)
 //
 // Microsoft Developer Studio generated include file.
 // Used by languages.rc
@@ -39,6 +39,7 @@
 #define SSH_WINDOWS_UNMARKALLAREAS      50026
 #define SSH_HELP_SHORTCUTHELP           50091
 #define SSH_HELP_AUTHORSWWWPAGE         50092
+
 #define SSH_FIRST_FREE_MESSAGE          50100
 
 //ADDITIONAL
