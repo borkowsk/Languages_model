@@ -1,6 +1,6 @@
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
-/// @date 2026-04-30 (modified)
+/// @date 2026-05-06 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-use-nullptr"
@@ -24,6 +24,7 @@
 #include "jworld.h"
 #include "jagent.h"
 
+using namespace symshell2;
 
 //When Embarcadero goes crazy in a hundred places: "code has no effect" even though it definitely has an effect!
 //#pragma warn -8019
@@ -186,15 +187,15 @@ void jworld::make_basic_sources()
     //Main series:
     Firsts=Agenci.make_source("First mem",&jagent::First);
     if(Firsts)
-        Firsts->setminmax(0, NumOfCate - 1);
+        Firsts->set_min_max(0, NumOfCate - 1);
 
     Seconds=Agenci.make_source("Second mem",&jagent::Second);
     if(Seconds)
-        Seconds->setminmax(0, NumOfCate - 1);
+        Seconds->set_min_max(0, NumOfCate - 1);
 
     Thirds=Agenci.make_source("Third mem",&jagent::Third);
     if(Thirds)
-        Thirds->setminmax(0, NumOfCate - 1);
+        Thirds->set_min_max(0, NumOfCate - 1);
 
     Powers=Agenci.make_source("Power",&jagent::Power);
     Age=Agenci.make_source("Lang. age",&jagent::Age);
@@ -202,17 +203,17 @@ void jworld::make_basic_sources()
 
     Classif=Agenci.make_source("Classification",&jagent::Classif);
     if(Classif)
-        Classif->setminmax(0, NumOfCate * NumOfCate * NumOfCate - 1);	//'Max class ==NumOfCate^3',because three independent layers.
+        Classif->set_min_max(0, NumOfCate * NumOfCate * NumOfCate - 1);	//'Max class ==NumOfCate^3',because three independent layers.
 
     //struct_matrix_source<_far_link,unsigned>		*
     FarA=FarLinks.make_source("F.links to A",&_far_link::a);
     if(FarA)
-        FarA->setminmax(0,MyWidth-1);
+        FarA->set_min_max(0, MyWidth - 1);
 
     //struct_matrix_source<_far_link,unsigned>		*
     FarB=FarLinks.make_source("F.links to B",&_far_link::b);
     if(FarB)
-        FarB->setminmax(0,MyWidth-1);
+        FarB->set_min_max(0, MyWidth - 1);
 
     FCount=FarLinks.make_source("counters of far connections",&_far_link::get_target_count);
 
@@ -492,7 +493,7 @@ void jworld::make_default_visualisation()
 
     if(WithGr)
     {
-        area_menager&	Menager=MyAreaMenager(); ///< Shortcut to Area Manager
+        symshell2::area_menager&	Menager=MyAreaMenager(); ///< Shortcut to Area Manager
 
         // AVAILABLE WINDOW DIMENSIONS:
         unsigned szer=Menager.getwidth();
@@ -506,7 +507,7 @@ void jworld::make_default_visualisation()
         }
 
         // VISUALIZATION OF BASIC DATA SERIES:
-        graph* pom1=new sequence_graph(szer/2-1,wyso/4,szer-50,wyso/2-1, //default coordinates of this display area
+        symshell2::graph* pom1=new symshell2::sequence_graph(szer/2-1,wyso/4,szer-50,wyso/2-1, //default coordinates of this display area
                                         3,Sources.make_series_info(
                                                 iClassEntropy,iNumClassF,iMainClassF,
                                                     -1
@@ -515,7 +516,7 @@ void jworld::make_default_visualisation()
                                        );
         if(!pom1) ON_ERROR_MAKE
         pom1->setframe(128);
-        pom1->settitle("History of classes");
+        pom1->set_title("History of classes");
         Menager.insert(pom1);
 
         pom1=new sequence_graph(szer/2-1,1,szer-50,wyso/4-1, //default coordinates of this display area
@@ -529,7 +530,7 @@ void jworld::make_default_visualisation()
                                        );
         if(!pom1) ON_ERROR_MAKE
         pom1->setframe(128);
-        pom1->settitle("History of ENTROPY of coincidence");
+        pom1->set_title("History of ENTROPY of coincidence");
         Menager.insert(pom1);
 
         graph* pom=new true_color_carpet_graph(1,wyso/2,szer/2-1,wyso-1, //Combined meme map - in the same place as the classification, so either/or
@@ -537,7 +538,7 @@ void jworld::make_default_visualisation()
                      Seconds,0,
                      Thirds,0 // Memes, i.e., language attributes, appear here as sources of color data
                      );
-        pom->settitle("RGB map of languages");
+        pom->set_title("RGB map of languages");
         Menager.insert(pom);
 
         //pom=new fast_carpet_graph<ptr_to_struct_matrix_source<jagent,unsigned long> ,true>(szer/2-1,wyso/2,szer-50,wyso-1,
@@ -545,7 +546,7 @@ void jworld::make_default_visualisation()
                      Politics,0, //Visualization of agents' political affiliation
                      true // Master agents as a source of color data
                      );
-        pom->settitle("POLITICAL MAP");
+        pom->set_title("POLITICAL MAP");
         Menager.insert(pom);
 
         // Side menu for additional visualizations:
@@ -565,7 +566,7 @@ void jworld::make_default_visualisation()
                                );
         if(!pom) ON_ERROR_MAKE
         pom->setframe(128);
-        pom->settitle("History of far links");
+        pom->set_title("History of far links");
         Menager.insert(pom);
 
         // Stress history:
@@ -580,7 +581,7 @@ void jworld::make_default_visualisation()
                                );
         if(!pom) ON_ERROR_MAKE
         pom->setframe(128);
-        pom->settitle("History of stress");
+        pom->set_title("History of stress");
         Menager.insert(pom);
 
         // History of correlation:
@@ -595,7 +596,7 @@ void jworld::make_default_visualisation()
                                );
         if(!pom) ON_ERROR_MAKE
         pom->setframe(128);
-        pom->settitle("History of correlations");
+        pom->set_title("History of correlations");
         Menager.insert(pom);
 
         // Visualization of the world in the colors of the languages and with the height of the bars visualizing the strength of agents.
@@ -609,7 +610,7 @@ void jworld::make_default_visualisation()
                                 0.77		//A fraction of the height is dedicated to perspective
                                 );
         pom->setdatacolors(0,255);
-        pom->settitle("Strength of agents versus RGB view of languages");
+        pom->set_title("Strength of agents versus RGB view of languages");
         Menager.insert(pom);
 
         if(NumOfCate * NumOfCate * NumOfCate <= 256) //For more languages, the following visualization does not make sense.
@@ -622,7 +623,7 @@ void jworld::make_default_visualisation()
                                     0.77		//A fraction of the height is dedicated to perspective
                                     );
             pom->setdatacolors(0,255);
-            pom->settitle("Strength of agents versus languages");
+            pom->set_title("Strength of agents versus languages");
             int inde=Menager.insert(pom);
             Menager.minimize(inde);
         }
@@ -635,7 +636,7 @@ void jworld::make_default_visualisation()
         pom=new carpet_graph(MLeft,6*MStep,szer,7*MStep,
                                 LogAge);
         //pom->setdatacolors(255,511);
-        pom->settitle("Age of agent's language");
+        pom->set_title("Age of agent's language");
         Menager.insert(pom);
 
         if(NumOfCate * NumOfCate * NumOfCate <= 256) //For more languages, the following visualization does not make sense.
@@ -644,7 +645,7 @@ void jworld::make_default_visualisation()
                 Classif	//Artificial color data source, no more than 256
                 );
             pom->setdatacolors(0,255);
-            pom->settitle("Map of languages");
+            pom->set_title("Map of languages");
             Menager.insert(pom);
         }
 
@@ -654,7 +655,7 @@ void jworld::make_default_visualisation()
                 ClassStat
                 );
             pom->setdatacolors(0,255);
-            pom->settitle("Histogram of languages");
+            pom->set_title("Histogram of languages");
             int ipom=Menager.insert(pom);
             Menager.minimize(ipom);
         }
@@ -665,7 +666,7 @@ void jworld::make_default_visualisation()
         if(!pom) ON_ERROR_MAKE
         pom->setdatacolors(0,32);
         pom->setframe(200);
-        pom->settitle("Log distribution of language size classes");
+        pom->set_title("Log distribution of language size classes");
         Menager.insert(pom);
 
         if(!UseSpatialCorr)
@@ -673,13 +674,13 @@ void jworld::make_default_visualisation()
             pom=new bars_graph(MLeft,8*MStep,szer,9*MStep,
                 HistClass);
             pom->setdatacolors(0,255);
-            pom->settitle("Histogram of language size classes");
+            pom->set_title("Histogram of language size classes");
             Menager.insert(pom);
         }
         else
         {
         /*
-            function_source_base* Linear=new function_source<yeqx>(SpatialCorr->get_size(),0,SpatialCorr->get_size(),"length"); Sources.insert(Linear);
+            function_source_base* Linear=new function_source<y_eq_x>(SpatialCorr->get_size(),0,SpatialCorr->get_size(),"length"); Sources.insert(Linear);
             pom1=new scatter_graph(szer-49,8*char_height('X')+8,szer,9*char_height('X')+10,
                 Linear,0,
                 SpatialCorr,0);
@@ -688,7 +689,7 @@ void jworld::make_default_visualisation()
             pom=new bars_graph(szer-49,7*char_height('X')+7,szer,8*char_height('X')+9,
                                     LogHistClass);
             pom->setdatacolors(0,255);
-            pom->settitle("Log10 Histogram of languages");
+            pom->set_title("Log10 Histogram of languages");
             Menager.insert(pom);
         */
         }
@@ -702,7 +703,7 @@ void jworld::make_default_visualisation()
                                     0.77);
         pom->setdatacolors(0,255);
         pom->settextcolors(0);
-        pom->settitle("First & Second coincidence");
+        pom->set_title("First & Second coincidence");
         Menager.insert(pom);
 
         pom=new manhattan_graph(MLeft,10*MStep,szer,11*MStep,
@@ -713,7 +714,7 @@ void jworld::make_default_visualisation()
                                     0.77);
         pom->setdatacolors(0,255);
         pom->settextcolors(0);
-        pom->settitle("Second & Third coincidence");
+        pom->set_title("Second & Third coincidence");
         Menager.insert(pom);
 
         pom=new manhattan_graph(MLeft,11*MStep,szer,12*MStep,
@@ -724,7 +725,7 @@ void jworld::make_default_visualisation()
                                     0.77);
         pom->setdatacolors(0,255);
         pom->settextcolors(0);
-        pom->settitle("Third & First coincidence");
+        pom->set_title("Third & First coincidence");
         Menager.insert(pom);
 
         // Maps of individual memes - language attributes:
@@ -733,7 +734,7 @@ void jworld::make_default_visualisation()
         pom=new carpet_graph(MLeft,15*MStep,szer,16*MStep,
                                 Firsts);
         pom->setdatacolors(0,255);
-        pom->settitle("Map of FIRSTs");
+        pom->set_title("Map of FIRSTs");
         int inde=Menager.insert(pom);
         Menager.minimize(inde);
 
@@ -742,13 +743,13 @@ void jworld::make_default_visualisation()
                                 NULL,0,
                                 NULL,0);
         pom->setdatacolors(0,255);
-        pom->settitle("Red map of FIRSTs");
+        pom->set_title("Red map of FIRSTs");
         Menager.insert(pom);
 
         pom=new carpet_graph(MLeft,16*MStep,szer,17*MStep,
                                 Seconds);
         pom->setdatacolors(0,255);
-        pom->settitle("Map of SECONDs");
+        pom->set_title("Map of SECONDs");
         inde=Menager.insert(pom);
         Menager.minimize(inde);
 
@@ -757,13 +758,13 @@ void jworld::make_default_visualisation()
                                 Seconds,0,
                                 NULL,0);
         pom->setdatacolors(0,255);
-        pom->settitle("Green map of SECONDs");
+        pom->set_title("Green map of SECONDs");
         Menager.insert(pom);
 
         pom=new carpet_graph(MLeft,17*MStep,szer,18*MStep,
                                 Thirds);
         pom->setdatacolors(0,255);
-        pom->settitle("Map of THIRDs");
+        pom->set_title("Map of THIRDs");
         inde=Menager.insert(pom);
         Menager.minimize(inde);
 
@@ -772,7 +773,7 @@ void jworld::make_default_visualisation()
                                 NULL,0,
                                 Thirds,0);
         pom->setdatacolors(0,255);
-        pom->settitle("Blue map of THIRDs");
+        pom->set_title("Blue map of THIRDs");
         Menager.insert(pom);
 
         // Information about far links:
@@ -781,7 +782,7 @@ void jworld::make_default_visualisation()
                                 FarB,0,
                                 FCount,0,
                                 FCount,0);
-        pom->settitle("Sources of far influence");
+        pom->set_title("Sources of far influence");
         pom->setbackground(256+100);
         Menager.insert(pom);
 
@@ -799,7 +800,7 @@ void jworld::make_default_visualisation()
 
             if(!pom1) ON_ERROR_MAKE
             pom1->setframe(128);
-            pom1->settitle("SPATIAL CORRELATION");
+            pom1->set_title("SPATIAL CORRELATION");
             Menager.insert(pom1);
 
             pom=new sequence_graph(MLeft,14*MStep,szer,15*MStep,
@@ -813,7 +814,7 @@ void jworld::make_default_visualisation()
                                 );
             if(!pom) ON_ERROR_MAKE
             pom->setframe(128);
-            pom->settitle("History of approximated cluster size");
+            pom->set_title("History of approximated cluster size");
             Menager.insert(pom);
     }
 
@@ -828,7 +829,7 @@ void jworld::make_default_visualisation()
                                                   );
         drawable_base* pWheel=new steering_wheel(MLeft, 0, szer, 4 * MStep, tmp);  assert(pWheel != NULL);
         pWheel->setbackground(10);
-        pWheel->settitle(" (-o-) ");
+        pWheel->set_title(" (-o-) ");
         Menager.insert(pWheel);
     }
 }

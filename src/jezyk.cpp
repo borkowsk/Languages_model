@@ -1,6 +1,6 @@
 /// @file
 /// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover.
-/// @date 2026-04-30 (modified)
+/// @date 2026-05-06 (modified)
 ///
 ///     THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -669,7 +669,7 @@ return 1;
 /* AREA MANAGER'S OWN RE-IMPLEMENTATION AND GENERAL MAIN FUNCTION */
 /* ************************************************************** */
 
-class my_area_menager:public main_area_menager
+class my_area_menager:public symshell2::main_area_menager
 {
     jworld* TheWorld;
 public:
