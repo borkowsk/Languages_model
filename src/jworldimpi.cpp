@@ -1,6 +1,6 @@
 /// @file
 /// @brief Virtual Input method implementation of the jworld class. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-04-30 (modified)
+/// @date 2026-05-07 (modified)
 ///
 ///     Its is rather simply implementation. You can replace it if you need.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -9,7 +9,7 @@
 
 int jworld::implement_input(istream& i)  
 {
-    int ret=world::implement_input(i);
+    int ret=this->symshell2::world::implement_input(i);
     if(ret!=1) return ret;
     i>>MyWidth;
     i >> MaxStrength;
@@ -19,7 +19,7 @@ int jworld::implement_input(istream& i)
     i >> NeighRadius;
     i>>UseSelf;
     i>>Noise;
-    rectangle_geometry* Geom=(rectangle_geometry*)Agenci.get_geometry();                         assert(Geom!=NULL);
+    symshell2::rectangle_geometry* Geom=(symshell2::rectangle_geometry*)Agenci.get_geometry();                         assert(Geom!=NULL);
     if(Geom->get_width()!=MyWidth||
        Geom->get_height()!=MyWidth )
             Geom->set(MyWidth,MyWidth,1);

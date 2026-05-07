@@ -1,7 +1,8 @@
 /// @file
 /// @brief SIMULATION STEP WITH BIAS IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-04-30 (modified)
-// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @date 2026-05-07 (modified)
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //#include <limits.h>
 //#include <assert.h>
 //#include <string.h>
@@ -20,6 +21,8 @@
 
 #include "jrand.h"
 #include "jworld.h"
+
+using namespace symshell2;
 
 /// The value that represents "all-the-same" in conditional biases.
 /// Always greater than the largest value in the layer. Default `==8`. Announced in the header.

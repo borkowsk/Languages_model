@@ -1,6 +1,6 @@
 /// @file
 /// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover.
-/// @date 2026-05-06 (modified)
+/// @date 2026-05-07 (modified)
 ///
 ///     THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,8 +88,6 @@ int My_Rand_seed=0; ///< Random generator initializer. If 0 it uses RANDOMIZE, i
 #include <cstdlib>
 #include <ctime>
 
-using namespace std;
-
 #define HIDE_WB_PTR_IO 0
 #include "wb_ptr.hpp"
 #include "optParam.hpp"
@@ -97,6 +95,9 @@ using namespace std;
 #include "jrand.h"
 #include "jworld.h"
 #include "lang_res.h"
+
+using namespace std;
+using namespace symshell2;
 
 unsigned	SCR_WIDTH=asserted<unsigned>(1440 * 0.6666);		///< Screen/window inside width. (720 or 1440);
 unsigned	SCR_HEIGHT=asserted<unsigned>(1080 * 0.6666);	///< Screen/window inside height. (540 or 1080);

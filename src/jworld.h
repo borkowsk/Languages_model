@@ -1,7 +1,8 @@
 /// @file
 /// @brief DECLARATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-04-30 (modified)
+/// @date 2026-05-07 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 #include <climits> //SHRT_MAX
 
@@ -9,12 +10,13 @@
 #include "world.hpp"
 #include "layer.hpp"
 #include "jagent.h" //Agent definition
+using namespace sym2::data;; //To będzie miec wpływ globalny!
 
 extern bool			Console;	///< Flag for working in console mode - without any graphics. By default, it is `false`.
 extern const int	BIAS_FOR_ANY;	///< The value that represents "all-the-same" in conditional biases.
                                     ///< Always greater than the largest value in the layer. Default `==8`.
 /// The Whole World of Simulation.
-class jworld:public world
+class jworld:public symshell2::world
 //--------------------------------------------------
 {
 public:
@@ -144,10 +146,10 @@ private:
     //rectangle_unilayer<unsigned char> livability; //livability layer.
 
     /// The layer of colonizing agents.
-    rectangle_layer_of_ptr_to_agents<jagent>	Agenci;
+    symshell2::rectangle_layer_of_ptr_to_agents<jagent>	Agenci;
 
     //!< A layer of long-distance connections. Not in agents, because the structure is supposed to be constant despite agent movement.
-    rectangle_layer_of_struct<_far_link>		FarLinks;
+    symshell2::rectangle_layer_of_struct<_far_link>		FarLinks;
 
     // Main data series. Because it's more convenient to have pointers than to search `Sources` by name:
     // /////////////////////////////////////////////////////////////////////////////////////////////////

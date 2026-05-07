@@ -1,6 +1,6 @@
 /// @file
 /// @brief ALTERNATIVE CONDITIONAL BIAS SIMULATION STEP IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-04-30 (created)
+/// @date 2026-05-07 (created)
 ///     Split from "jbias.cpp" by borkowsk on 14.04.2026.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
@@ -32,14 +32,14 @@ void    jworld::_one_step_conditional_bias1()
     _conditional_bias_information* BiasData=dynamic_cast<_conditional_bias_information*>
                                                             (BiasDefinition.get_ptr_val());      assert(BiasData!=NULL);
     /// Shortcut to the geometry of the simulation world.
-    const geometry_base* MyGeom=Agenci.get_geometry();                                             assert(MyGeom!=NULL);
+    const symshell2::geometry* MyGeom=Agenci.get_geometry();                                             assert(MyGeom!=NULL);
 
     /// THREE-DIMENSIONAL TABLE FOR COUNTING INFLUENCES.
     /// Number of allowable categories in each meme + positions for single biases and double combinations.
     int Wplywy[BIAS_FOR_ANY+1][BIAS_FOR_ANY+1][BIAS_FOR_ANY+1];                           assert(NumOfCate <= BIAS_FOR_ANY); //Aren't there too many categories for such an influence board?
 
     /// Monte-Carlo iterator (may have data allocations inside).
-    iteratorh Monte=MyGeom->make_random_global_iterator();
+    symshell2::iteratorh Monte=MyGeom->make_random_global_iterator();
     int testowanie=0; ///< An auxiliary counter for testing the algorithm.
 
     //We go through the agents with a Monte-Carlo iterator. Some may be drawn again.
@@ -61,8 +61,8 @@ void    jworld::_one_step_conditional_bias1()
             goto STARZENIE;
 
         {   // INFLUENCE CALCULATION CODE:
-            //////////////////////////////
-            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,NeighRadius,NeighDens); // We allocate the neighborhood iterator
+            // ////////////////////////////
+            symshell2::iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,NeighRadius,NeighDens); // We allocate the neighborhood iterator
             unsigned zliczanie=0;           //For counting neighbors
 
             //The counter table need to be reset.
@@ -73,7 +73,7 @@ void    jworld::_one_step_conditional_bias1()
             {
                 size_t a,b;
                 unsigned x,y;
-                dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b); //Retrieve x and y from the agent index
+                dynamic_cast<const symshell2::rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b); //Retrieve x and y from the agent index
                     assert("Not tested after porting!"==nullptr);
                 // if(_xy_of_far_link_of(0,TODO,x,y)) //Pobrać indeks "protektora" tego agenta  o ile go ma
                 // {

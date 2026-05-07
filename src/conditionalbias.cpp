@@ -1,6 +1,6 @@
 /// @file
 /// @brief CONDITIONAL BIAS SIMULATION STEP IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-04-30 (modified)
+/// @date 2026-05-07 (modified)
 ///     Created long time ago.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
@@ -22,16 +22,18 @@
 #include "jrand.h"
 #include "jworld.h"
 
+using namespace symshell2;
+
 void	jworld::_one_step_conditional_bias0()
 {   /// Shortcut to the geometry of the simulation world.
-    const geometry_base* MyGeom=Agenci.get_geometry();													 assert(MyGeom);
+    const symshell2::geometry_base* MyGeom=Agenci.get_geometry();													 assert(MyGeom);
 
     /// THREE-DIMENSIONAL TABLE FOR COUNTING INFLUENCES.
     /// Number of allowable categories in each meme + positions for single biases and double combinations.
     int Wplywy[BIAS_FOR_ANY+1][BIAS_FOR_ANY+1][BIAS_FOR_ANY+1];							  assert(NumOfCate <= BIAS_FOR_ANY);	//Aren't there too many categories for such an influence board?
 
     /// Monte-Carlo iterator (may have data allocations inside).
-    iteratorh Monte=MyGeom->make_random_global_iterator();
+    symshell2::iteratorh Monte=MyGeom->make_random_global_iterator();
     int testowanie=0;; ///< An auxiliary counter for testing the algorithm.
 
     //We go through the agents with a Monte-Carlo iterator. Some may be drawn again.
