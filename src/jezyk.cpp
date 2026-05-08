@@ -1,6 +1,6 @@
 /// @file
 /// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover.
-/// @date 2026-05-07 (modified)
+/// @date 2026-05-08 (modified)
 ///
 ///     THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -445,8 +445,8 @@ int parse_options(const int argc,const char* argv[])
     else
     if((pom=strstr(rob,"DUMP="))!=NULL)  //If not NULL, then exists
     {
-    jworld::continous_dump=(toupper(pom[5])=='Y');
-    cerr<<"DUMP="<<(jworld::continous_dump?"Yes":"No")<<endl;
+    jworld::continuous_dump=(toupper(pom[5]) == 'Y');
+    cerr << "DUMP=" << (jworld::continuous_dump?"Yes":"No") << endl;
     }
     //continuous dump
     else
@@ -684,8 +684,8 @@ public:
         switch(input_char)
         {
         case ID_VIEWOPT_DUMPCO:	//               60100
-            world::continous_dump=!world::continous_dump;
-            clog<<"Continuous screen dumping was set to "<<(world::continous_dump?"Y":"N")<<endl;
+            world::continuous_dump=!world::continuous_dump;
+            clog << "Continuous screen dumping was set to " << (world::continuous_dump?"Y":"N") << endl;
         break;
         case ID_VIEWOPT_LESSOFT:	//              60101
             TheWorld->InputRatio*=2;
