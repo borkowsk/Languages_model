@@ -1,6 +1,6 @@
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
-/// @date 2026-05-08 (modified)
+/// @date 2026-05-11 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-use-nullptr"
@@ -493,7 +493,7 @@ void jworld::make_default_visualisation()
 
     if(WithGr)
     {
-        symshell2::area_menager&	Menager=MyAreaMenager(); ///< Shortcut to Area Manager
+        symshell2::area_manager&	Menager=MyAreaMenager(); ///< Shortcut to Area Manager
 
         // AVAILABLE WINDOW DIMENSIONS:
         unsigned szer= Menager.get_width();
@@ -503,7 +503,7 @@ void jworld::make_default_visualisation()
         if(OutArea)
         {
             OutArea->set(1,1,szer/2.-1,wyso/2.-1);
-            Menager.as_orginal(Menager.search(OutArea->name()));
+            Menager.as_original(Menager.search(OutArea->name()));
         }
 
         // VISUALIZATION OF BASIC DATA SERIES:

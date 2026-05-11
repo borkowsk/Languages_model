@@ -1,6 +1,6 @@
 /// @file
 /// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover.
-/// @date 2026-05-08 (modified)
+/// @date 2026-05-11 (modified)
 ///
 ///     THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -670,7 +670,7 @@ return 1;
 /* AREA MANAGER'S OWN RE-IMPLEMENTATION AND GENERAL MAIN FUNCTION */
 /* ************************************************************** */
 
-class my_area_menager:public symshell2::main_area_menager
+class my_area_menager:public symshell2::main_area_manager
 {
     jworld* TheWorld;
 public:
@@ -732,7 +732,7 @@ public:
     my_area_menager(size_t size, ///< length of the list of possible areas.
                 long int width,long int height,
                 unsigned ibkg=default_half_gray
-                ):main_area_menager(size,asserted<int>(width),asserted<int>(height),ibkg)
+                ): main_area_manager(size, asserted<int>(width), asserted<int>(height), ibkg)
                 {TheWorld=0;}
 
     // /// Constructor with a partially filled list (UNUSED!).
@@ -740,7 +740,7 @@ public:
     // my_area_menager(size_t size,
     //               int width,int height,
     //
-    //               drawable_base* ptr/*first...NULL*/):main_area_menager(size,width,height,ptr)
+    //               drawable_base* ptr/*first...NULL*/):main_area_manager(size,width,height,ptr)
     //               {TheWorld=nullptr;}
 };
 
