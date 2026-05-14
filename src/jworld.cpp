@@ -1,6 +1,6 @@
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
-/// @date 2026-05-11 (modified)
+/// @date 2026-05-14 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-use-nullptr"
@@ -331,7 +331,7 @@ void jworld::make_default_visualisation()
     iFarLinksMaxs=Sources.insert(FarLinksMaxs);
 
     /// The serie calculating the mutual co-statistics for fists and seconds. (NOTE: even larger tables)
-    coincidention_source* CorrFS=new coincidention_source(Firsts,Seconds);
+    coincidence_source* CorrFS=new coincidence_source(Firsts, Seconds);
     if(!CorrFS) ON_ERROR_MAKE
     Sources.insert(CorrFS);
 
@@ -345,7 +345,7 @@ void jworld::make_default_visualisation()
     if(!CorrFSLogR) ON_ERROR_MAKE
     iCorrFSR=Sources.insert(CorrFSLogR);
 
-    coincidention_source* CorrST=new coincidention_source(Seconds,Thirds);
+    coincidence_source* CorrST=new coincidence_source(Seconds, Thirds);
     if(!CorrST) ON_ERROR_MAKE
     Sources.insert(CorrST);
 
@@ -357,7 +357,7 @@ void jworld::make_default_visualisation()
     if(!CorrSTLogR) ON_ERROR_MAKE
     iCorrSTR=Sources.insert(CorrSTLogR);
 
-    coincidention_source* CorrTF=new coincidention_source(Thirds,Firsts);
+    coincidence_source* CorrTF=new coincidence_source(Thirds, Firsts);
     if(!CorrTF) ON_ERROR_MAKE
     Sources.insert(CorrTF);
 
@@ -1133,7 +1133,7 @@ void jworld::dump_net_file(const char* core_name,unsigned long Step)
 void    jworld::_update_age()
 {
     const geometry_base* MyGeom=Agenci.get_geometry();
-    iteratorh Iter=MyGeom->make_global_iterator();
+    iterator_h Iter=MyGeom->make_global_iterator();
     while(Iter)
     {
         size_t index=MyGeom->get_next(Iter);	//We obtain the agent's index.

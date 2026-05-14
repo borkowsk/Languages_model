@@ -1,6 +1,6 @@
 /// @file
 /// @brief CONDITIONAL BIAS SIMULATION STEP IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-07 (modified)
+/// @date 2026-05-14 (modified)
 ///     Created long time ago.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
@@ -33,7 +33,7 @@ void	jworld::_one_step_conditional_bias0()
     int Wplywy[BIAS_FOR_ANY+1][BIAS_FOR_ANY+1][BIAS_FOR_ANY+1];							  assert(NumOfCate <= BIAS_FOR_ANY);	//Aren't there too many categories for such an influence board?
 
     /// Monte-Carlo iterator (may have data allocations inside).
-    symshell2::iteratorh Monte=MyGeom->make_random_global_iterator();
+    symshell2::iterator_h Monte=MyGeom->make_random_global_iterator();
     int testowanie=0;; ///< An auxiliary counter for testing the algorithm.
 
     //We go through the agents with a Monte-Carlo iterator. Some may be drawn again.
@@ -54,7 +54,7 @@ void	jworld::_one_step_conditional_bias0()
 
         {	// INFLUENCE CALCULATION CODE:
             //////////////////////////////
-            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index, NeighRadius, NeighDens);	// Alokujemy iterator sasiedztwa
+            iterator_h Neigh=MyGeom->make_random_neighbour_iterator(index, NeighRadius, NeighDens);	// Alokujemy iterator sasiedztwa
             unsigned zliczanie=0;           //For counting neighbors
 
             //The counter table need to be reset.

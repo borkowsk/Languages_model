@@ -1,6 +1,6 @@
 /// @file
 /// @brief ALTERNATIVE CONDITIONAL BIAS SIMULATION STEP IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-07 (created)
+/// @date 2026-05-14 (created)
 ///     Split from "jbias.cpp" by borkowsk on 14.04.2026.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
@@ -39,7 +39,7 @@ void    jworld::_one_step_conditional_bias1()
     int Wplywy[BIAS_FOR_ANY+1][BIAS_FOR_ANY+1][BIAS_FOR_ANY+1];                           assert(NumOfCate <= BIAS_FOR_ANY); //Aren't there too many categories for such an influence board?
 
     /// Monte-Carlo iterator (may have data allocations inside).
-    symshell2::iteratorh Monte=MyGeom->make_random_global_iterator();
+    symshell2::iterator_h Monte=MyGeom->make_random_global_iterator();
     int testowanie=0; ///< An auxiliary counter for testing the algorithm.
 
     //We go through the agents with a Monte-Carlo iterator. Some may be drawn again.
@@ -62,7 +62,7 @@ void    jworld::_one_step_conditional_bias1()
 
         {   // INFLUENCE CALCULATION CODE:
             // ////////////////////////////
-            symshell2::iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,NeighRadius,NeighDens); // We allocate the neighborhood iterator
+            symshell2::iterator_h Neigh=MyGeom->make_random_neighbour_iterator(index, NeighRadius, NeighDens); // We allocate the neighborhood iterator
             unsigned zliczanie=0;           //For counting neighbors
 
             //The counter table need to be reset.

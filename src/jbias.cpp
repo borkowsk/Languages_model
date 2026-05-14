@@ -1,6 +1,6 @@
 /// @file
 /// @brief SIMULATION STEP WITH BIAS IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-07 (modified)
+/// @date 2026-05-14 (modified)
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //#include <limits.h>
@@ -554,7 +554,7 @@ void    jworld::_one_step_no_bias()
     assert(MyGeom && Firsts.IsOK() && Seconds.IsOK() && Thirds.IsOK());
     
     //We allocate the Monte-Carlo iterator:
-    iteratorh Monte=MyGeom->make_random_global_iterator();
+    iterator_h Monte=MyGeom->make_random_global_iterator();
     
     //We go through the agents with a Monte-Carlo iterator. Some may repeat themselves.
     while(Monte)
@@ -578,8 +578,8 @@ void    jworld::_one_step_no_bias()
             // ////////////////////////
 
             /// We allocate the neighborhood iterator...
-            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,NeighRadius,NeighDens);
-            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,NeighRadius); //A simpler alternative (non random).
+            iterator_h Neigh=MyGeom->make_random_neighbour_iterator(index, NeighRadius, NeighDens);
+            //iterator_h Neigh=MyGeom->make_neighbour_iterator(index,NeighRadius); //A simpler alternative (non random).
             unsigned zliczanie=0;	///< To count real neighbors.
             
             // Cleaning the counter arrays:
@@ -711,7 +711,7 @@ void    jworld::_one_step_simple_bias()
     
     //OTHER AUXILIARY VARIABLES:
     int testowanie=0; ///< counter.
-    iteratorh Monte=MyGeom->make_random_global_iterator(); ///< Monte-Carlo iterator (internal allocated)
+    iterator_h Monte=MyGeom->make_random_global_iterator(); ///< Monte-Carlo iterator (internal allocated)
     
     //We go through the agents with a Monte-Carlo iterator (some repetitions possible).
     while(Monte)
@@ -735,8 +735,8 @@ void    jworld::_one_step_simple_bias()
             // ///////////////////////////
 
             /// Neighborhood iterator (with internal allocation perhaps!).
-            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,NeighRadius,NeighDens);
-            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,NeighRadius); ///< Non-random neighborhood iterator.
+            iterator_h Neigh=MyGeom->make_random_neighbour_iterator(index, NeighRadius, NeighDens);
+            //iterator_h Neigh=MyGeom->make_neighbour_iterator(index,NeighRadius); ///< Non-random neighborhood iterator.
             unsigned zliczanie=0; ///< To count real neighbors.
 
             // Cleaning the counter arrays:
@@ -891,7 +891,7 @@ void    jworld::_one_step_sequentional_bias0()
 
     //OTHER AUXILIARY VARIABLES:
     int testowanie=0; ///< counter.
-    iteratorh Monte=MyGeom->make_random_global_iterator(); ///< Iterator Monte-Carlo.
+    iterator_h Monte=MyGeom->make_random_global_iterator(); ///< Iterator Monte-Carlo.
 
     //We go through the agents with a Monte-Carlo iterator (some repetitions possible).
     while(Monte)
@@ -915,8 +915,8 @@ void    jworld::_one_step_sequentional_bias0()
             // ///////////////////////////
 
             /// Neighborhood iterator (with internal allocation perhaps!).
-            iteratorh Neigh=MyGeom->make_random_neighbour_iterator(index,NeighRadius,NeighDens);
-            //iteratorh Neigh=MyGeom->make_neighbour_iterator(index,NeighRadius); ///< Non-random neighborhood iterator.
+            iterator_h Neigh=MyGeom->make_random_neighbour_iterator(index, NeighRadius, NeighDens);
+            //iterator_h Neigh=MyGeom->make_neighbour_iterator(index,NeighRadius); ///< Non-random neighborhood iterator.
             unsigned zliczanie=0; ///< To count real neighbors.
 
             // Cleaning the counter arrays:
