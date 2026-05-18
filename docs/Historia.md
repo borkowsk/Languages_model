@@ -40,7 +40,7 @@
                         - dodanie fix-histogramu klas rozmiaru języków.
 
       *	ver.   1.4      - dodanie mutacji spontanicznych we wszystkich trybach biasu,
-                        - wprowadzenie możliwości wyłączenia korelacji przestrzennej (UseSpatialCorr) z KODU!!!
+                        - wprowadzenie możliwości wyłączenia korelacji przestrzennej (use_spatial_corr) z KODU!!!
                         - wprowadzenie wykresu log-log rozkładu rozmiarów języków (dhistosou.h),
                         - wprowadzenie wpisywania tego histogramu do logu.
                         - uzupełnienie części komunikatów o ustawieniach parametrów (ale cześć została bez).

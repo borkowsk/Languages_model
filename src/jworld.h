@@ -1,6 +1,6 @@
 /// @file
 /// @brief DECLARATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-07 (modified)
+/// @date 2026-05-18 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -16,7 +16,7 @@ extern bool			Console;	///< Flag for working in console mode - without any graph
 extern const int	BIAS_FOR_ANY;	///< The value that represents "all-the-same" in conditional biases.
                                     ///< Always greater than the largest value in the layer. Default `==8`.
 /// The Whole World of Simulation.
-class jworld:public symshell2::world
+class jworld:public sym2::world
 //--------------------------------------------------
 {
 public:
@@ -146,10 +146,10 @@ private:
     //rectangle_unilayer<unsigned char> livability; //livability layer.
 
     /// The layer of colonizing agents.
-    symshell2::rectangle_layer_of_ptr_to_agents<jagent>	Agenci;
+    sym2::rectangle_layer_of_ptr_to_agents<jagent>	Agenci;
 
     //!< A layer of long-distance connections. Not in agents, because the structure is supposed to be constant despite agent movement.
-    symshell2::rectangle_layer_of_struct<_far_link>		FarLinks;
+    sym2::rectangle_layer_of_struct<_far_link>		FarLinks;
 
     // Main data series. Because it's more convenient to have pointers than to search `Sources` by name:
     // /////////////////////////////////////////////////////////////////////////////////////////////////

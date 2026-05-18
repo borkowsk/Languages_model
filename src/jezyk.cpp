@@ -1,6 +1,6 @@
 /// @file
 /// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover.
-/// @date 2026-05-11 (modified)
+/// @date 2026-05-18 (modified)
 ///
 ///     THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ const char* SCREEN_DUMP_NAME="LANGUAGES";
 ///
 ///			version 1.4
 /// 					- Adding spontaneous mutations in all bias modes.
-///						- Introducing the ability to disable spatial correlation calculation (UseSpatialCorr) from CODE!!!
+///						- Introducing the ability to disable spatial correlation calculation (use_spatial_corr) from CODE!!!
 ///						- Introduction of a log-log plot of the distribution of language sizes (type "dhistosou.h").
 ///						- Introduction of writing this histogram to the log.
 ///						- Supplementing some messages about parameter settings (but some were left without).
@@ -97,16 +97,16 @@ int My_Rand_seed=0; ///< Random generator initializer. If 0 it uses RANDOMIZE, i
 #include "lang_res.h"
 
 using namespace std;
-using namespace symshell2;
+using namespace sym2;
 
 unsigned	SCR_WIDTH=asserted<unsigned>(1440 * 0.6666);		///< Screen/window inside width. (720 or 1440);
 unsigned	SCR_HEIGHT=asserted<unsigned>(1080 * 0.6666);	///< Screen/window inside height. (540 or 1080);
 bool		Console=false;			///< Flag for working in console mode - no graphics.
 
 //No Object-wise passed to the source initialization method:
-unsigned	internal_log=10000;			///< Default length of internal logs (historical data sources).
-bool		UseSpatialCorr=false;		///< Flag for using spatial correlation (expensive to compute).
-unsigned	spatial_correlation_mode=50;	///< Number of sampling runs in calculating spatial correlation.
+unsigned	internal_log=10000;				///< Default length of internal logs (historical data sources).
+bool		use_spatial_corr=false;			///< Flag for using spatial correlation (expensive to compute).
+int			spatial_correlation_mode=50;	///< Number of sampling runs in calculating spatial correlation.
 
 //Object-oriented passed to the world constructor.
 char	 LogName[512]="languagesSW2.log\0-------------------+--";		///<
@@ -583,7 +583,7 @@ int parse_options(const int argc,const char* argv[])
     else
     if((pom=strstr(rob,"RSPC="))!=NULL)
     {
-        if(UseSpatialCorr)
+        if(use_spatial_corr)
         {
         const char* lpom=pom+5;
         if(toupper(*lpom)=='N')
@@ -600,13 +600,13 @@ int parse_options(const int argc,const char* argv[])
             if(*(pom+5)=='+')
             {
                 cerr<<"!!!! Spatial correlations are enabled. RSPC will be applied."<<endl;
-                UseSpatialCorr=true;
+                use_spatial_corr=true;
             }
             else
             if(*(pom+5)=='-')
             {
                 cerr<<"!!!! Spatial correlations were disabled."<<endl;
-                UseSpatialCorr=true;
+                use_spatial_corr=true;
             }
             else
             cerr<<"!!! Sorry, but spatial correlation is disabled, RSPC was ignored."<<endl;
@@ -670,7 +670,7 @@ return 1;
 /* AREA MANAGER'S OWN RE-IMPLEMENTATION AND GENERAL MAIN FUNCTION */
 /* ************************************************************** */
 
-class my_area_menager:public symshell2::main_area_manager
+class my_area_menager:public sym2::main_area_manager
 {
     jworld* TheWorld;
 public:

@@ -1,6 +1,6 @@
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
-/// @date 2026-05-14 (modified)
+/// @date 2026-05-18 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-use-nullptr"
@@ -24,7 +24,7 @@
 #include "jworld.h"
 #include "jagent.h"
 
-using namespace symshell2;
+using namespace sym2;
 
 //When Embarcadero goes crazy in a hundred places: "code has no effect" even though it definitely has an effect!
 //#pragma warn -8019
@@ -109,8 +109,8 @@ short jagent::distribution=1;  //!< Degree of distribution:
 // CONSTRUCTION OF THE WORLD:
 // //////////////////////////
 extern unsigned internal_log;
-extern unsigned spatial_correlation_mode;
-extern bool UseSpatialCorr;
+extern int      spatial_correlation_mode;
+extern bool use_spatial_corr;
 
 
 jworld::jworld(size_t Width,
@@ -457,7 +457,7 @@ void jworld::make_default_visualisation()
             Log.insert( LogLogHistClassStat->Class(i,"Log<%g,%g)(%s)")  );
 
     // Optional Spatial Correlation statistic and its columns in the log:
-    if(UseSpatialCorr)
+    if(use_spatial_corr)
     {
         generic_spatial_correlation_source* SpatialCorr1=new generic_spatial_correlation_source(Firsts,-1,spatial_correlation_mode);
         if(!SpatialCorr1) ON_ERROR_MAKE
@@ -493,7 +493,7 @@ void jworld::make_default_visualisation()
 
     if(WithGr)
     {
-        symshell2::area_manager&	Menager=MyAreaMenager(); ///< Shortcut to Area Manager
+        sym2::area_manager&	Menager=MyAreaManager(); ///< Shortcut to Area Manager
 
         // AVAILABLE WINDOW DIMENSIONS:
         unsigned szer= Menager.get_width();
@@ -507,12 +507,12 @@ void jworld::make_default_visualisation()
         }
 
         // VISUALIZATION OF BASIC DATA SERIES:
-        symshell2::graph* pom1=new symshell2::sequence_graph(szer/2-1,wyso/4,szer-50,wyso/2-1, //default coordinates of this display area
-                                        3,Sources.make_series_info(
+        sym2::graph* pom1=new sym2::sequence_graph(szer / 2 - 1, wyso / 4, szer - 50, wyso / 2 - 1, //default coordinates of this display area
+                                        3, Sources.make_series_info(
                                                 iClassEntropy,iNumClassF,iMainClassF,
                                                     -1
                                                 ).get_ptr_val(),
-                                        0 // 0 means with rescaling
+                                                   0 // 0 means with rescaling
                                        );
         if(!pom1) ON_ERROR_MAKE
         pom1->set_frame(128);
@@ -669,7 +669,7 @@ void jworld::make_default_visualisation()
         pom->set_title("Log distribution of language size classes");
         Menager.insert(pom);
 
-        if(!UseSpatialCorr)
+        if(!use_spatial_corr)
         {
             pom=new bars_graph(MLeft,8*MStep,szer,9*MStep,
                 HistClass);
@@ -786,7 +786,7 @@ void jworld::make_default_visualisation()
         pom->set_background(256 + 100);
         Menager.insert(pom);
 
-        if(UseSpatialCorr)
+        if(use_spatial_corr)
         {
             //Optional visualization of Spatial Correlation
             pom1=new sequence_graph(MLeft,8*MStep,szer,9*MStep,
@@ -837,7 +837,7 @@ void jworld::make_default_visualisation()
     // FINALLY, DONE - YOU CAN ALSO DRAW IT ALL:
     Sources.new_data_version(1,1); // Notifies the series that data has been updated (after initialization)
     if(WithGr)
-        this->MyAreaMenager().maximize(0); // Minimizing the zero-index area (OutArea?)
+        this->MyAreaManager().maximize(0); // Minimizing the zero-index area (OutArea?)
 }
 
 
