@@ -10,7 +10,7 @@
                     - Wprowadzenie  konsolowego trybu pracy (w tle, w ogóle bez grafiki).
       *	ver.   2.11 - początki użycia klas `OptionalParameters` do obsługi parametrów wywołania (potem z nich zrezygnowano).
       *	ver.   2.10 - implementacja procesu zaciągania władzy i wyświetlanie mapy politycznej.
-      *	ver.   2.06 - działające sterowanie częstością wyświetlania i `my_area_menager` zadeklarowany.
+      *	ver.   2.06 - działające sterowanie częstością wyświetlania i `my_area_manager` zadeklarowany.
       *	ver.   2.05 - rozbudowane menu, zwłaszcza nowe opcje wizualizacji, parametr `SRND` i `DUMP`.
       *	ver.   2.04 - Ciagłe zrzucanie sieci jako parametr.
       *	ver.   2.03a - Implementacja zrzutu sieci SW w postaci plików NET.

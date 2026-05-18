@@ -454,7 +454,7 @@ void jworld::make_default_visualisation()
 
     // Inserting the log-log histogram into the log file - so that it is in the last columns:
     for(int i=0;i<LogLogHistClassStat->get_size();i++)
-            Log.insert( LogLogHistClassStat->Class(i,"Log<%g,%g)(%s)")  );
+            Log.insert(LogLogHistClassStat->Categories(i, "Log<%g,%g)(%s)")  );
 
     // Optional Spatial Correlation statistic and its columns in the log:
     if(use_spatial_corr)

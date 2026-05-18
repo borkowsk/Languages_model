@@ -27,7 +27,7 @@ const char* SCREEN_DUMP_NAME="LANGUAGES";
 ///					   - Introduction of console mode of operation (in the background, without graphics at all).
 ///			ver.  2.11 - Beginnings of using `OptionalParameters` classes to handle call parameters (later abandoned).
 ///			ver.  2.10 - Implementation of the process of imposing power and displaying the political map.
-///			ver.  2.06 - Display rate control now working and `my_area_menager` declared.
+///			ver.  2.06 - Display rate control now working and `my_area_manager` declared.
 ///			ver.  2.05 - Expanded menus, especially new visualization options. Also, `SRND` and `DUMP` parameters.
 ///			ver.  2.04 - Continuous SW network dump as command line parameter.
 ///			ver.  2.03a - Implementation of SW network dump in the form of NET files.
@@ -670,7 +670,7 @@ return 1;
 /* AREA MANAGER'S OWN RE-IMPLEMENTATION AND GENERAL MAIN FUNCTION */
 /* ************************************************************** */
 
-class my_area_menager:public sym2::main_area_manager
+class my_area_manager: public sym2::main_area_manager
 {
     jworld* TheWorld;
 public:
@@ -729,15 +729,15 @@ public:
 
     /// Constructor providing a manager with a specified list size.
     /// @warning: Calling more than one constructor will abort the process!!!
-    my_area_menager(size_t size, ///< length of the list of possible areas.
-                long int width,long int height,
-                unsigned ibkg=default_half_gray
+    my_area_manager(size_t size, ///< length of the list of possible areas.
+                long int width, long int height,
+                    unsigned ibkg=default_half_gray
                 ): main_area_manager(size, asserted<int>(width), asserted<int>(height), ibkg)
                 {TheWorld=0;}
 
     // /// Constructor with a partially filled list (UNUSED!).
     // /// Attributes `bkg` and `frm` are default, but can be changed later.
-    // my_area_menager(size_t size,
+    // my_area_manager(size_t size,
     //               int width,int height,
     //
     //               drawable_base* ptr/*first...NULL*/):main_area_manager(size,width,height,ptr)
@@ -761,7 +761,7 @@ int main(const int argc,const char* argv[])
         {SRAND(My_Rand_seed)}
 
     //INITIALIZATION of the sub-window system:
-    my_area_menager Lufciki(24, SCR_WIDTH, SCR_HEIGHT, 28);  //Or just a placeholder if you don't want graphics.
+    my_area_manager Lufciki(24, SCR_WIDTH, SCR_HEIGHT, 28);  //Or just a placeholder if you don't want graphics.
 
     if( Console || !Lufciki.start(WINDOW_HEADER,argc,argv,1) )
     {
