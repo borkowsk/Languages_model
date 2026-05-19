@@ -1,6 +1,6 @@
 # CMAKE configuration for LANGUAGES simulation project
 ######################################################################
-## @date 2026-05-11 (last update)
+## @date 2026-05-19 (last update)
 ## @author	: Wojciech Borkowski
 #
 
@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.20)
 project(LANGUAGES)
 
 set(CMAKE_CXX_STANDARD 11) # See: https://matgomes.com/setting-cpp-standard-cmake/
-#set(CMAKE_CXX_STANDARD_REQUIRED On)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
 #set(CMAKE_CXX_EXTENSIONS Off)
 
 IF (WIN32)
