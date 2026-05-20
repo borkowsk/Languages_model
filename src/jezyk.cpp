@@ -1,6 +1,6 @@
 /// @file
 /// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover.
-/// @date 2026-05-18 (modified)
+/// @date 2026-05-20 (modified)
 ///
 ///     THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,6 +98,9 @@ int My_Rand_seed=0; ///< Random generator initializer. If 0 it uses RANDOMIZE, i
 
 using namespace std;
 using namespace sym2;
+using namespace sym2::data;
+using namespace sym2::shell;
+using namespace sym2::visual;
 
 unsigned	SCR_WIDTH=asserted<unsigned>(1440 * 0.6666);		///< Screen/window inside width. (720 or 1440);
 unsigned	SCR_HEIGHT=asserted<unsigned>(1080 * 0.6666);	///< Screen/window inside height. (540 or 1080);
@@ -670,7 +673,7 @@ return 1;
 /* AREA MANAGER'S OWN RE-IMPLEMENTATION AND GENERAL MAIN FUNCTION */
 /* ************************************************************** */
 
-class my_area_manager: public sym2::main_area_manager
+class my_area_manager: public main_area_manager
 {
     jworld* TheWorld;
 public:

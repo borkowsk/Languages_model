@@ -1,6 +1,6 @@
 /// @file
 /// @brief DECLARATION OF A G E N T FOR "LANGUAGES" SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-18 (modified)
+/// @date 2026-05-20 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "layer.hpp"
@@ -8,7 +8,7 @@
 #include "maybe_unused.h"
 
 /// Language Evolution Simulation Agent.
-class jagent:public sym2::agent_base
+class jagent:public sym2::shell::agent_base
 {
     friend class jworld;	//To simplify access to the attributes of the world.
 

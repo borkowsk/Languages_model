@@ -1,6 +1,6 @@
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
-/// @date 2026-05-18 (modified)
+/// @date 2026-05-20 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-use-nullptr"
@@ -25,6 +25,9 @@
 #include "jagent.h"
 
 using namespace sym2;
+using namespace sym2::data;
+using namespace sym2::shell;
+using namespace sym2::visual;
 
 //When Embarcadero goes crazy in a hundred places: "code has no effect" even though it definitely has an effect!
 //#pragma warn -8019
@@ -493,7 +496,7 @@ void jworld::make_default_visualisation()
 
     if(WithGr)
     {
-        sym2::area_manager&	Menager=MyAreaManager(); ///< Shortcut to Area Manager
+        area_manager&	Menager=MyAreaManager(); ///< Shortcut to Area Manager
 
         // AVAILABLE WINDOW DIMENSIONS:
         unsigned szer= Menager.get_width();
@@ -507,7 +510,7 @@ void jworld::make_default_visualisation()
         }
 
         // VISUALIZATION OF BASIC DATA SERIES:
-        sym2::graph* pom1=new sym2::sequence_graph(szer / 2 - 1, wyso / 4, szer - 50, wyso / 2 - 1, //default coordinates of this display area
+        graph* pom1=new sequence_graph(szer / 2 - 1, wyso / 4, szer - 50, wyso / 2 - 1, //default coordinates of this display area
                                         3, Sources.make_series_info(
                                                 iClassEntropy,iNumClassF,iMainClassF,
                                                     -1
