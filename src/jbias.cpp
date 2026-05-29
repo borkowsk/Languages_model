@@ -1,6 +1,6 @@
 /// @file
 /// @brief SIMULATION STEP WITH BIAS IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-18 (modified)
+/// @date 2026-05-29 (modified)
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //#include <limits.h>
@@ -546,7 +546,7 @@ int  jworld::_sequentional_bias_information::read_one_bias_item(istream& in)
 void    jworld::_one_step_no_bias()
 {
     int testowanie=0;
-    const geometry_base* MyGeom=Agenci.get_geometry();
+    const geometry_base* MyGeom=Agents.get_geometry();
     //AUXILIARY BOARDS:
     wb_dynarray<int> Firsts(NumOfCate);
     wb_dynarray<int> Seconds(NumOfCate);
@@ -563,8 +563,8 @@ void    jworld::_one_step_no_bias()
         //if(index==FULL)  //We ignore it if it goes behind the board (which happens with clippings, or happened in the past)
         //      continue;                        
         assert(index!=MyGeom->FULL);               //This definitely shouldn't happen here!
-        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());	//We obtain references to the agent by bypassing NULL assertions.
-        if(Agenci.is_empty(CenterAgent))    // We check whether it is not an empty cell (NULL?).
+        jagent& CenterAgent=*(Agents.get_ptr(index).get_ptr_val());	//We obtain references to the agent by bypassing NULL assertions.
+        if(Agents.is_empty(CenterAgent))    // We check whether it is not an empty cell (NULL?).
             continue;
         
         if(
@@ -596,8 +596,8 @@ void    jworld::_one_step_no_bias()
                 // if(_xy_of_far_link_of(a,b,x,y)) //Get the "protector" index of this agent, if it has one (?????)
                 // 	{
                 // 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-                // 	jagent& PeryfAgent=Agenci.get(x,y); //We obtain references to the "protector".
-                // 										assert(!Agenci.is_empty(PeryfAgent));
+                // 	jagent& PeryfAgent=Agents.get(x,y); //We obtain references to the "protector".
+                // 										assert(!Agents.is_empty(PeryfAgent));
                 // 	Firsts[PeryfAgent.First]+=PeryfAgent.Power;
                 // 	Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
                 // 	Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
@@ -612,8 +612,8 @@ void    jworld::_one_step_no_bias()
                 if(index2==MyGeom->FULL || index2==index)   //If it was outside the simulation area or in the center of the area, it would still be pointless.
                     continue; //TODO But does it happen?
 
-                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val()); //We obtain a reference to the neighbor by bypassing NULL assertions
-                if(Agenci.is_empty(PeryfAgent)) //We check whether it is not an empty cell.
+                jagent& PeryfAgent=*(Agents.get_ptr(index2).get_ptr_val()); //We obtain a reference to the neighbor by bypassing NULL assertions
+                if(Agents.is_empty(PeryfAgent)) //We check whether it is not an empty cell.
                     continue;
 
                 zliczanie++; //This is a real neighbor, not an empty field.
@@ -702,7 +702,7 @@ void    jworld::_one_step_simple_bias()
 {                                                                                            assert(BiasDefinition.OK());
     _simple_bias_information* BiasData=dynamic_cast<_simple_bias_information*>
                                                             (BiasDefinition.get_ptr_val());  assert(BiasData!=NULL);
-    const geometry_base* MyGeom=Agenci.get_geometry();                                       assert(MyGeom!=NULL);
+    const geometry_base* MyGeom=Agents.get_geometry();                                       assert(MyGeom != NULL);
 
     //AUXILIARY BOARDS OF COUNTERS:
     wb_dynarray<int> Firsts(NumOfCate);
@@ -720,8 +720,8 @@ void    jworld::_one_step_simple_bias()
         //if(index==FULL)
         //      continue;
         assert(index!=MyGeom->FULL);
-        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());
-        if(Agenci.is_empty(CenterAgent))
+        jagent& CenterAgent=*(Agents.get_ptr(index).get_ptr_val());
+        if(Agents.is_empty(CenterAgent))
             continue;
 
          if(
@@ -752,8 +752,8 @@ void    jworld::_one_step_simple_bias()
                 if(_xy_of_far_link_of(a,b,x,y))
                 {
                                                         assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-                    jagent& PeryfAgent=Agenci.get(x,y); ///< The references to "protector".
-                                                        assert(!Agenci.is_empty(PeryfAgent));
+                    jagent& PeryfAgent=Agents.get(x, y); ///< The references to "protector".
+                                                        assert(!Agents.is_empty(PeryfAgent));
                     //Adding protector strength to counters in arrays
                     Firsts[PeryfAgent.First]+=PeryfAgent.Power;
                     Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
@@ -770,8 +770,8 @@ void    jworld::_one_step_simple_bias()
                 if(index2==MyGeom->FULL || index2==index)
                     continue;  //TODO But does it happen?
 
-                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val()); ///< reference to the neighbor
-                if(Agenci.is_empty(PeryfAgent))
+                jagent& PeryfAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< reference to the neighbor
+                if(Agents.is_empty(PeryfAgent))
                     continue;
 
                 zliczanie++; //This is a real neighbor, not an empty field.
@@ -882,7 +882,7 @@ void    jworld::_one_step_sequentional_bias0()
 {                                                                                               assert(BiasDefinition.OK());
     _sequentional_bias_information* BiasData=dynamic_cast<_sequentional_bias_information*>
                                                             (BiasDefinition.get_ptr_val());     assert(BiasData!=NULL);
-    const geometry_base* MyGeom=Agenci.get_geometry();                                          assert(MyGeom!=NULL);
+    const geometry_base* MyGeom=Agents.get_geometry();                                          assert(MyGeom != NULL);
 
     //AUXILIARY BOARDS OF COUNTERS:
     wb_dynarray<int> CFirst(NumOfCate); //!< Counters for firsts opinions.
@@ -900,8 +900,8 @@ void    jworld::_one_step_sequentional_bias0()
         //if(index==MyGeom->FULL)
         //      continue;
         assert(index!=MyGeom->FULL);
-        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());
-        if(Agenci.is_empty(CenterAgent))
+        jagent& CenterAgent=*(Agents.get_ptr(index).get_ptr_val());
+        if(Agents.is_empty(CenterAgent))
             continue;
 
          if(
@@ -933,8 +933,8 @@ void    jworld::_one_step_sequentional_bias0()
             // if(_xy_of_far_link_of(0,TODO,x,y)) //Download the "protector" index of this agent, if it has one
             // {
             // 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-            // 	jagent& PeryfAgent=Agenci.get(x,y); ///< The references to "protector".
-            // 										assert(!Agenci.is_empty(PeryfAgent));
+            // 	jagent& PeryfAgent=Agents.get(x,y); ///< The references to "protector".
+            // 										assert(!Agents.is_empty(PeryfAgent));
             // 										assert("NOT TESTED IPLEMENTATION");
             //
             // 	//Adding protector strength to counters in arrays
@@ -953,8 +953,8 @@ void    jworld::_one_step_sequentional_bias0()
                 if(index2==MyGeom->FULL || index2==index)
                     continue;
 
-                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val()); ///< reference to the neighbor
-                if(Agenci.is_empty(PeryfAgent))
+                jagent& PeryfAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< reference to the neighbor
+                if(Agents.is_empty(PeryfAgent))
                     continue;
 
                 zliczanie++; //This is a real neighbor, not an empty field.

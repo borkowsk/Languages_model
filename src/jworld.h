@@ -1,6 +1,6 @@
 /// @file
 /// @brief DECLARATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-20 (modified)
+/// @date 2026-05-29 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -143,10 +143,10 @@ private:
     // /////////////////////////////
 
     // !< The layer defines the suitability for habitation.
-    //rectangle_unilayer<unsigned char> livability; //livability layer.
+    //rectangle_layer_of<unsigned char> livability; //livability layer.
 
     /// The layer of colonizing agents.
-    sym2::shell::rectangle_layer_of_ptr_to_agents<jagent>	Agenci;
+    sym2::shell::rectangle_layer_of_ptr_to_agents<jagent>	Agents;
 
     //!< A layer of long-distance connections. Not in agents, because the structure is supposed to be constant despite agent movement.
     sym2::shell::rectangle_layer_of_struct<_far_link>		FarLinks;
@@ -154,13 +154,13 @@ private:
     // Main data series. Because it's more convenient to have pointers than to search `Sources` by name:
     // /////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ptr_to_struct_matrix_source<jagent,short>		*Firsts;	//!< `=Agenci.make_source("First mem",&jagent::First);`
-    ptr_to_struct_matrix_source<jagent,short>		*Seconds;	//!< `=Agenci.make_source("Second mem",&jagent::Second);`
-    ptr_to_struct_matrix_source<jagent,short>		*Thirds;	//!< `=Agenci.make_source("Third mem",&jagent::Third);`
-    ptr_to_struct_matrix_source<jagent,short>		*Powers;	//!< `=Agenci.make_source("Power",&jagent::Power);`
-    ptr_to_struct_matrix_source<jagent,unsigned long>	*Age;	//!< `=Agenci.make_source("Lang age",&jagent::age);`
-    ptr_to_struct_matrix_source<jagent,unsigned long>	*Politics;	//!< `=Agenci.make_source("Polit. affil.",&jagent::Politics);`
-    method_by_ptr_matrix_source<jagent,long>		*Classif;	//!< `=Agenci.make_source("Classification",&jagent::Classif);`
+    ptr_to_struct_matrix_source<jagent,short>		*Firsts;	//!< `=Agents.make_source("First mem",&jagent::First);`
+    ptr_to_struct_matrix_source<jagent,short>		*Seconds;	//!< `=Agents.make_source("Second mem",&jagent::Second);`
+    ptr_to_struct_matrix_source<jagent,short>		*Thirds;	//!< `=Agents.make_source("Third mem",&jagent::Third);`
+    ptr_to_struct_matrix_source<jagent,short>		*Powers;	//!< `=Agents.make_source("Power",&jagent::Power);`
+    ptr_to_struct_matrix_source<jagent,unsigned long>	*Age;	//!< `=Agents.make_source("Lang age",&jagent::age);`
+    ptr_to_struct_matrix_source<jagent,unsigned long>	*Politics;	//!< `=Agents.make_source("Polit. affil.",&jagent::Politics);`
+    method_by_ptr_matrix_source<jagent,unsigned long>	*Classif;	//!< `=Agents.make_source("Classification",&jagent::classify);`
     struct_matrix_source<_far_link,unsigned>		*FarA;		//!< `=FarLinks.make_source("f.links A",&_far_link::a)`
     struct_matrix_source<_far_link,unsigned>		*FarB;		//!< `=FarLinks.make_source("f.links B",&_far_link::b)`
     method_matrix_source<_far_link,unsigned>		*FCount;	//!< `=FarLinks.make_source("far counters",&_far_link::getcount)`
@@ -202,7 +202,7 @@ public:
                 << "\n" << this->MyWidth << sep << "x" << sep << MyWidth << sep << "=" << sep << MyWidth * MyWidth
                 << "\nPower range:" << sep << MinStrength << '-' << MaxStrength
                 << "\nDistribution:" << sep << (jagent::distribution < 0 ? "G" : "P") << jagent::distribution
-                << "\nTresh of Power=" << sep << TrsStrength
+                << "\nThresh of Power=" << sep << TrsStrength
                 << "\nNoise %=" << sep << Noise * 100 << sep << " Spontanic %=" << sep << spontanic
                 << "\nSelf=" << sep << UseSelf
                 << "\nNeighborhood=" << sep << NeighDens << "/(" << (1 + 2 * NeighRadius) << "*" << (1 + 2 * NeighRadius) << ")"
@@ -421,9 +421,9 @@ void	jworld::_connect_flink_to(	unsigned aa,
     farLinkAABB.b=target_b;	//Sets `b` of the new connection
     FarLinks.get(target_a,target_b).count++;	//We add to the counter in the new target
 
-    unsigned long politofprot=Agenci.get(target_a,target_b).Politics;
-    Agenci.get(aa, bb).Politics=politofprot;
-    //			Agenci.get(aa,bb).Politics=RANDOM(0xffffff); /// TODO Why changed?
+    unsigned long politofprot=Agents.get(target_a, target_b).Politics;
+    Agents.get(aa, bb).Politics=politofprot;
+    //			Agents.get(aa,bb).Politics=RANDOM(0xffffff); /// TODO Why changed?
 }
 
 /* **************************************************************** */

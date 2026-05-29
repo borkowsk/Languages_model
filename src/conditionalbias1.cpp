@@ -1,6 +1,6 @@
 /// @file
 /// @brief ALTERNATIVE CONDITIONAL BIAS SIMULATION STEP IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-20 (created)
+/// @date 2026-05-29 (created)
 ///     Split from "jbias.cpp" by borkowsk on 14.04.2026.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
@@ -36,7 +36,7 @@ void    jworld::_one_step_conditional_bias1()
     _conditional_bias_information* BiasData=dynamic_cast<_conditional_bias_information*>
                                                             (BiasDefinition.get_ptr_val());      assert(BiasData!=NULL);
     /// Shortcut to the geometry of the simulation world.
-    const geometry* MyGeom=Agenci.get_geometry();                                             assert(MyGeom != NULL);
+    const geometry* MyGeom=Agents.get_geometry();                                             assert(MyGeom != NULL);
 
     /// THREE-DIMENSIONAL TABLE FOR COUNTING INFLUENCES.
     /// Number of allowable categories in each meme + positions for single biases and double combinations.
@@ -53,8 +53,8 @@ void    jworld::_one_step_conditional_bias1()
         //if(index==FULL) continue;
                                                                                             assert(index!=MyGeom->FULL);
         /// Reference to the agent. Obtained bypassing the NULL assertion.
-        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());
-        if(Agenci.is_empty(CenterAgent)) // Check if it is not an empty cell (NULL)
+        jagent& CenterAgent=*(Agents.get_ptr(index).get_ptr_val());
+        if(Agents.is_empty(CenterAgent)) // Check if it is not an empty cell (NULL)
                 continue;
 
         if(
@@ -82,8 +82,8 @@ void    jworld::_one_step_conditional_bias1()
                 // if(_xy_of_far_link_of(0,TODO,x,y)) //Pobrać indeks "protektora" tego agenta  o ile go ma
                 // {
                 // 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-                // 	    jagent& PeryfAgent=Agenci.get(x,y);
-                // 										assert(!Agenci.is_empty(PeryfAgent));
+                // 	    jagent& PeryfAgent=Agents.get(x,y);
+                // 										assert(!Agents.is_empty(PeryfAgent));
                 // 										assert("NOT TESTED IPLEMENTATION"==NULL);
                 // 	    Wplywy[PeryfAgent.First][PeryfAgent.Second][PeryfAgent.Third]+=3*PeryfAgent.Power; //"counter" for ABC coincidence
                 //
@@ -105,8 +105,8 @@ void    jworld::_one_step_conditional_bias1()
                 if(index2==MyGeom->FULL || index2==index) //If it was outside the simulation area or in the center of the area, it would still be pointless.
                     continue;
 
-                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val()); ///< A reference to a neighbor bypassing NULL assertions
-                if(Agenci.is_empty(PeryfAgent))     //We check whether it is not an empty cell (NULL) because then it would be pointless to continue.
+                jagent& PeryfAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< A reference to a neighbor bypassing NULL assertions
+                if(Agents.is_empty(PeryfAgent))     //We check whether it is not an empty cell (NULL) because then it would be pointless to continue.
                     continue;
 
                 zliczanie++;                        //Counts the number of randomly selected neighbors.

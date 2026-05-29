@@ -1,6 +1,6 @@
 /// @file
 /// @brief CONDITIONAL BIAS SIMULATION STEP IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-20 (modified)
+/// @date 2026-05-29 (modified)
 ///     Created long time ago.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#include <limits.h>
@@ -30,7 +30,7 @@ using namespace sym2::visual;
 
 void	jworld::_one_step_conditional_bias0()
 {   /// Shortcut to the geometry of the simulation world.
-    const geometry_base* MyGeom=Agenci.get_geometry();													 assert(MyGeom);
+    const geometry_base* MyGeom=Agents.get_geometry();													 assert(MyGeom);
 
     /// THREE-DIMENSIONAL TABLE FOR COUNTING INFLUENCES.
     /// Number of allowable categories in each meme + positions for single biases and double combinations.
@@ -47,9 +47,9 @@ void	jworld::_one_step_conditional_bias0()
         //if(index==FULL) continue;
                                                                                     assert(index!=any_layer_base::FULL);
         /// Reference to the agent. Obtained bypassing the NULL assertion.
-        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());
+        jagent& CenterAgent=*(Agents.get_ptr(index).get_ptr_val());
 
-        if(Agenci.is_empty(CenterAgent)) // Check if it is not an empty cell (NULL)
+        if(Agents.is_empty(CenterAgent)) // Check if it is not an empty cell (NULL)
                 continue;
 
         if(CenterAgent.Power > TrsStrength)	// Is there no immunity to change anymore?
@@ -71,8 +71,8 @@ void	jworld::_one_step_conditional_bias0()
                 if(index2==any_layer_base::FULL || index2==index)	//If it was outside the simulation area or in the center of the area, it would still be pointless.
                     continue;
 
-                jagent& PeryfAgent=*(Agenci.get_ptr(index2).get_ptr_val());///< A reference to a neighbor bypassing NULL assertions.
-                if(Agenci.is_empty(PeryfAgent))		//We check whether it is not an empty cell (NULL) because then it would be pointless to continue.
+                jagent& PeryfAgent=*(Agents.get_ptr(index2).get_ptr_val());///< A reference to a neighbor bypassing NULL assertions.
+                if(Agents.is_empty(PeryfAgent))		//We check whether it is not an empty cell (NULL) because then it would be pointless to continue.
                     continue;
 
                 zliczanie++;						//Counts the number of randomly selected neighbors.

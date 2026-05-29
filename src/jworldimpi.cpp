@@ -1,6 +1,6 @@
 /// @file
 /// @brief Virtual Input method implementation of the jworld class. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-20 (modified)
+/// @date 2026-05-29 (modified)
 ///
 ///     Its is rather simply implementation. You can replace it if you need.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -23,11 +23,11 @@ int jworld::implement_input(istream& i)
     i >> NeighRadius;
     i>>UseSelf;
     i>>Noise;
-    rectangle_geometry* Geom=(rectangle_geometry*)Agenci.get_geometry();                         assert(Geom != NULL);
+    rectangle_geometry* Geom=(rectangle_geometry*)Agents.get_geometry();                         assert(Geom != NULL);
     if(Geom->get_width()!=MyWidth||
        Geom->get_height()!=MyWidth )
             Geom->set(MyWidth,MyWidth,1);
-    i>>Agenci;
+    i >> Agents;
     return 0;
 }
 

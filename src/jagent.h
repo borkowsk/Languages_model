@@ -1,6 +1,6 @@
 /// @file
 /// @brief DECLARATION OF A G E N T FOR "LANGUAGES" SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-20 (modified)
+/// @date 2026-05-29 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "layer.hpp"
@@ -106,7 +106,7 @@ public:
     }
 
     // ReSharper disable once CppMemberFunctionMayBeConst
-    long Classif() 	//!< Converting agent attributes to language classification number. NOLINT(*-make-member-function-const)
+    unsigned long classify() override	//!< Converting agent attributes to language classification number. NOLINT(*-make-member-function-const)
     {
         return First + cate_num * (Second + cate_num * Third);
     }

@@ -1,6 +1,6 @@
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
-/// @date 2026-05-20 (modified)
+/// @date 2026-05-29 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-use-nullptr"
@@ -142,7 +142,7 @@ jworld::jworld(size_t Width,
         MaskName(clone_str(live_mask)),
         //Sub-objects specific to this simulation:
         MyWidth(Width),
-        Agenci(Width,Width,NULL),	//`iiniter == NULL`, so agents created by the constructor, not cloning.
+        Agents(Width, Width, NULL),	//`iiniter == NULL`, so agents created by the constructor, not cloning.
         FarLinks(Width,Width),
         MaxStrength(max_power),
         MinStrength(min_power),
@@ -177,7 +177,7 @@ jworld::jworld(size_t Width,
 
         _far_link::MyWorld=this;	//Connection to read counters via arrays
 
-            assert(Agenci.get_rect_geometry()->is_torus());	//ALWAYS TORUS. ASSURED IN THE DISTANT LINK ALGORITHM, etc.
+            assert(Agents.get_rect_geometry()->is_torus());	//ALWAYS TORUS. ASSURED IN THE DISTANT LINK ALGORITHM, etc.
 
         //Initiating direct statistics, or rather the only one.
         SW_dynamic_perc=0;
@@ -188,23 +188,23 @@ void jworld::make_basic_sources()
     world::make_basic_sources();	//Inherited
 
     //Main series:
-    Firsts=Agenci.make_source("First mem",&jagent::First);
+    Firsts=Agents.make_source("First mem", &jagent::First);
     if(Firsts)
         Firsts->set_min_max(0, NumOfCate - 1);
 
-    Seconds=Agenci.make_source("Second mem",&jagent::Second);
+    Seconds=Agents.make_source("Second mem", &jagent::Second);
     if(Seconds)
         Seconds->set_min_max(0, NumOfCate - 1);
 
-    Thirds=Agenci.make_source("Third mem",&jagent::Third);
+    Thirds=Agents.make_source("Third mem", &jagent::Third);
     if(Thirds)
         Thirds->set_min_max(0, NumOfCate - 1);
 
-    Powers=Agenci.make_source("Power",&jagent::Power);
-    Age=Agenci.make_source("Lang. age",&jagent::Age);
-    Politics=Agenci.make_source("Polit. affil.",&jagent::Politics);
+    Powers=Agents.make_source("Power", &jagent::Power);
+    Age=Agents.make_source("Lang. age", &jagent::Age);
+    Politics=Agents.make_source("Polit. affil.", &jagent::Politics);
 
-    Classif=Agenci.make_source("Classification",&jagent::Classif);
+    Classif=Agents.make_source("Classification", &jagent::classify);
     if(Classif)
         Classif->set_min_max(0, NumOfCate * NumOfCate * NumOfCate - 1);	//'Max class ==NumOfCate^3',because three independent layers.
 
@@ -911,16 +911,16 @@ void jworld::initialize_layers()
     char *pos=NULL;
     char *old=NULL;
 
-    from1= Agenci.init_from_bitmap(MappName.get_ptr_val(),&jagent::assignPow); //Initializing powers from the map of powers.
+    from1= Agents.init_from_bitmap(MappName.get_ptr_val(), &jagent::assignPow); //Initializing powers from the map of powers.
 
-    if((pos=strchr(MaplName.get_ptr_val(),';'))==NULL) // If there are not three file names in MaplName, we treat it as one common RGB map.
+    if((pos=strchr(MaplName.get_ptr_val(),';'))==NULL) // If there are not three file names in MapLName, we treat it as one common RGB map.
     {
-        from2= Agenci.init_from_bitmap(MaplName.get_ptr_val(),&jagent::assign123); //Initializing attributes from one file
+        from2= Agents.init_from_bitmap(MaplName.get_ptr_val(), &jagent::assign123); //Initializing attributes from one file
     }
     else //When we have three separate files...
     {
         *pos='\0';
-        from2= Agenci.init_from_bitmap(MaplName.get_ptr_val(),&jagent::assign1); //Initializing the first attribute from the first file
+        from2= Agents.init_from_bitmap(MaplName.get_ptr_val(), &jagent::assign1); //Initializing the first attribute from the first file
 
         old=pos+1;
         if(from2==1 && (pos=strchr(old,';'))!=NULL)
@@ -928,7 +928,7 @@ void jworld::initialize_layers()
             clog<<"1. layer initialized by data file "<<MaplName.get_ptr_val()<<'\n'<<flush;
 
             *pos='\0';
-            from2= Agenci.init_from_bitmap(old,&jagent::assign2); //Initializing the second attribute from the next file
+            from2= Agents.init_from_bitmap(old, &jagent::assign2); //Initializing the second attribute from the next file
 
             if(from2==1)
             {
@@ -936,7 +936,7 @@ void jworld::initialize_layers()
                 old=pos+1;
                 if((pos=strchr(old,';'))!=NULL)
                                 *pos='\0'; //In case there is a trailing ';' present
-                from2= Agenci.init_from_bitmap(old,&jagent::assign3); //Initializing the third attribute from the last file
+                from2= Agents.init_from_bitmap(old, &jagent::assign3); //Initializing the third attribute from the last file
 
                 if(from2==1)
                     clog<<"3. layer initialized by data file "<<old<<'\n'<<flush;
@@ -947,11 +947,11 @@ void jworld::initialize_layers()
     // If the agents and language attributes are not initialized from files,
     // a temporary random initialization is performed by constructors or by cloning.
     if(from1!=1 && from2!=1)
-        Agenci.reallocate_all();
+        Agents.reallocate_all();
 
     // Using the mask for uninhabitable areas. Resets an agent if the mask shows black in that area.
-    if(Agenci.init_from_bitmap(MaskName.get_ptr_val(),&jagent::killBlack)==1 )
-        Agenci.deallocate_not_OK();
+    if(Agents.init_from_bitmap(MaskName.get_ptr_val(), &jagent::killBlack) == 1 )
+        Agents.deallocate_not_OK();
 
     if(use_SW_links)
         _connect_far_links(SW_start_connect_percent); //I try to connect some percentage of distant links before starting
@@ -990,9 +990,9 @@ void    jworld::_connect_far_links(double Percent)
         unsigned const a=RANDOM(MyWidth); ///< Random coordinate `a`.
         unsigned const b=RANDOM(MyWidth); ///< Random coordinate `b`.
 
-        if(Agenci.filled(a,b)) //Note! Only for a non-empty cell!
+        if(Agents.filled(a, b)) //Note! Only for a non-empty cell!
         {
-            const jagent& on=Agenci.get(a,b);
+            const jagent& on=Agents.get(a, b);
             double r=on.Power/asserted<double>(jagent::max_pow * MyWidth / 2); ///< Distance to random target.
 //			r=NeighRadius+r*DRAND(); // Usually radius is draw within a radius, but not less than `NeighRadius`.
             r= NeighRadius + r * DRAND() * DRAND() * DRAND(); // Randomisation of radius, which is now draw condensed, closer to the agent.
@@ -1005,19 +1005,19 @@ void    jworld::_connect_far_links(double Percent)
             tb=(tb+MyWidth)%MyWidth;
                                                                                    assert(0<=ta && ta<MyWidth);
                                                                                    assert(0<=tb && tb<MyWidth);
-            if((a!=ta || b!=tb) && Agenci.filled(ta,tb)) //There is no point in connecting with yourself or with an empty field
+            if((a!=ta || b!=tb) && Agents.filled(ta, tb)) //There is no point in connecting with yourself or with an empty field
             {
 #if 0
                 //OLD ALGORITHM WITHOUT RANDOMNESS:
-                if(Agenci.get(ta,tb).Power>=on.Power) //Voluntary submission to protection or sometimes alliance.
+                if(Agents.get(ta,tb).Power>=on.Power) //Voluntary submission to protection or sometimes alliance.
                 {									  //Ignoring external interference, the connection strives to connect
                                                       //with the strongest agent within the available radius (r).
 
                     double power_of_protector=0;
                     if(FarLinks.get(a,b).a!=UINT_MAX)	//When there is a protector, we read its strength/power.
-                        power_of_protector=Agenci.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).Power;
+                        power_of_protector=Agents.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).Power;
 
-                    if(Agenci.get(ta,tb).Power+on.Power>power_of_protector)	//In alliance with the new, you must defeat the old protector
+                    if(Agents.get(ta,tb).Power+on.Power>power_of_protector)	//In alliance with the new, you must defeat the old protector
                     {
                         _connect_flink_to(a,b,ta,tb);
                         Counter++; //Victory!
@@ -1027,9 +1027,9 @@ void    jworld::_connect_far_links(double Percent)
                 {
                     double power_of_protector=0;
                     if(FarLinks.get(ta,tb).a!=UINT_MAX)	//When there is a protector, we read its strength/power.
-                        power_of_protector=Agenci.get(FarLinks.get(ta,tb).a,FarLinks.get(ta,tb).b).Power;
+                        power_of_protector=Agents.get(FarLinks.get(ta,tb).a,FarLinks.get(ta,tb).b).Power;
 
-                    if(on.Power>power_of_protector+Agenci.get(ta,tb).Power)	//It is necessary to defeat the alliance of the invaded party and its protector
+                    if(on.Power>power_of_protector+Agents.get(ta,tb).Power)	//It is necessary to defeat the alliance of the invaded party and its protector
                     {
                         _connect_flink_to(ta,tb,a,b); //link built the other way!
                         Counter++; //Victory!
@@ -1037,15 +1037,15 @@ void    jworld::_connect_far_links(double Percent)
                 }
 #else
                 //SIMPLE NOISE ALGORITHM - REALIZED POWER CAN BE FROM 50 TO 150% OF NOMINAL:
-                if(Agenci.get(ta,tb).Power>=on.Power) //Voluntary submission to protection or sometimes alliance.
+                if(Agents.get(ta, tb).Power >= on.Power) //Voluntary submission to protection or sometimes alliance.
                 {									  //Ignoring external interference, the connection strives to connect
                                                       //with the strongest agent within the available radius (r).
                     double power_of_protector=0;
                     if(FarLinks.get(a,b).a!=UINT_MAX)	//When there is a protector, we read its strength/power.
-                        power_of_protector=Agenci.get(FarLinks.get(a,b).a,FarLinks.get(a,b).b).Power;
+                        power_of_protector=Agents.get(FarLinks.get(a, b).a, FarLinks.get(a, b).b).Power;
 
                     //Taking into account randomness, in alliance with the new one, you have to defeat the old protector.
-                    if((0.5+DRAND())*(Agenci.get(ta,tb).Power+on.Power)>power_of_protector)
+                    if((0.5+DRAND())*(Agents.get(ta, tb).Power + on.Power) > power_of_protector)
                     {
                         _connect_flink_to(a,b,ta,tb);
                         Counter++;
@@ -1055,10 +1055,10 @@ void    jworld::_connect_far_links(double Percent)
                 {
                     double power_of_protector=0;
                     if(FarLinks.get(ta,tb).a!=UINT_MAX)	//When there is a protector, we read its strength/power.
-                        power_of_protector=Agenci.get(FarLinks.get(ta,tb).a,FarLinks.get(ta,tb).b).Power;
+                        power_of_protector=Agents.get(FarLinks.get(ta, tb).a, FarLinks.get(ta, tb).b).Power;
 
                     //Taking into account randomness, you have to defeat the alliance of the invaded party and its protector.
-                    if((0.5+DRAND())*on.Power>power_of_protector+Agenci.get(ta,tb).Power)
+                    if((0.5+DRAND())*on.Power> power_of_protector + Agents.get(ta, tb).Power)
                     {
                         _connect_flink_to(ta,tb,a,b);
                         Counter++;
@@ -1072,13 +1072,13 @@ void    jworld::_connect_far_links(double Percent)
     //Double looping through all agents just for coloring!
     for(int a=0;a<N;a++) {
         for (int b = 0; b < N; b++)
-            if (Agenci.filled(a, b))    //Watch out for empty cells!
+            if (Agents.filled(a, b))    //Watch out for empty cells!
             {
                 _far_link pom = FarLinks.get(a, b);
                 if (pom.a != UINT_MAX)    //If there is any protector at all.
                 {
-                    unsigned long politOfProtector= Agenci.get(pom.a, pom.b).Politics; ///< A political marker of the Protector.
-                    Agenci.get(a, b).Politics = politOfProtector; // An agent adopts the political marker of his protector.
+                    unsigned long politOfProtector= Agents.get(pom.a, pom.b).Politics; ///< A political marker of the Protector.
+                    Agents.get(a, b).Politics = politOfProtector; // An agent adopts the political marker of his protector.
                 }
             }
     }
@@ -1117,7 +1117,7 @@ void jworld::dump_net_file(const char* core_name,unsigned long Step)
         for(wer=0;wer<MyWidth;wer++)	//Loop through the lines/rows.
          for(col=0;col<MyWidth;col++)	//Loop through columns in a given row.
          {
-            Out<<col<<'\t'<<wer<<'\t'<<Agenci.get(col,wer).Power<<"  "<<col<<'x'<<wer<<endl;
+            Out << col << '\t' << wer << '\t' << Agents.get(col, wer).Power << "  " << col << 'x' << wer << endl;
          }
 
         // Saving information about distant links of individual items.
@@ -1135,14 +1135,14 @@ void jworld::dump_net_file(const char* core_name,unsigned long Step)
 
 void    jworld::_update_age()
 {
-    const geometry_base* MyGeom=Agenci.get_geometry();
+    const geometry_base* MyGeom=Agents.get_geometry();
     iterator_h Iter=MyGeom->make_global_iterator();
     while(Iter)
     {
         size_t index=MyGeom->get_next(Iter);	//We obtain the agent's index.
         assert(index!=MyGeom->FULL); //It shouldn't happen here, but...
-        jagent& CenterAgent=*(Agenci.get_ptr(index).get_ptr_val());	//We obtain references to the agent by bypassing NULL assertion.
-        if(Agenci.is_empty(CenterAgent))    //We check whether it is not an empty cell (NULL)
+        jagent& CenterAgent=*(Agents.get_ptr(index).get_ptr_val());	//We obtain references to the agent by bypassing NULL assertion.
+        if(Agents.is_empty(CenterAgent))    //We check whether it is not an empty cell (NULL)
             continue;                   //Because then doing anything further would be pointless.
 
         CenterAgent.Age++;
