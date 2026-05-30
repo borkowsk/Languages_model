@@ -1,23 +1,20 @@
 /// @file
 /// @brief CONDITIONAL BIAS SIMULATION STEP IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-29 (modified)
-///     Created long time ago.
+/// @date 2026-05-31 (modified)
+///     Created a long time ago.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//#include <limits.h>
-//#include <assert.h>
-//#include <string.h>
-//#include <math.h>
+
 #include <cstring>
-#include <cmath>
+//#include <cmath>
 //#include <strstream>
 
 //#include "compatyb.h"
-#include "histosou.hpp"
-//#include "clstsour.hpp" //Jest tez statsour
-#include "coincsou.hpp"
+//#include "histosou.hpp"
+//#include "clstsour.hpp"
+//#include "coincsou.hpp"
 //#include "compatyb.hpp"
 #include "gadgets.hpp"
-#include "wb_ptrio.h"
+//#include "wb_ptrio.h"
 
 #include "jrand.h"
 #include "jworld.h"
@@ -27,23 +24,28 @@ using namespace sym2::data;
 using namespace sym2::shell;
 using namespace sym2::visual;
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "modernize-use-nullptr"
+#pragma ide diagnostic ignored "modernize-use-auto"
 
 void	jworld::_one_step_conditional_bias0()
 {   /// Shortcut to the geometry of the simulation world.
     const geometry_base* MyGeom=Agents.get_geometry();													 assert(MyGeom);
 
     /// THREE-DIMENSIONAL TABLE FOR COUNTING INFLUENCES.
-    /// Number of allowable categories in each meme + positions for single biases and double combinations.
-    int Wplywy[BIAS_FOR_ANY+1][BIAS_FOR_ANY+1][BIAS_FOR_ANY+1];							  assert(NumOfCate <= BIAS_FOR_ANY);	//Aren't there too many categories for such an influence board?
+    /// Number of allowable categories in each meme plus positions for single biases and double combinations.
+    int Influence[BIAS_FOR_ANY + 1][BIAS_FOR_ANY + 1][BIAS_FOR_ANY + 1];
+                                                         //Aren't there too many categories for such an influence board?
+                                                                                      assert(NumOfCate <= BIAS_FOR_ANY);
 
     /// Monte-Carlo iterator (may have data allocations inside).
     iterator_h Monte=MyGeom->make_random_global_iterator();
-    int testowanie=0;; ///< An auxiliary counter for testing the algorithm.
+    int testing=0; ///< An auxiliary counter for testing the algorithm.
 
     //We go through the agents with a Monte-Carlo iterator. Some may be drawn again.
     while(Monte) // Loop through the neighborhood.
     {
-        size_t index=MyGeom->get_next(Monte); //We obtain the index of a randomly selected agent
+        size_t index=MyGeom->get_next(Monte); //We get the index of a randomly selected agent.
         //if(index==FULL) continue;
                                                                                     assert(index!=any_layer_base::FULL);
         /// Reference to the agent. Obtained bypassing the NULL assertion.
@@ -57,13 +59,13 @@ void	jworld::_one_step_conditional_bias0()
                 goto STARZENIE;
 
         {	// INFLUENCE CALCULATION CODE:
-            //////////////////////////////
-            iterator_h Neigh=MyGeom->make_random_neighbour_iterator(index, NeighRadius, NeighDens);	// Alokujemy iterator sasiedztwa
+            // ////////////////////////////
+            iterator_h Neigh=MyGeom->make_random_neighbour_iterator(index, NeighRadius, NeighDens);	// We allocate a neighborhood iterator.
             unsigned zliczanie=0;           //For counting neighbors
 
-            //The counter table need to be reset.
+            //The table of counters needs to be reset.
             //You have to zero the whole thing, even if you don't use all of it - because there are columns for BIAS_FOR_ANY
-            memset(Wplywy,0,sizeof(Wplywy));
+            memset(Influence, 0, sizeof(Influence));
             // TODO And where is the influence from a distant link?
             while(Neigh)  //Loop through the neighborhood.
             {
@@ -71,40 +73,40 @@ void	jworld::_one_step_conditional_bias0()
                 if(index2==any_layer_base::FULL || index2==index)	//If it was outside the simulation area or in the center of the area, it would still be pointless.
                     continue;
 
-                jagent& PeryfAgent=*(Agents.get_ptr(index2).get_ptr_val());///< A reference to a neighbor bypassing NULL assertions.
-                if(Agents.is_empty(PeryfAgent))		//We check whether it is not an empty cell (NULL) because then it would be pointless to continue.
-                    continue;
+                jagent& PeryAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< A reference to a neighbor bypassing NULL assertions.
+                if(Agents.is_empty(PeryAgent))		//We check whether it is not an empty cell (NULL),
+                    continue;                       //because then it would be pointless to continue.
 
                 zliczanie++;						//Counts the number of randomly selected neighbors.
 
                 //Adding the forces of each neighbor to the counters in the tables:
-                Wplywy[PeryfAgent.First][PeryfAgent.Second][PeryfAgent.Third]+=3*PeryfAgent.Power;	//"counter" for ABC coincidence
+                Influence[PeryAgent.First][PeryAgent.Second][PeryAgent.Third]+= 3 * PeryAgent.Power;	//"counter" for ABC coincidence
 
-                Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][PeryfAgent.Third]+=2*PeryfAgent.Power;	//BxC histogram "counter".
-                Wplywy[PeryfAgent.First][BIAS_FOR_ANY][PeryfAgent.Third]+=2*PeryfAgent.Power;	//AxC histogram "counter".
-                Wplywy[PeryfAgent.First][PeryfAgent.Second][BIAS_FOR_ANY]+=2*PeryfAgent.Power;	//AxB histogram "counter".
+                Influence[BIAS_FOR_ANY][PeryAgent.Second][PeryAgent.Third]+= 2 * PeryAgent.Power;	//BxC histogram "counter".
+                Influence[PeryAgent.First][BIAS_FOR_ANY][PeryAgent.Third]+= 2 * PeryAgent.Power;	//AxC histogram "counter".
+                Influence[PeryAgent.First][PeryAgent.Second][BIAS_FOR_ANY]+= 2 * PeryAgent.Power;	//AxB histogram "counter".
 
-                Wplywy[PeryfAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=PeryfAgent.Power;	//histogram "counter" for Axx
-                Wplywy[BIAS_FOR_ANY][PeryfAgent.Second][BIAS_FOR_ANY]+=PeryfAgent.Power;	//histogram "counter" for xBx
-                Wplywy[BIAS_FOR_ANY][BIAS_FOR_ANY][PeryfAgent.Third]+=PeryfAgent.Power;	//histogram "counter" for xxC
+                Influence[PeryAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=PeryAgent.Power;	//histogram "counter" for Axx
+                Influence[BIAS_FOR_ANY][PeryAgent.Second][BIAS_FOR_ANY]+=PeryAgent.Power;	//histogram "counter" for xBx
+                Influence[BIAS_FOR_ANY][BIAS_FOR_ANY][PeryAgent.Third]+=PeryAgent.Power;	//histogram "counter" for xxC
 
             }
 
             MyGeom->destroy_iterator(Neigh);    // We make sure that the iterator will be removed.
 
-            testowanie++;						// Counts the number of randomly selected agents
+            testing++;						// Counts the number of randomly selected agents
 
             if(UseSelf) //Adding your own forces to counters in tables
             {
-                Wplywy[CenterAgent.First][CenterAgent.Second][CenterAgent.Third]+=3*CenterAgent.Power;
+                Influence[CenterAgent.First][CenterAgent.Second][CenterAgent.Third]+= 3 * CenterAgent.Power;
 
-                Wplywy[BIAS_FOR_ANY][CenterAgent.Second][CenterAgent.Third]+=2*CenterAgent.Power;
-                Wplywy[CenterAgent.First][BIAS_FOR_ANY][CenterAgent.Third]+=2*CenterAgent.Power;
-                Wplywy[CenterAgent.First][CenterAgent.Second][BIAS_FOR_ANY]+=2*CenterAgent.Power;
+                Influence[BIAS_FOR_ANY][CenterAgent.Second][CenterAgent.Third]+= 2 * CenterAgent.Power;
+                Influence[CenterAgent.First][BIAS_FOR_ANY][CenterAgent.Third]+= 2 * CenterAgent.Power;
+                Influence[CenterAgent.First][CenterAgent.Second][BIAS_FOR_ANY]+= 2 * CenterAgent.Power;
 
-                Wplywy[CenterAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=CenterAgent.Power;
-                Wplywy[BIAS_FOR_ANY][CenterAgent.Second][BIAS_FOR_ANY]+=CenterAgent.Power;
-                Wplywy[BIAS_FOR_ANY][BIAS_FOR_ANY][CenterAgent.Third]+=CenterAgent.Power;
+                Influence[CenterAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=CenterAgent.Power;
+                Influence[BIAS_FOR_ANY][CenterAgent.Second][BIAS_FOR_ANY]+=CenterAgent.Power;
+                Influence[BIAS_FOR_ANY][BIAS_FOR_ANY][CenterAgent.Third]+=CenterAgent.Power;
             }
 
             //Adding noise and bias in the loop:
@@ -112,11 +114,12 @@ void	jworld::_one_step_conditional_bias0()
             for(int i=0,width=(BIAS_FOR_ANY+1)*(BIAS_FOR_ANY+1)*(BIAS_FOR_ANY+1);i<width;i++)
             {
                 // TODO Nie ma BiasData, nie wiem dlaczego
-                // TODO ((int*)Wplywy)[i]+=long(DRAND()*Noise*(4.5*MaxStrength))+((float*)BiasData->Biases)[i];//cast!!! - sztuczka zeby uniknac potrojnie zagniezdzonej petli
+                // TODO ((int*)Influence)[i]+=long(DRAND()*Noise*(4.5*MaxStrength))+((float*)BiasData->Biases)[i];
+                // Why this cast??? Old info: "trick to avoid triple nested loop" (???)
             }
 
             // Searching for maxima - less trivial here:
-            ////////////////////////////////////////////
+            // //////////////////////////////////////////
 
             /// Array of statistics from the maximum search loop.
             wb_dynarray<int> FillStat(4);fill(FillStat,0);
@@ -126,7 +129,7 @@ void	jworld::_one_step_conditional_bias0()
             int indT=-1;
 
             do{	// Loop of searching for subsequent maxima - to fill ind{FST}'s:
-                ////////////////////////////////////////////////////////////////
+                // //////////////////////////////////////////////////////////////
                 int width=BIAS_FOR_ANY+1;		///< "Width" of the cube array for counters.
                 int offsetA=RANDOM(NumOfCate);			assert(0 <= offsetA && offsetA < NumOfCate);
                 int offsetB=RANDOM(NumOfCate);			assert(0 <= offsetB && offsetB < NumOfCate);
@@ -147,7 +150,7 @@ void	jworld::_one_step_conditional_bias0()
                         {
                             int c=(k+offsetC)%width;											assert(c>=0 && c<width);
 
-                            int pom=Wplywy[a][b][c];
+                            int pom=Influence[a][b][c];
                             if(pom>Max)
                             {
                                 Max=pom;
@@ -160,7 +163,7 @@ void	jworld::_one_step_conditional_bias0()
                                                                                      assert(pA!=-1 && pB!=-1 && pC!=-1);
 
                 //What to do with the maximum???
-                Wplywy[pA][pB][pC]=0; //Reset it to zero so that it doesn't mess up in your next search!
+                Influence[pA][pB][pC]=0; //Reset it to zero so that it doesn't mess up in your next search!
 
                 //Storing memes to change - only when the slot is still free.
                 if(pA!=BIAS_FOR_ANY && indF==-1)
@@ -171,12 +174,12 @@ void	jworld::_one_step_conditional_bias0()
                     indT=pC;
                 FillStat[(indF!=-1)+(indS!=-1)+(indT!=-1)]++;
             }while( indF==-1 || indS==-1 || indT==-1  );
-
-                                                    assert(indF!=-1 && indS!=-1 && indT!=-1);//Po wyjsciu z petli wszystkie musza juz byc ustawione
-
-            CenterAgent.First=asserted<short>(indF);		//zmieniamy w agencie centralnym
-            CenterAgent.Second=asserted<short>(indS);		//zmieniamy w agencie centralnym
-            CenterAgent.Third=asserted<short>(indT);		//zmieniamy w agencie centralnym
+                                                                      //After exiting the loop, all of them must be set!
+                                                                               assert(indF!=-1 && indS!=-1 && indT!=-1);
+            // Now we change in the central agent.
+            CenterAgent.First=asserted<short>(indF);
+            CenterAgent.Second=asserted<short>(indS);
+            CenterAgent.Third=asserted<short>(indT);
 
             //cout<<FillStat[0]<<'='<<FillStat[1]<<'+'<<FillStat[2]<<'+'<<FillStat[3]<<flush<<endl; //Print out the loop recurrence statistics
         }//END OF STATE CHANGES
@@ -193,6 +196,7 @@ STARZENIE:
     MyGeom->destroy_iterator(Monte);
 } //CONDITIONAL BIAS IMPLEMENTATION ENDS HERE.
 
+#pragma clang diagnostic pop
 /* **************************************************************** */
 /*           THIS CODE IS DESIGNED & COPYRIGHT BY:                  */
 /*            W O J C I E C H   B O R K O W S K I                   */

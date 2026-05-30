@@ -1,6 +1,6 @@
 /// @file
 /// @brief DECLARATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-29 (modified)
+/// @date 2026-05-31 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -10,34 +10,36 @@
 #include "world.hpp"
 #include "layer.hpp"
 #include "jagent.h" //Agent definition
-using namespace sym2::data;; //To będzie miec wpływ globalny!
 
-extern bool			Console;	///< Flag for working in console mode - without any graphics. By default, it is `false`.
+using namespace sym2::data; //This has a global impact, as jworld.h is included almost everywhere!
+
+extern bool				 Console;	///< Flag for working in console mode - without any graphics. By default, it is `false`.
 extern const int	BIAS_FOR_ANY;	///< The value that represents "all-the-same" in conditional biases.
                                     ///< Always greater than the largest value in the layer. Default `==8`.
-/// The Whole World of Simulation.
+
+/// @brief The Whole World of Simulation.
 class jworld:public sym2::shell::world
-//--------------------------------------------------
+//------------------------------------
 {
 public:
     // Information necessary for effective implementation of various bias modes:
     // /////////////////////////////////////////////////////////////////////////
 
     /// Different simulation modes, depending on the bias type used.
-    enum SimulMode {NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIONAL_BIAS=3,INVALID_BIAS_MODE=4};
+    enum SimulMode {NO_BIAS=0,SIMPLE_BIAS=1,CONDITIONAL_BIAS=2,SEQUENTIAL_BIAS=3,INVALID_BIAS_MODE=4};
 
-    /// The base class for any-mode bias information.
-    /// The descendant classes are used to store various bias information.
+    /// @brief The base class for any-mode bias information.
+    /// @details The descendant classes are used to store various bias information.
     class _bias_information_base
     {
     protected:
-        short* PtrIleKate;		//!< A pointer to the number of categories set in child classes.
+        short* PtrHowManyCategories;		//!< A pointer to the number of categories set in child classes.
 
     public:
         /// Get how many bias categories are there. Interface to the pointer to the number of categories.
-        short  IleKate() { return *PtrIleKate;}
+        short  IleKate() { return *PtrHowManyCategories;}
 
-        explicit _bias_information_base(short* ini):PtrIleKate(ini){}	//!< Constructor that sets a pointer.
+        explicit _bias_information_base(short* ini): PtrHowManyCategories(ini){}	//!< Constructor that sets a pointer.
         virtual ~_bias_information_base()= default;	//!< Virtual destructor to ensure correct deallocation.
 
         virtual void clean()= 0;					//!< Bias definition content clearing is required.
@@ -48,7 +50,7 @@ public:
         }
     };
 
-    /// Information about the agent's distant connection to some location [a,b].
+    /// @brief Information about the agent's distant connection to some location [a,b].
     struct _far_link
     {
         static jworld* MyWorld;	//!< Static binding to a world. This may be because we only have one world in the program.
@@ -73,12 +75,12 @@ private:
     // Different model step implementations depending on bias type:
     // ////////////////////////////////////////////////////////////
 
-    // Auxiliary methods:
-    //-------------------
-
+    /// @name Auxiliary methods:
+    //--------------------------
+    /// @{
     void	_update_age();				//!< aging agents.
 
-    /// Reads the location pointed to by the far link starting at location [aa,bb].
+    /// \brief Reads the location pointed to by the far link starting at location [aa,bb].
     /// \param aa is `a`(means x) of source location.
     /// \param bb is `b`(means y) of source location.
     /// \param target_a is for returning `a`(means x) of target location.
@@ -93,14 +95,17 @@ private:
     /// Tries to switch a certain percentage of distant links.
     /// But only sometimes does it reach the exact required number.
     void	_connect_far_links(double Percent);
+    /// @}
 
-    // Implementations of single simulation steps depending on different types of bias implementations:
-    //-------------------------------------------------------------------------------------------------
+    /// @name Implementations of single simulation steps depending on different types of bias implementations:
+    //--------------------------------------------------------------------------------------------------------
+    /// @{
     void	_one_step_no_bias();				//!< Single step implementation without bias.
     void	_one_step_simple_bias();			//!< Single step implementation with simple bias.
     void	_one_step_conditional_bias0();		//!< Single step implementation with conditional bias.
     void	_one_step_conditional_bias1();		//!< Alternative (more complete) implementation with conditional bias.
-    void	_one_step_sequentional_bias0();		//!< Single step implementation with sequential bias.
+    void	_one_step_sequential_bias0();		//!< Single step implementation with sequential bias.
+    /// @}
 
     // Simulation statistics directly calculated in the step:
     // //////////////////////////////////////////////////////
@@ -115,22 +120,22 @@ private:
     // Single-valued parameters/attributes of the world:
     // /////////////////////////////////////////////////
 
-    unsigned			MyWidth;	//!< Circumference of a torus.
+    int					MyWidth;		//!< Circumference of a torus.
     short				MaxStrength;	//!< Maximum agent power/strength.
     short				MinStrength;	//!< Minimum agent strength.
     short				TrsStrength;	//!< Threshold of strength above which there is no change.
-    short				NumOfCate;	//!< Number of categories.
-    short				NeighDens;	//!< The density of the neighborhood (1-8 is random, -1 means all not randomly).
+    short				NumOfCate;		//!< Number of categories.
+    short				NeighDens;		//!< The density of the neighborhood (1-8 is random, -1 means all not randomly).
     short				NeighRadius;	//!< Neighborhood radius.
-    short				UseSelf;	//!< Determines whether to take himself into consideration.
-    double				Noise;		//!< Information noise at the contacts.
-    double				spontanic;	//!< Spontaneous mutations - random changes in language attributes.
-    bool 				use_SW_links;	//!< Determines whether we use far links.
+    short				UseSelf;		//!< Determines whether to take himself into consideration.
+    double				Noise;			//!< Information noise at the contacts.
+    double				Spontaneous;	//!< Spontaneous mutations - random changes in language attributes.
+    bool 				Use_SW_links;	//!< Determines whether we use far links.
     double				SW_start_connect_percent;	//!< Determines percentage of far link change attempts to perform before attitude dynamic launch.
-    double				SW_reconnect_percent;	//!< Specifies the percentage of far links (SW structure) changes "per step".
-    wb_pchar			MappName;	//!< Force initialization bitmap filename.
-    wb_pchar			MaplName;	//!< The name of the bitmap file that initializes the language attributes.
-    wb_pchar			MaskName;	//!< The name of the bitmap file that initializes the uninhabitable areas.
+    double				SW_reconnect_percent;		//!< Specifies the percentage of far links (SW structure) "per-step" changes.
+    wb_pchar			MappName;		//!< Force initialization bitmap filename.
+    wb_pchar			MapLName;		//!< The name of the bitmap file that initializes the language attributes.
+    wb_pchar			MaskName;		//!< The name of the bitmap file that initializes the uninhabitable areas.
 
     // THE TOPIC OF BIAS:
     // //////////////////
@@ -158,56 +163,57 @@ private:
     ptr_to_struct_matrix_source<jagent,short>		*Seconds;	//!< `=Agents.make_source("Second mem",&jagent::Second);`
     ptr_to_struct_matrix_source<jagent,short>		*Thirds;	//!< `=Agents.make_source("Third mem",&jagent::Third);`
     ptr_to_struct_matrix_source<jagent,short>		*Powers;	//!< `=Agents.make_source("Power",&jagent::Power);`
-    ptr_to_struct_matrix_source<jagent,unsigned long>	*Age;	//!< `=Agents.make_source("Lang age",&jagent::age);`
-    ptr_to_struct_matrix_source<jagent,unsigned long>	*Politics;	//!< `=Agents.make_source("Polit. affil.",&jagent::Politics);`
-    method_by_ptr_matrix_source<jagent,unsigned long>	*Classif;	//!< `=Agents.make_source("Classification",&jagent::classify);`
+    ptr_to_struct_matrix_source<jagent,unsigned>	*Age;		//!< `=Agents.make_source("Lang age",&jagent::age);`
+    ptr_to_struct_matrix_source<jagent,unsigned long>	*Politics;	//!< `=Agents.make_source("Polit. affiliation",&jagent::Politics);`
+    method_by_ptr_matrix_source<jagent,unsigned long>	*Classify;	//!< `=Agents.make_source("Classification",&jagent::classify);`
     struct_matrix_source<_far_link,unsigned>		*FarA;		//!< `=FarLinks.make_source("f.links A",&_far_link::a)`
     struct_matrix_source<_far_link,unsigned>		*FarB;		//!< `=FarLinks.make_source("f.links B",&_far_link::b)`
-    method_matrix_source<_far_link,unsigned>		*FCount;	//!< `=FarLinks.make_source("far counters",&_far_link::getcount)`
+    method_matrix_source<_far_link,unsigned>		*FCount;	//!< `=FarLinks.make_source("far counters",&_far_link::get_count)`
 
 public:
     //CONSTRUCTION & DESTRUCTION
-    jworld(size_t Width,			//!< Width of the torus of the agent matrix.
+
+    /// The sole constructor.
+    jworld(size_t Width,			//!< Width of the torus for the agent matrix.
           char* log_name,			//!< File name for saving history.
-          char* mapl_name,			//!< The name of the raster graphic that initializes the "language components".
+          char* map_l_name,			//!< The name of the raster graphic that initializes the "language components".
           char* mapp_name,			//!< The name of the raster graphic that initiates agent powers.
           char* live_mask,			//!< The name of the raster graphic that initializes unusable areas. Black points on this map.
           short Distribution,		//!< Type and degree of strength distribution. Small negative or positive integers.
           double Noise=0,			//!< Information noise at the contacts.
-          short	max_sila=255,		//!< Maximum agent power/strength.
-          short min_sila=1,			//!< Minimum agent strength.
+          short	max_power=255,		//!< Maximum agent power/strength.
+          short min_power=1,		//!< Minimum agent strength.
           short	ile_kate=256,		//!< Number of categories.
-          short	odl_sasiad=1,		//!< Neighborhood radius.
-          short	ile_sasiad=8,		//!< The density of the neighborhood (1-8 is random, -1 means all not randomly).
-          short need_use_self=0,	//!< Taking your own attributes in determining the majority.
-          short walkpower=0,		//!< Determines whether the strength increases with the age of the agent.
-          short trespower=SHRT_MAX,	//!< The strength above which the agent is immune to influence.
-          double spontanic=0,		//!< Probability (?) of spontaneous attribute mutations.
-          bool i_use_SW_links=true,	//!< Determines whether we use long distance links.
-          double i_SW_startconnect_percent=0,	//!< Determines what percentage of distant links we set at the beginning.
-          double i_SW_reconect_percent=0		//!< Percentage of far link changes in each simulation step.
+          short	neigh_radius=1,		//!< Neighborhood radius.
+          short	neigh_dens=8,		//!< The density of the neighborhood (1-8 is random, -1 means all not randomly).
+          short	need_use_self=0,	//!< Taking your own attributes in determining the majority.
+          short	walk_of_power=0,	//!< Determines whether the strength increases with the age of the agent.
+          short	thr_power=SHRT_MAX,	//!< The strength above which the agent is immune to influence.
+          double	spontaneous=0,		//!< Probability (?) of spontaneous attribute mutations.
+          bool		i_use_SW_links=true,			//!< Determines whether we use long distance links.
+          double	i_SW_start_connect_percent=0,	//!< Determines what percentage of distant links we set at the beginning.
+          double	i_SW_reconnect_percent=0		//!< Percentage of far link changes in each simulation step.
           );
 
-    ~jworld() override= default;		//!< Virtual destructor.
+    ~jworld() override = default;		//!< The virtual destructor. It does a lot more than it looks.
 
-    /// Printout of simulation parameter values.
+    /// @brief Printout of simulation parameter values.
     /// @param out is a reference to the output stream.
     /// @param sep specifies the character used to separate individual fields. This can be a space or a tab.
     void	print_experiment_info(ostream& out,const char sep) const
     {
         char bufor1[100];
         char bufor2[100];
-        out
-                << "\nNum of Kl=" << sep << NumOfCate
+        out     << "\nNum of Kl=" << sep << NumOfCate
                 << "\n" << this->MyWidth << sep << "x" << sep << MyWidth << sep << "=" << sep << MyWidth * MyWidth
                 << "\nPower range:" << sep << MinStrength << '-' << MaxStrength
                 << "\nDistribution:" << sep << (jagent::distribution < 0 ? "G" : "P") << jagent::distribution
                 << "\nThresh of Power=" << sep << TrsStrength
-                << "\nNoise %=" << sep << Noise * 100 << sep << " Spontanic %=" << sep << spontanic
+                << "\nNoise %=" << sep << Noise * 100 << sep << " Spontaneous change %=" << sep << Spontaneous
                 << "\nSelf=" << sep << UseSelf
                 << "\nNeighborhood=" << sep << NeighDens << "/(" << (1 + 2 * NeighRadius) << "*" << (1 + 2 * NeighRadius) << ")"
-                << "\nSmall World:" << sep << (!use_SW_links ? "NO" : dtoa(SW_reconnect_percent, bufor1))
-                << sep << (!use_SW_links ? "NO" : dtoa(SW_start_connect_percent, bufor2))
+                << "\nSmall World:" << sep << (!Use_SW_links?"NO":dtoa(SW_reconnect_percent, bufor1))
+                << sep << (!Use_SW_links?"NO":dtoa(SW_start_connect_percent, bufor2))
                 <<endl;
         cout<<"SW: "<<bufor1<<'/'<<bufor2<<endl;
     }
@@ -306,22 +312,22 @@ public:
     };
 
     /// Information about sequential conditional bias.
-    class _sequentional_bias_information:public _bias_information_base
+    class _sequential_bias_information: public _bias_information_base
     {
     public:
         /// Single conditional bias data.
         struct IfBias
         {
-            int		leyer[3];	//!< Condition states for individual layers, e.g., a=1 b=3 c=*
-            int		 whatley;	//!< Specifies which layer will be modified
-            int		  lstate;	//!< For what state.
+            int		layer[3];	//!< Condition states for individual layers, e.g., a=1 b=3 c=*
+            int		what_lay;	//!< Specifies which layer will be modified
+            int		wh_state;	//!< For what state.
             float	   value;	//!< And what added value
 
             /// Checks if the conditional bias is defined correctly.
-            bool IsOK(int n_of_cate=256) const
+            bool IsOK(int /*n_of_cate*/=256) const
             {
-                return  whatley!=BIAS_FOR_ANY &&
-                        lstate!=-1 &&
+                return what_lay != BIAS_FOR_ANY &&
+                       wh_state != -1 &&
                         value!=0
                         ;
             }
@@ -330,17 +336,17 @@ public:
             { clean();}
 
             void clean() ///< A method that sets fields to default (neutral) values.
-            { leyer[0]=leyer[1]=leyer[2]=BIAS_FOR_ANY;whatley=BIAS_FOR_ANY;lstate=-1;value=0;}
+            { layer[0]= layer[1]= layer[2]=BIAS_FOR_ANY;what_lay=BIAS_FOR_ANY;wh_state=-1;value=0;}
 
-            int reg(int Index,int Wartosc); ///< Records a value for a layer, provided it is the first time.
+            int reg(int Index,int Value); ///< Records a value for a layer, provided it is the first time.
 
-            int set(int Index,int Wartosc,float Premia); ///< Records target and bonus amount.
+            int set(int Index, int Value, float Premium); ///< Records target and bonus amount.
 
             int much(int FirstVal,int SecondVal,int ThirdVal) const ///< Checking the fulfillment of the conditional bias (???)
             {
-                return (leyer[0]==BIAS_FOR_ANY || leyer[0]==FirstVal) &&
-                       (leyer[1]==BIAS_FOR_ANY || leyer[1]==SecondVal) &&
-                       (leyer[2]==BIAS_FOR_ANY || leyer[2]==ThirdVal);
+                return (layer[0] == BIAS_FOR_ANY || layer[0] == FirstVal) &&
+                       (layer[1] == BIAS_FOR_ANY || layer[1] == SecondVal) &&
+                       (layer[2] == BIAS_FOR_ANY || layer[2] == ThirdVal);
             }
 
             friend ostream& operator << (ostream& o,const IfBias& b); ///< Serialization.
@@ -358,13 +364,13 @@ public:
         /// @returns counter value before incrementation, means last proper index.
         int use_next_item() { return for_use++;}
 
-        explicit _sequentional_bias_information(short* ini,unsigned maxN=20):
+        explicit _sequential_bias_information(short* ini, unsigned maxN=20):
             _bias_information_base(ini),SeqBiases(maxN),for_use(0)
         {
             //No cleaning is necessary because the `IfBias` constructor is implicitly used.
         }
 
-        ~_sequentional_bias_information() override= default; ///< Virtual destructor (empty).
+        ~_sequential_bias_information() override= default; ///< Virtual destructor (empty).
 
         void clean() override	///< Clears the contents of the bias definition. Uses clearing for the `IfBias` structure.
         {
@@ -376,9 +382,9 @@ public:
 
         /// Implementing bias usage. It is quite complicated here and resembles executing a program.
         void UseBiasForAgent(   int FirstVal,int SecondVal,int ThirdVal,
-                                wb_dynarray<int>& Firsts,
-                                wb_dynarray<int>& Seconds,
-                                wb_dynarray<int>& Thirds
+                                wb_dynarray<int>& CountFirsts,
+                                wb_dynarray<int>& CountSeconds,
+                                wb_dynarray<int>& CountThirds
                              );
     };
 };
@@ -421,8 +427,8 @@ void	jworld::_connect_flink_to(	unsigned aa,
     farLinkAABB.b=target_b;	//Sets `b` of the new connection
     FarLinks.get(target_a,target_b).count++;	//We add to the counter in the new target
 
-    unsigned long politofprot=Agents.get(target_a, target_b).Politics;
-    Agents.get(aa, bb).Politics=politofprot;
+    unsigned long polit_of_prot=Agents.get(target_a, target_b).Politics;
+    Agents.get(aa, bb).Politics=polit_of_prot;
     //			Agents.get(aa,bb).Politics=RANDOM(0xffffff); /// TODO Why changed?
 }
 

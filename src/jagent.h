@@ -1,6 +1,6 @@
 /// @file
 /// @brief DECLARATION OF A G E N T FOR "LANGUAGES" SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-29 (modified)
+/// @date 2026-05-31 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "layer.hpp"
@@ -24,7 +24,7 @@ class jagent:public sym2::shell::agent_base
 
     //AGENT ATTRIBUTES IMPORTANT IN SIMULATION:
     short			Power;		//!< The power/strength of this agent.
-    unsigned long	Age;		//!< Age of the agent's current language/culture (i.e., how many steps since the last change).
+    unsigned		Age;		//!< Age of the agent's current language/culture (i.e., how many steps since the last change).
     unsigned long	Politics;	//!< Political affiliation
 
     /// Union for language/culture attributes viewed by name and simultaneously as an array.
@@ -81,22 +81,22 @@ public:
 
     void assign1(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading the first attribute from one RGB/gray pixel.
     {
-        First=( (int(Red)+int(Green)+int(Blue))/3 ) >> cate_shift;	//Average color intensity classified. Best when `R = G = B`
+        First=asserted<short>(( (unsigned(Red)+Green+Blue)/3 ) >> cate_shift);	//Average color intensity classified. Best when `R = G = B`
     }
     
     void assign2(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading a second attribute from one RGB pixel.
     {
-        Second=( (int(Red)+int(Green)+int(Blue))/3 ) >> cate_shift;	//Average color intensity classified. Best when `R = G = B`
+        Second=asserted<short>(( (unsigned(Red)+Green+Blue)/3 ) >> cate_shift);	//Average color intensity classified. Best when `R = G = B`
     }
 
     void assign3(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading the third attribute from one RGB pixel.
     {
-        Third=( (int(Red)+int(Green)+int(Blue))/3 ) >> cate_shift;	//Average color intensity classified. Best when `R = G = B`
+        Third=asserted<short>(( (unsigned(Red)+Green+Blue)/3 ) >> cate_shift);	//Average color intensity classified. Best when `R = G = B`
     }
 
     void assignPow(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Loading agent strength from one RGB pixel.
     {
-        Power= min_pow + short((int(Red) + int(Green) + int(Blue)) / (3. * 255) * (max_pow - min_pow));
+        Power=asserted<short>( (int(Red) + Green + Blue) / (3. * 255) * (max_pow - min_pow) + min_pow );
     }
 
     void killBlack(unsigned char Red,unsigned char Green,unsigned char Blue)	//!< Agent cleaning in non-residential areas.
@@ -113,9 +113,13 @@ public:
 
     long RGB() const	//!< Agent color in true-color visualizations.
     {
-        return ((unsigned long) (((unsigned char) (First) |
-            ((unsigned short) (Second) << 8)) |
-            (((unsigned long) (unsigned char) (Third)) << 16))) ;
+        return long(
+                 (unsigned long) ( // But why? TODO?
+                ((unsigned char) (First) |
+                ((unsigned short) (Second) << 8)) |
+                (((unsigned long) (unsigned char) (Third)) << 16)
+                )
+                ) ;
     }
 
     friend ostream& operator << (ostream& o,const jagent& a)	//!< Serialization.

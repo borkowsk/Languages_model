@@ -1,10 +1,8 @@
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
-/// @date 2026-05-29 (modified)
+/// @date 2026-05-31 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "modernize-use-nullptr"
-#pragma ide diagnostic ignored "modernize-use-auto"
+
 #include <cstring>
 #include <cmath>
 #include <strstream>
@@ -28,6 +26,10 @@ using namespace sym2;
 using namespace sym2::data;
 using namespace sym2::shell;
 using namespace sym2::visual;
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "modernize-use-nullptr"
+#pragma ide diagnostic ignored "modernize-use-auto"
 
 //When Embarcadero goes crazy in a hundred places: "code has no effect" even though it definitely has an effect!
 //#pragma warn -8019
@@ -115,10 +117,12 @@ extern unsigned internal_log;
 extern int      spatial_correlation_mode;
 extern bool use_spatial_corr;
 
-
+// TODO Problem:
+//  In instantiation of member function 'sym2::shell::rectangle_layer_of_ptr_to_agents<jagent>::make_source'
+//  (BUT WHAT???)
 jworld::jworld(size_t Width,
       char* log_name,
-      char* mapl_name,
+      char* map_l_name,
       char* mapp_name,
       char* live_mask,
       short distribution,
@@ -126,30 +130,30 @@ jworld::jworld(size_t Width,
       short	max_power,
       short min_power,
       short	number_of_categories,
-      short	neighborhood_radius,
-      short	neighborhood_fill,
+      short	neigh_radius,
+      short	neigh_dens,
       short need_use_self,
-      short walk_power,
-      short tres_power,
-      double i_spontan,
+      short walk_of_power,
+      short thr_power,
+      double spontaneous,
       bool i_use_SW_links,
-      double i_SW_connect_percent_at_start,
+      double i_SW_start_connect_percent,
       double i_SW_reconnect_percent
         ):
         world(log_name,50),
-        MaplName(clone_str(mapl_name)),
+        MapLName(clone_str(map_l_name)),
         MappName(clone_str(mapp_name)),
         MaskName(clone_str(live_mask)),
         //Sub-objects specific to this simulation:
-        MyWidth(Width),
-        Agents(Width, Width, NULL),	//`iiniter == NULL`, so agents created by the constructor, not cloning.
+        MyWidth(asserted<int>(Width)),
+        Agents(Width, Width, NULL),	//Initializer is NULL, so agents created by the constructor, not cloning.
         FarLinks(Width,Width),
         MaxStrength(max_power),
         MinStrength(min_power),
-        TrsStrength(tres_power),
+        TrsStrength(thr_power),
         NumOfCate(number_of_categories),
-        NeighDens(neighborhood_fill),
-        NeighRadius(neighborhood_radius),
+        NeighDens(neigh_dens),
+        NeighRadius(neigh_radius),
         Noise(noise),
         UseSelf(need_use_self),
         //Pointers to basic data series:
@@ -157,23 +161,23 @@ jworld::jworld(size_t Width,
         Seconds(NULL),
         Thirds(NULL),
         Powers(NULL),
-        Classif(NULL),
+        Classify(NULL),
         Politics(NULL),
         Age(NULL),
         FarA(NULL),
         FarB(NULL),
         FCount(NULL),
         BiasMode(NO_BIAS),
-        spontanic(i_spontan),
-        use_SW_links(i_use_SW_links),
-        SW_start_connect_percent(i_SW_connect_percent_at_start),
+        Spontaneous(spontaneous),
+        Use_SW_links(i_use_SW_links),
+        SW_start_connect_percent(i_SW_start_connect_percent),
         SW_reconnect_percent(i_SW_reconnect_percent)
 { //There is not too much that can be done because we cannot rely on virtual methods of the `World` yet.
-        jagent::pow_move=walk_power;
+        jagent::pow_move=walk_of_power;
         jagent::distribution=distribution;
         world::set_simulation_name("Languages_v2 SW");
         set_bias_from_str("");
-        jagent::mutation_level=spontanic;
+        jagent::mutation_level=Spontaneous;
 
         _far_link::MyWorld=this;	//Connection to read counters via arrays
 
@@ -202,11 +206,13 @@ void jworld::make_basic_sources()
 
     Powers=Agents.make_source("Power", &jagent::Power);
     Age=Agents.make_source("Lang. age", &jagent::Age);
-    Politics=Agents.make_source("Polit. affil.", &jagent::Politics);
 
-    Classif=Agents.make_source("Classification", &jagent::classify);
-    if(Classif)
-        Classif->set_min_max(0, NumOfCate * NumOfCate * NumOfCate - 1);	//'Max class ==NumOfCate^3',because three independent layers.
+    // These two series are of type "unsigned long" which may not fit in type "double" because it is 64 bits itself.
+    // This may cause problems with detecting "missing values"!
+    Politics=Agents.make_source("Polit. affiliation", &jagent::Politics);
+    Classify=Agents.make_source("Classification", &jagent::classify);
+    if(Classify)
+        Classify->set_min_max(0, NumOfCate * NumOfCate * NumOfCate - 1);	//'Max class ==NumOfCate^3',because three independent layers.
 
     //struct_matrix_source<_far_link,unsigned>		*
     FarA=FarLinks.make_source("F.links to A",&_far_link::a);
@@ -227,7 +233,7 @@ void jworld::make_basic_sources()
     Sources.insert(Powers);
     Sources.insert(Age);
     Sources.insert(Politics);
-    Sources.insert(Classif);
+    Sources.insert(Classify);
     Sources.insert(FarA);
     Sources.insert(FarB);
     Sources.insert(FCount);
@@ -250,12 +256,12 @@ void jworld::make_default_visualisation()
     // Data series indexes needed for the statistical log and further for graphs:
     // //////////////////////////////////////////////////////////////////////////
 
-    // Indexes of the main series:
-    int	iFirst=0;		///< Raw data of the "Firsts" layer of language attributes (index of).
-    int	iSecond=0;		///< Raw data of the "Seconds" layer of language attributes (index of).
-    int	iThird=0;		///< Raw data of the "Thirds" layer of language attributes (index of).
-    int	iPower=0;		///< Raw data of the agent strengths (index of).
-    int	iClassif=0;		///< Raw data of the agent languages (index of).
+    /// Indexes of the main series:
+    int	iFirsts=0;		///< Raw data of the "Firsts" language attributes layer (index of).
+    int	iSecond=0;		///< Raw data of the "Seconds" language attributes layer (index of).
+    int	iThirds=0;		///< Raw data of the "Thirds" language attributes layer (index of).
+    int	iPowers=0;		///< Raw data of the agent strengths (index of).
+    int	iClassify=0;		///< Raw data of the agent languages (index of).
 
     /// Indexes of various other derived series.
     int iFarLinksMeans=-1,iFarLinksMaxs=-1,iEntropyFS=-1,iCorrFSR=-1,
@@ -266,110 +272,110 @@ void jworld::make_default_visualisation()
     /// Series Indexes for spatial correlations source.
     int iSpatialCorr1=-1,iSpatialCorr2=-1,iSpatialCorr3=-1,iClusterSize1=-1,iClusterSize2=-1,iClusterSize3=-1;
 
-    // Obtaining the indexes of basic series from the data manager:
+    // Getting the indexes of basic series from the data manager:
     //-------------------------------------------------------------
     {
-    if(Firsts) iFirst=Sources.search(Firsts->name()); // Raw data of the "Firsts" layer of language attributes.
+    if(Firsts) iFirsts=Sources.search(Firsts->name()); // Raw data of the "Firsts" layer of language attributes.
     else  ON_ERROR_MAKE
 
-    if(Seconds) iSecond=Sources.search(Seconds->name()); // Raw data of the "Seconds" layer of language attributes.
+    if(Seconds) iSecond=Sources.search(Seconds->name()); // Raw data of the "Seconds" language attributes layer.
     else  ON_ERROR_MAKE
 
-    if(Thirds)   iThird=Sources.search(Thirds->name()); // Raw data of the "Thirds" layer of language attributes.
+    if(Thirds) iThirds=Sources.search(Thirds->name()); // Raw data of the "Thirds" language attributes layer.
     else  ON_ERROR_MAKE
 
-    if(Powers)   iPower=Sources.search(Powers->name()); // Raw data of the agent strengths.
+    if(Powers) iPowers=Sources.search(Powers->name()); // Raw data of the agent strengths.
     else  ON_ERROR_MAKE
 
-    if(Classif)  iClassif=Sources.search(Classif->name()); // Raw data of the agent languages.
+    if(Classify) iClassify=Sources.search(Classify->name()); // Raw data of the agent languages.
     else  ON_ERROR_MAKE
     }
 
     // And the creation of derived statistical series:
     //------------------------------------------------
     generic_clustering_source*	FirstStat=new generic_clustering_source(Firsts); ///< Statistics of the "Firsts".
-    if(!FirstStat) ON_ERROR_MAKE
+    //if(!FirstStat) ON_ERROR_MAKE
     Sources.insert(FirstStat);
 
     generic_clustering_source*	SecondStat=new generic_clustering_source(Seconds); ///< Statistics of the "Seconds".
-    if(!SecondStat) ON_ERROR_MAKE
+    //if(!SecondStat) ON_ERROR_MAKE
     Sources.insert(SecondStat);
 
     generic_clustering_source*	ThirdStat=new generic_clustering_source(Thirds); ///< Statistics of the "Thirds".
-    if(!ThirdStat) ON_ERROR_MAKE
+    //if(!ThirdStat) ON_ERROR_MAKE
     Sources.insert(ThirdStat);
 
     //NOTE FOR HISTOGRAMS: If `NumOfCate > 16`, very large arrays are created, slowing down the program somewhat!
 
     /// Histogram of language classification (sizes of particular languages).
-    generic_discrete_histogram_source*  ClassStat=new generic_discrete_histogram_source(0, NumOfCate * NumOfCate * NumOfCate, Classif, "DistrOf(%s[%d..%d])");
-    if(!ClassStat) ON_ERROR_MAKE
+    generic_discrete_histogram_source*  ClassStat=new generic_discrete_histogram_source(0, NumOfCate * NumOfCate * NumOfCate, Classify, "DistrOf(%s[%d..%d])");
+    //if(!ClassStat) ON_ERROR_MAKE
     Sources.insert(ClassStat);
 
     /// Histogram of languages by size (haw many languages in particular size class).
-    generic_fix_histogram_source* HistClass=new generic_fix_histogram_source(100,1,MyWidth*MyWidth,ClassStat,"Distr_%dcl(%s[%g..%g])",true);	//histogram jezyków
-    if(!HistClass) ON_ERROR_MAKE
+    generic_fix_histogram_source* HistClass=new generic_fix_histogram_source(100,1,MyWidth*MyWidth,ClassStat,"Distr_%dcl(%s[%g..%g])",true);
+    //if(!HistClass) ON_ERROR_MAKE
     Sources.insert(HistClass);
 
     generic_log_F_filter*  LogHistClass=new generic_log_F_filter(ClassStat);
-    if(!LogHistClass)ON_ERROR_MAKE
+    //if(!LogHistClass)ON_ERROR_MAKE
     Sources.insert(LogHistClass);
 
     /// Histogram of languages in logarithmic size classes (10 users, 100 users, 1000 etc.).
     generic_fix_histogram_source*  LogLogHistClassStat=new generic_fix_histogram_source(16,0,8,LogHistClass,"LogDistr_%dcl(%s[%g..%g])");
-    if(!LogLogHistClassStat) ON_ERROR_MAKE
+    //if(!LogLogHistClassStat) ON_ERROR_MAKE
     Sources.insert(LogLogHistClassStat);
 
-    // Statistics for examining far links:
+    /// Statistics for examining far links:
     generic_basic_statistics_source* FarLinksStat=new generic_basic_statistics_source(this->FCount);
-    if(!FarLinksStat) ON_ERROR_MAKE
+    //if(!FarLinksStat) ON_ERROR_MAKE
     Sources.insert(FarLinksStat);
 
     fifo_source<double>* FarLinksMeans=new fifo_source<double>(FarLinksStat->Mean(),internal_log);
-    if(!FarLinksMeans) ON_ERROR_MAKE
+    //if(!FarLinksMeans) ON_ERROR_MAKE
     iFarLinksMeans=Sources.insert(FarLinksMeans);
 
     fifo_source<double>* FarLinksMaxs=new fifo_source<double>(FarLinksStat->Max(),internal_log);
-    if(!FarLinksMaxs) ON_ERROR_MAKE
+    //if(!FarLinksMaxs) ON_ERROR_MAKE
     iFarLinksMaxs=Sources.insert(FarLinksMaxs);
 
     /// The serie calculating the mutual co-statistics for fists and seconds. (NOTE: even larger tables)
     coincidence_source* CorrFS=new coincidence_source(Firsts, Seconds);
-    if(!CorrFS) ON_ERROR_MAKE
+    //if(!CorrFS) ON_ERROR_MAKE
     Sources.insert(CorrFS);
 
-    /// A "fifo" queue of entropies of the firsts and the seconds.
+    /// A "fifo" entropies queue of the firsts with the seconds.
     fifo_source<double>* EntropyFSLog=new fifo_source<double>(CorrFS->Entropy(),internal_log);
-    if(!EntropyFSLog) ON_ERROR_MAKE
+    //if(!EntropyFSLog) ON_ERROR_MAKE
     iEntropyFS=Sources.insert(EntropyFSLog);
 
-    /// A "fifo" queue of correlations of the firsts and the seconds.
+    /// A "fifo" correlations queue of the firsts with the seconds.
     fifo_source<double>* CorrFSLogR=new fifo_source<double>(CorrFS->Tau_a_Goodman_Kruskal(),internal_log);
-    if(!CorrFSLogR) ON_ERROR_MAKE
+    //if(!CorrFSLogR) ON_ERROR_MAKE
     iCorrFSR=Sources.insert(CorrFSLogR);
 
     coincidence_source* CorrST=new coincidence_source(Seconds, Thirds);
-    if(!CorrST) ON_ERROR_MAKE
+    //if(!CorrST) ON_ERROR_MAKE
     Sources.insert(CorrST);
 
     fifo_source<double>* EntropySTLog=new fifo_source<double>(CorrST->Entropy(),internal_log);
-    if(!EntropySTLog) ON_ERROR_MAKE
+    //if(!EntropySTLog) ON_ERROR_MAKE
     iEntropyST=Sources.insert(EntropySTLog);
 
     fifo_source<double>* CorrSTLogR=new fifo_source<double>(CorrST->Tau_a_Goodman_Kruskal(),internal_log);
-    if(!CorrSTLogR) ON_ERROR_MAKE
+    //if(!CorrSTLogR) ON_ERROR_MAKE
     iCorrSTR=Sources.insert(CorrSTLogR);
 
     coincidence_source* CorrTF=new coincidence_source(Thirds, Firsts);
-    if(!CorrTF) ON_ERROR_MAKE
+    //if(!CorrTF) ON_ERROR_MAKE
     Sources.insert(CorrTF);
 
     fifo_source<double>* EntropyTFLog=new fifo_source<double>(CorrTF->Entropy(),internal_log);
-    if(!EntropyTFLog) ON_ERROR_MAKE
+    //if(!EntropyTFLog) ON_ERROR_MAKE
     iEntropyTF=Sources.insert(EntropyTFLog);
 
     fifo_source<double>* CorrTFLogR=new fifo_source<double>(CorrTF->Tau_a_Goodman_Kruskal(),internal_log);
-    if(!CorrTFLogR) ON_ERROR_MAKE
+    //if(!CorrTFLogR) ON_ERROR_MAKE
     iCorrTFR=Sources.insert(CorrTFLogR);
 
     // Creating series that count even more derived statistics:
@@ -378,9 +384,10 @@ void jworld::make_default_visualisation()
     if(!MeanFirstLog) ON_ERROR_MAKE
     iMFirst=Sources.insert(MeanFirstLog);
     */
+
     /// A fifo queue from first layer average stresses.
     fifo_source<double>* StressFirstLog=new fifo_source<double>(FirstStat->Stress(),internal_log);
-    if(!StressFirstLog) ON_ERROR_MAKE
+    //if(!StressFirstLog) ON_ERROR_MAKE
     iSFirst=Sources.insert(StressFirstLog);
 
     /*
@@ -390,7 +397,7 @@ void jworld::make_default_visualisation()
     */
     /// A fifo queue from second layer average stresses.
     fifo_source<double>* StressSecondLog=new fifo_source<double>(SecondStat->Stress(),internal_log);
-    if(!StressSecondLog) ON_ERROR_MAKE
+    //if(!StressSecondLog) ON_ERROR_MAKE
     iSSecond=Sources.insert(StressSecondLog);
     /*
     fifo_source<double>* MeanThirdLog=new fifo_source<double>(ThirdStat->Mean(),internal_log);
@@ -496,70 +503,71 @@ void jworld::make_default_visualisation()
 
     if(WithGr)
     {
-        area_manager&	Menager=MyAreaManager(); ///< Shortcut to Area Manager
+        area_manager&	Manager=MyAreaManager(); ///< Shortcut to Area Manager
 
         // AVAILABLE WINDOW DIMENSIONS:
-        unsigned szer= Menager.get_width();
-        unsigned wyso= Menager.get_height();
-                                        assert(szer>100 && wyso>80); //Is it larger than the smallest reasonable window?
-
+        int l_width= Manager.get_width();
+        int l_height= Manager.get_height();                          //Is it larger than the smallest reasonable window?
+                                                                                 assert(l_width > 100 && l_height > 80);
         if(OutArea)
         {
-            OutArea->set(1,1,szer/2.-1,wyso/2.-1);
-            Menager.as_original(Menager.search(OutArea->name()));
+            OutArea->set(1, 1, l_width / 2. - 1, l_height / 2. - 1);
+            Manager.as_original(Manager.search(OutArea->name()));
         }
 
         // VISUALIZATION OF BASIC DATA SERIES:
-        graph* pom1=new sequence_graph(szer / 2 - 1, wyso / 4, szer - 50, wyso / 2 - 1, //default coordinates of this display area
+        graph* pom1=new sequence_graph(l_width / 2 - 1, l_height / 4, l_width - 50, l_height / 2 - 1, //default coordinates of this display area
                                         3, Sources.make_series_info(
                                                 iClassEntropy,iNumClassF,iMainClassF,
                                                     -1
                                                 ).get_ptr_val(),
-                                                   0 // 0 means with rescaling
+                                       0 // 0 means with rescaling
                                        );
         if(!pom1) ON_ERROR_MAKE
         pom1->set_frame(128);
         pom1->set_title("History of classes");
-        Menager.insert(pom1);
+        Manager.insert(pom1);
 
-        pom1=new sequence_graph(szer/2-1,1,szer-50,wyso/4-1, //default coordinates of this display area
-                                        3,Sources.make_series_info(
+        pom1=new sequence_graph(l_width / 2 - 1, 1, l_width - 50, l_height / 4 - 1, //default coordinates of this display area
+                                        3, Sources.make_series_info(
                                                 iEntropyFS,
                                                 iEntropyST,
                                                 iEntropyTF,
                                                     -1
                                                 ).get_ptr_val(),
-                                       1 // 1 means common minimum and maximum.
+                                1 // 1 means common minimum and maximum.
                                        );
         if(!pom1) ON_ERROR_MAKE
         pom1->set_frame(128);
-        pom1->set_title("History of ENTROPY of coincidence");
-        Menager.insert(pom1);
+        pom1->set_title("History of coincidence ENTROPY");
+        Manager.insert(pom1);
 
-        graph* pom=new true_color_carpet_graph(1,wyso/2,szer/2-1,wyso-1, //Combined meme map - in the same place as the classification, so either/or
-                     Firsts,0,
-                     Seconds,0,
-                     Thirds,0 // Memes, i.e., language attributes, appear here as sources of color data
+        // Combined meme map - in the same place as the classification, so either/or.
+        // Memes, i.e., language attributes "Firsts", "Seconds" and "Thirds", appear here as sources of color data.
+        graph* pom=new true_color_carpet_graph(1, l_height / 2, l_width / 2 - 1, l_height - 1,
+                                               Firsts, 0,
+                                               Seconds, 0,
+                                               Thirds, 0
                      );
         pom->set_title("RGB map of languages");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
-        //pom=new fast_carpet_graph<ptr_to_struct_matrix_source<jagent,unsigned long> ,true>(szer/2-1,wyso/2,szer-50,wyso-1,
-        pom=new carpet_graph(szer/2-1,wyso/2,szer-50,wyso-1,  //default coordinates of this display area
-                     Politics,0, //Visualization of agents' political affiliation
-                     true // Master agents as a source of color data
-                     );
+        //pom=new fast_carpet_graph<ptr_to_struct_matrix_source<jagent,unsigned long> ,true>(l_width/2-1,l_height/2,l_width-50,l_height-1,
+        pom=new carpet_graph(l_width / 2 - 1, l_height / 2, l_width - 50, l_height - 1,  //default coordinates of this display area
+                                             Politics, 0, //Visualization of agents' political affiliation
+                                             true // Master agents as a source of color data
+                                             );
         pom->set_title("POLITICAL MAP");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
         // Side menu for additional visualizations:
 
-        unsigned int MLeft=szer-49;      ///< Left edge of the side menu.
-        unsigned int MStep=char_height('X')+2; ///< Side menu one line height.
+        int MLeft=l_width - 49;      ///< Left edge of the side menu.
+        int MStep=asserted<int>(2+char_height('X')); ///< Side menu one line l_height.
 
         // The history of changes in distant connections (the structure of Small Worlds):
-        pom=new sequence_graph(MLeft,5*MStep,szer,6*MStep,
-                                        3,Sources.make_series_info(
+        pom=new sequence_graph(MLeft,5*MStep, l_width, 6 * MStep,
+                               3, Sources.make_series_info(
                                                 iFarLinksMeans,
                                                 iFarLinksMaxs,
                                         //		iFarLinksDynam,
@@ -570,11 +578,11 @@ void jworld::make_default_visualisation()
         if(!pom) ON_ERROR_MAKE
         pom->set_frame(128);
         pom->set_title("History of far links");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
         // Stress history:
-        pom=new sequence_graph(MLeft,12*MStep,szer,13*MStep,
-                                        3,Sources.make_series_info(
+        pom=new sequence_graph(MLeft,12*MStep, l_width, 13 * MStep,
+                               3, Sources.make_series_info(
                                                 iSFirst,
                                                 iSSecond,
                                                 iSThird,
@@ -585,255 +593,256 @@ void jworld::make_default_visualisation()
         if(!pom) ON_ERROR_MAKE
         pom->set_frame(128);
         pom->set_title("History of stress");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
         // History of correlation:
-        pom=new sequence_graph(MLeft,13*MStep,szer,14*MStep,
-                                        3,Sources.make_series_info(
+        pom=new sequence_graph(MLeft,13*MStep, l_width, 14 * MStep,
+                               3, Sources.make_series_info(
                                                 iCorrFSR,	//iCorrFS,
                                                 iCorrSTR,	//iCorrST,
                                                 iCorrTFR,	//iCorrTF,
                                                     -1
                                                 ).get_ptr_val(),
-                                1
+                               1
                                );
         if(!pom) ON_ERROR_MAKE
         pom->set_frame(128);
         pom->set_title("History of correlations");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
-        // Visualization of the world in the colors of the languages and with the height of the bars visualizing the strength of agents.
-        pom=new true_color_manhattan_graph(MLeft,4*MStep,szer,5*MStep,
-                                Powers,0,	//Bar height data source (unmanaged)
-                                Firsts,0,	//Color component data sources (RGB)
-                                Seconds,0,
-                                Thirds,0,
-                                1,		//If 1, then the bars start at least from 0! If 0, then they can start from `min>0`.
-                                0.22,		//A fraction of the width is allocated to perspective
-                                0.77		//A fraction of the height is dedicated to perspective
-                                );
+        // Visualization of the world in the colors of the languages and with the l_height of the bars visualizing the strength of agents.
+        pom=new true_color_manhattan_graph( MLeft,4*MStep, l_width, 5 * MStep,
+                                            Powers,  0,	//Bar l_height data source (unmanaged)
+                                            Firsts,  0,	//Color component data sources (RGB)
+                                            Seconds, 0,
+                                            Thirds,  0,
+                                            1,		// If 1, then the bars start at least from 0!
+                                                    // If 0, then they can start from `min>0`.
+                                            0.22,	// A fraction of the l_width is allocated to perspective
+                                            0.77	// A fraction of the l_height is dedicated to perspective
+                                            );
         pom->set_data_colors(0, 255);
         pom->set_title("Strength of agents versus RGB view of languages");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
         if(NumOfCate * NumOfCate * NumOfCate <= 256) //For more languages, the following visualization does not make sense.
         {
-            pom=new manhattan_graph(MLeft,5*MStep,szer,6*MStep,
-                                    Powers,0,	//Bar height data source (unmanaged)
-                                    Classif,0,	//Artificial color data source (unmanaged)
+            pom=new manhattan_graph(MLeft,5*MStep, l_width, 6 * MStep,
+                                    Powers, 0,	//Bar l_height data source (unmanaged)
+                                    Classify, 0,	//Artificial color data source (unmanaged)
                                     1,		//If 1, then the bars start at least from 0! If 0, then they can start from `min>0`.
-                                    0.22,		//A fraction of the width is allocated to perspective
-                                    0.77		//A fraction of the height is dedicated to perspective
+                                    0.22,		//A fraction of the l_width is allocated to perspective
+                                    0.77		//A fraction of the l_height is dedicated to perspective
                                     );
             pom->set_data_colors(0, 255);
             pom->set_title("Strength of agents versus languages");
-            int inde=Menager.insert(pom);
-            Menager.minimize(inde);
+            int area_index2=Manager.insert(pom);
+            Manager.minimize(area_index2);
         }
 
-        generic_log_1_plus_F_filter* LogAge=new generic_log_1_plus_F_filter(Age); // AGE: 15*char_height('X')+16,szer,16*char_height('X')+17 (Something old???)
+        generic_log_1_plus_F_filter* LogAge=new generic_log_1_plus_F_filter(Age); // AGE: 15*char_height('X')+16,l_width,16*char_height('X')+17 (Something old???)
         if(!LogAge) ON_ERROR_MAKE
         Sources.insert(LogAge);
 
         // How long has the current language been used here?
-        pom=new carpet_graph(MLeft,6*MStep,szer,7*MStep,
-                                LogAge);
+        pom=new carpet_graph(MLeft,6*MStep, l_width, 7 * MStep,
+                             LogAge);
         //pom->set_data_colors(255,511);
         pom->set_title("Age of agent's language");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
         if(NumOfCate * NumOfCate * NumOfCate <= 256) //For more languages, the following visualization does not make sense.
         {
-            pom=new carpet_graph(MLeft,6*MStep,szer,7*MStep,
-                Classif	//Artificial color data source, no more than 256
+            pom=new carpet_graph(MLeft,6*MStep, l_width, 7 * MStep,
+                                 Classify	//Artificial color data source, no more than 256
                 );
             pom->set_data_colors(0, 255);
             pom->set_title("Map of languages");
-            Menager.insert(pom);
+            Manager.insert(pom);
         }
 
-        if(ClassStat->get_size()<max(1024, Menager.get_width() - 30)) // There is no point in creating such a visualization if the histogram does not fit on the screen
+        if(ClassStat->get_size()<max(1024, Manager.get_width() - 30)) // There is no point in creating such a visualization if the histogram does not fit on the screen
         {
-            pom=new bars_graph(MLeft,7*MStep,szer,8*MStep,
-                ClassStat
+            pom=new bars_graph(MLeft,7*MStep, l_width, 8 * MStep,
+                               ClassStat
                 );
             pom->set_data_colors(0, 255);
             pom->set_title("Histogram of languages");
-            int ipom=Menager.insert(pom);
-            Menager.minimize(ipom);
+            int ipom=Manager.insert(pom);
+            Manager.minimize(ipom);
         }
 
         // Log-Log histogram of languages - how many languages are there in each size class (10, 100, 1000, 10 000 users)
-        pom=new bars_graph(MLeft,7*MStep,szer,8*MStep,
-                                LogLogHistClassStat);
+        pom=new bars_graph(MLeft,7*MStep, l_width, 8 * MStep,
+                           LogLogHistClassStat);
         if(!pom) ON_ERROR_MAKE
         pom->set_data_colors(0, 32);
         pom->set_frame(200);
         pom->set_title("Log distribution of language size classes");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
         if(!use_spatial_corr)
         {
-            pom=new bars_graph(MLeft,8*MStep,szer,9*MStep,
-                HistClass);
+            pom=new bars_graph(MLeft,8*MStep, l_width, 9 * MStep,
+                               HistClass);
             pom->set_data_colors(0, 255);
             pom->set_title("Histogram of language size classes");
-            Menager.insert(pom);
+            Manager.insert(pom);
         }
         else
         {
         /*
             function_source_base* Linear=new function_source<y_eq_x>(SpatialCorr->get_size(),0,SpatialCorr->get_size(),"length"); Sources.insert(Linear);
-            pom1=new scatter_graph(szer-49,8*char_height('X')+8,szer,9*char_height('X')+10,
+            pom1=new scatter_graph(l_width-49,8*char_height('X')+8,l_width,9*char_height('X')+10,
                 Linear,0,
                 SpatialCorr,0);
         */
         /*
-            pom=new bars_graph(szer-49,7*char_height('X')+7,szer,8*char_height('X')+9,
+            pom=new bars_graph(l_width-49,7*char_height('X')+7,l_width,8*char_height('X')+9,
                                     LogHistClass);
             pom->set_data_colors(0,255);
             pom->set_title("Log10 Histogram of languages");
-            Menager.insert(pom);
+            Manager.insert(pom);
         */
         }
 
         //Coincidences of features
-        pom=new manhattan_graph(MLeft,9*MStep,szer,10*MStep,
-                                    CorrFS,0,
-                                    CorrFS,0,
-                                    1,
-                                    0.22,
-                                    0.77);
+        pom=new manhattan_graph(MLeft,9*MStep, l_width, 10 * MStep,
+                                CorrFS, 0,
+                                CorrFS, 0,
+                                1,
+                                0.22,
+                                0.77);
         pom->set_data_colors(0, 255);
         pom->set_text_colors(0);
         pom->set_title("First & Second coincidence");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
-        pom=new manhattan_graph(MLeft,10*MStep,szer,11*MStep,
-                                    CorrST,0,
-                                    CorrST,0,
-                                    1,
-                                    0.22,
-                                    0.77);
+        pom=new manhattan_graph(MLeft,10*MStep, l_width, 11 * MStep,
+                                CorrST, 0,
+                                CorrST, 0,
+                                1,
+                                0.22,
+                                0.77);
         pom->set_data_colors(0, 255);
         pom->set_text_colors(0);
         pom->set_title("Second & Third coincidence");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
-        pom=new manhattan_graph(MLeft,11*MStep,szer,12*MStep,
-                                    CorrTF,0,
-                                    CorrTF,0,
-                                    1,
-                                    0.22,
-                                    0.77);
+        pom=new manhattan_graph(MLeft,11*MStep, l_width, 12 * MStep,
+                                CorrTF, 0,
+                                CorrTF, 0,
+                                1,
+                                0.22,
+                                0.77);
         pom->set_data_colors(0, 255);
         pom->set_text_colors(0);
         pom->set_title("Third & First coincidence");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
         // Maps of individual memes - language attributes:
         //------------------------------------------------
 
-        pom=new carpet_graph(MLeft,15*MStep,szer,16*MStep,
-                                Firsts);
+        pom=new carpet_graph(MLeft,15*MStep, l_width, 16 * MStep,
+                             Firsts);
         pom->set_data_colors(0, 255);
         pom->set_title("Map of FIRSTs");
-        int inde=Menager.insert(pom);
-        Menager.minimize(inde);
+        int area_index=Manager.insert(pom);
+        Manager.minimize(area_index);
 
-        pom=new true_color_carpet_graph(MLeft,15*MStep,szer,16*MStep,
-                                Firsts,0,
-                                NULL,0,
-                                NULL,0);
+        pom=new true_color_carpet_graph(MLeft,15*MStep, l_width, 16 * MStep,
+                                        Firsts, 0,
+                                        NULL, 0,
+                                        NULL, 0);
         pom->set_data_colors(0, 255);
         pom->set_title("Red map of FIRSTs");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
-        pom=new carpet_graph(MLeft,16*MStep,szer,17*MStep,
-                                Seconds);
+        pom=new carpet_graph(MLeft,16*MStep, l_width, 17 * MStep,
+                             Seconds);
         pom->set_data_colors(0, 255);
         pom->set_title("Map of SECONDs");
-        inde=Menager.insert(pom);
-        Menager.minimize(inde);
+        area_index=Manager.insert(pom);
+        Manager.minimize(area_index);
 
-        pom=new true_color_carpet_graph(MLeft,16*MStep,szer,17*MStep,
-                                NULL,0,
-                                Seconds,0,
-                                NULL,0);
+        pom=new true_color_carpet_graph(MLeft,16*MStep, l_width, 17 * MStep,
+                                        NULL, 0,
+                                        Seconds, 0,
+                                        NULL, 0);
         pom->set_data_colors(0, 255);
         pom->set_title("Green map of SECONDs");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
-        pom=new carpet_graph(MLeft,17*MStep,szer,18*MStep,
-                                Thirds);
+        pom=new carpet_graph(MLeft,17*MStep, l_width, 18 * MStep,
+                             Thirds);
         pom->set_data_colors(0, 255);
         pom->set_title("Map of THIRDs");
-        inde=Menager.insert(pom);
-        Menager.minimize(inde);
+        area_index=Manager.insert(pom);
+        Manager.minimize(area_index);
 
-        pom=new true_color_carpet_graph(MLeft,17*MStep,szer,18*MStep,
-                                NULL,0,
-                                NULL,0,
-                                Thirds,0);
+        pom=new true_color_carpet_graph(MLeft,17*MStep, l_width, 18 * MStep,
+                                        NULL, 0,
+                                        NULL, 0,
+                                        Thirds, 0);
         pom->set_data_colors(0, 255);
         pom->set_title("Blue map of THIRDs");
-        Menager.insert(pom);
+        Manager.insert(pom);
 
         // Information about far links:
-        pom=new scatter_graph(MLeft,18*MStep,szer,19*MStep,
-                                FarA,0,
-                                FarB,0,
-                                FCount,0,
-                                FCount,0);
+        pom=new scatter_graph(MLeft,18*MStep, l_width, 19 * MStep,
+                              FarA, 0,
+                              FarB, 0,
+                              FCount, 0,
+                              FCount, 0);
         pom->set_title("Sources of far influence");
         pom->set_background(256 + 100);
-        Menager.insert(pom);
+        Manager.insert(pom);
 
         if(use_spatial_corr)
         {
             //Optional visualization of Spatial Correlation
-            pom1=new sequence_graph(MLeft,8*MStep,szer,9*MStep,
-                3,Sources.make_series_info(
+            pom1=new sequence_graph(MLeft,8*MStep, l_width, 9 * MStep,
+                                    3, Sources.make_series_info(
                 iSpatialCorr1,
                 iSpatialCorr2,
                 iSpatialCorr3,
                 -1
                 ).get_ptr_val(),
-                0);
+                                    0);
 
             if(!pom1) ON_ERROR_MAKE
             pom1->set_frame(128);
             pom1->set_title("SPATIAL CORRELATION");
-            Menager.insert(pom1);
+            Manager.insert(pom1);
 
-            pom=new sequence_graph(MLeft,14*MStep,szer,15*MStep,
-                                    3,Sources.make_series_info(
+            pom=new sequence_graph(MLeft,14*MStep, l_width, 15 * MStep,
+                                   3, Sources.make_series_info(
                                     iClusterSize1,	//iCorrFS,
                                     iClusterSize2,	//iCorrST,
                                     iClusterSize3,	//iCorrTF,
                                     -1
                                     ).get_ptr_val(),
-                                1
+                                   1
                                 );
             if(!pom) ON_ERROR_MAKE
             pom->set_frame(128);
             pom->set_title("History of approximated cluster size");
-            Menager.insert(pom);
+            Manager.insert(pom);
     }
 
     // Creating a zoom control area on maps.
     {
-        wb_dynarray<rectangle_source_base*> tmp(5,(rectangle_source_base*)Sources.get(iFirst),
+        wb_dynarray<rectangle_source_base*> tmp(5,(rectangle_source_base*)Sources.get(iFirsts),
                                                   (rectangle_source_base*)Sources.get(iSecond),
-                                                  (rectangle_source_base*)Sources.get(iThird),
-                                                  (rectangle_source_base*)Sources.get(iPower),
-                                                  (rectangle_source_base*)Sources.get(iClassif),
+                                                  (rectangle_source_base*)Sources.get(iThirds),
+                                                  (rectangle_source_base*)Sources.get(iPowers),
+                                                  (rectangle_source_base*)Sources.get(iClassify),
                                                   -1
                                                   );
-        drawable_base* pWheel=new steering_wheel(MLeft, 0, szer, 4 * MStep, tmp);  assert(pWheel != NULL);
+        drawable_base* pWheel=new steering_wheel(MLeft, 0, l_width, 4 * MStep, tmp);  assert(pWheel != NULL);
         pWheel->set_background(10);
         pWheel->set_title(" (-o-) ");
-        Menager.insert(pWheel);
+        Manager.insert(pWheel);
     }
 }
 
@@ -913,19 +922,20 @@ void jworld::initialize_layers()
 
     from1= Agents.init_from_bitmap(MappName.get_ptr_val(), &jagent::assignPow); //Initializing powers from the map of powers.
 
-    if((pos=strchr(MaplName.get_ptr_val(),';'))==NULL) // If there are not three file names in MapLName, we treat it as one common RGB map.
+    // If there are not three file names in `MapLName`, we treat it as one common RGB map.
+    if((pos=strchr(MapLName.get_ptr_val(), ';')) == NULL)
     {
-        from2= Agents.init_from_bitmap(MaplName.get_ptr_val(), &jagent::assign123); //Initializing attributes from one file
+        from2= Agents.init_from_bitmap(MapLName.get_ptr_val(), &jagent::assign123); //Initializing attributes from one file
     }
     else //When we have three separate files...
     {
         *pos='\0';
-        from2= Agents.init_from_bitmap(MaplName.get_ptr_val(), &jagent::assign1); //Initializing the first attribute from the first file
+        from2= Agents.init_from_bitmap(MapLName.get_ptr_val(), &jagent::assign1); //Initializing the first attribute from the first file
 
         old=pos+1;
         if(from2==1 && (pos=strchr(old,';'))!=NULL)
         {
-            clog<<"1. layer initialized by data file "<<MaplName.get_ptr_val()<<'\n'<<flush;
+            clog << "1. layer initialized by data file " << MapLName.get_ptr_val() << '\n' << flush;
 
             *pos='\0';
             from2= Agents.init_from_bitmap(old, &jagent::assign2); //Initializing the second attribute from the next file
@@ -953,7 +963,7 @@ void jworld::initialize_layers()
     if(Agents.init_from_bitmap(MaskName.get_ptr_val(), &jagent::killBlack) == 1 )
         Agents.deallocate_not_OK();
 
-    if(use_SW_links)
+    if(Use_SW_links)
         _connect_far_links(SW_start_connect_percent); //I try to connect some percentage of distant links before starting
 
     first=0; //End of the first call, the next ones will not be so eloquent.
@@ -964,7 +974,7 @@ void jworld::simulate_one_step()
 {
     _update_age(); //First, we age the agents.
 
-    if(use_SW_links)
+    if(Use_SW_links)
     {
         _connect_far_links(SW_reconnect_percent); //Trying to connect some percentage of far distant links.
     }
@@ -973,7 +983,8 @@ void jworld::simulate_one_step()
     case NO_BIAS:	        _one_step_no_bias();       break;
     case SIMPLE_BIAS:	    _one_step_simple_bias();    break;
     case CONDITIONAL_BIAS:  _one_step_conditional_bias1();break;
-    case SEQUENTIONAL_BIAS: _one_step_sequentional_bias0();break;
+    case SEQUENTIAL_BIAS:
+        _one_step_sequential_bias0();break;
     case INVALID_BIAS_MODE:
     default:
         assert("This code should never be reached.\nPROBABLY INVALID BIAS MODE!"==0);
@@ -987,8 +998,8 @@ void    jworld::_connect_far_links(double Percent)
     unsigned Counter=0; ///< Successful attempts counter.
     for(unsigned i=0;i<N;i++)	//Makes N attempts - although sometimes it can hit double or even triple
     {
-        unsigned const a=RANDOM(MyWidth); ///< Random coordinate `a`.
-        unsigned const b=RANDOM(MyWidth); ///< Random coordinate `b`.
+        int const a=RANDOM(MyWidth); ///< Random coordinate `a`.
+        int const b=RANDOM(MyWidth); ///< Random coordinate `b`.
 
         if(Agents.filled(a, b)) //Note! Only for a non-empty cell!
         {
@@ -1091,7 +1102,8 @@ void    jworld::_connect_far_links(double Percent)
 
 }
 
-unsigned jworld::_far_link::get_target_count()
+// It cannot be "const" because it is used as a data collector in `make_source`.
+unsigned jworld::_far_link::get_target_count() // NOLINT(*-make-member-function-const)
 {
     if(/*0<=a &&*/ a<MyWorld->MyWidth
         && /*0<=b &&*/ b<MyWorld->MyWidth)
@@ -1103,7 +1115,7 @@ unsigned jworld::_far_link::get_target_count()
 
 void jworld::dump_net_file(const char* core_name,unsigned long Step)
 {
-    unsigned N=(double(MyWidth)*double(MyWidth)); ///< Number of cells.
+    unsigned N=asserted<unsigned>(long(MyWidth)*long(MyWidth)); ///< Number of cells.
     wb_pchar Name(512);
     Name.prn("%s%06d.net",core_name,Step);
     ofstream Out(Name.get(),ios::out);
@@ -1139,9 +1151,9 @@ void    jworld::_update_age()
     iterator_h Iter=MyGeom->make_global_iterator();
     while(Iter)
     {
-        size_t index=MyGeom->get_next(Iter);	//We obtain the agent's index.
+        size_t index=MyGeom->get_next(Iter);	//We get the agent's index.
         assert(index!=MyGeom->FULL); //It shouldn't happen here, but...
-        jagent& CenterAgent=*(Agents.get_ptr(index).get_ptr_val());	//We obtain references to the agent by bypassing NULL assertion.
+        jagent& CenterAgent=*(Agents.get_ptr(index).get_ptr_val());	//We get references to the agent by bypassing NULL assertion.
         if(Agents.is_empty(CenterAgent))    //We check whether it is not an empty cell (NULL)
             continue;                   //Because then doing anything further would be pointless.
 

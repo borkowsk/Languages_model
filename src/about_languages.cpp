@@ -1,7 +1,8 @@
 /// @file
-/// @brief COPYRIGHT BOX ETC. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-04-30 (modified)
+/// @brief COPYRIGHT BOX ETC. ("LANGUAGES" PROJECT WITH P.Culicover).
+/// @date 2026-05-31 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -10,7 +11,6 @@
 #include "../WIN/symshwin.h"
 #include <windows.h>
 #endif
-//WIDTH=100 DSTB=-8 CLSS=8 MIPO=3 RSPC=1 VIEW=50 LOGF=10 LOGF=testW100.log
 
 constexpr int ILE_SEC=30; //How many seconds wait for OK?
 extern const char* ble_ble_ble;
@@ -19,27 +19,26 @@ extern const char* ble_ble_ble;
 __attribute__((unused))
 class time_checker
 {
-
-    tm *newtime;
-    time_t aclock;
+    tm   *new_time;
+    time_t a_clock;
 
 public:
 
-    time_checker():newtime(nullptr),aclock(0)
+    time_checker(): new_time(nullptr), a_clock(0)
     {
 
-        time( &aclock );                 /* Get time in seconds */
+        time( &a_clock );                 /* Get time in seconds */
 
-        newtime = localtime( &aclock );  /* Convert time to struct */
+        new_time = localtime(&a_clock );  /* Convert time to struct */
         /* tm form */
-        if(newtime->tm_year>200)         //TIME LIMIT   !!!
+        if(new_time->tm_year > 200)         //TIME LIMIT   !!!
         {
             fprintf(stderr, "%s", ble_ble_ble);
             abort();
         }
 
         /* Print local time as a string */
-        //printf("The current date and time are: %s", asctime( newtime ));
+        //printf("The current date and time are: %s", asctime( new_time ));
 
     }
 
