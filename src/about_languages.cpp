@@ -1,6 +1,6 @@
 /// @file
 /// @brief COPYRIGHT BOX ETC. ("LANGUAGES" PROJECT WITH P.Culicover).
-/// @date 2026-05-31 (modified)
+/// @date 2026-06-01 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <cstdio>
@@ -66,7 +66,7 @@ __attribute__((unused))
 static char ble_ble_ble_ble[]=
     "\0\1\0\0\0\rtr0\0\1\0\1\0\0\0iisysiiyucgueihuhewijfcijjfcremcoiisteiiomiewiitpicimtmiimatitikii\0\0\0"
     "0\08757812312432sq_we45115665525322345765434960916246378900887465765874582372657626526";
-static char numer[4]="000";	//FAKTYCZNY NUMER LICENCJI
+static char numer[4]="000";	//ACTUAL LICENSE NUMBER
 __attribute__((unused))
 static char bumblebee[]=
     "\0\0\1\1\0\rtr0\0\1\0\1\0\0\0iisysiiyucgueefuihfuihfuhfiuhefhuifhuhgfhyurgfughicimtmiimatitikii\0\0\0"

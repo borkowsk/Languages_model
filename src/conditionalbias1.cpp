@@ -1,27 +1,19 @@
 /// @file
 /// @brief ALTERNATIVE CONDITIONAL BIAS SIMULATION STEP IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-31 (created)
+/// @date 2026-06-01 (created)
 ///     Split from "jbias.cpp" by borkowsk on 14.04.2026.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//#include <limits.h>
-//#include <assert.h>
-//#include <string.h>
-//#include <math.h>
-//#include <cmath>
-//#include <strstream>
+
 #include <cstring>
 
 //#include "compatyb.h"
 //#include "compatyb.hpp"
-//#include "histosou.hpp"
-//#include "clstsour.hpp"
-//#include "coincsou.hpp"
-#include "gadgets.hpp"
 //#include "wb_ptrio.h"
+#include "gadgets.hpp"
+#include "asserted.h"
 
 #include "jrand.h"
 #include "jworld.h"
-#include "asserted.h"
 
 using namespace sym2::data;
 using namespace sym2::shell;
@@ -83,9 +75,9 @@ void    jworld::_one_step_conditional_bias1()
             if(Use_SW_links) //RECORDING IMPACT FROM THE PROTECTOR
             {
                 size_t a,b;
-                unsigned x,y;
                 dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index, a, b); //Retrieve x and y from the agent index
-                    assert("Not tested after porting!"==nullptr);
+                                                                           assert("Not tested after porting!"==nullptr);
+                unsigned x,y;
                 // if(_xy_of_far_link_of(0,TODO,x,y)) //Pobrać indeks "protektora" tego agenta  o ile go ma
                 // {
                 // 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
@@ -157,7 +149,7 @@ void    jworld::_one_step_conditional_bias1()
                     if(Rnd>0) //Using a cast, we change a three-dimensional array into a one-dimensional one.
                       ((int*)Influence)[i]+=asserted<int>(Rnd * Noise * (4.5 * MaxStrength) ); // NOLINT(*-narrowing-conversions)
                 }
-                ((int*)Influence)[i]+=asserted<int>(((float*)BiasData->Biases)[i] ); //cast!!! - trick to avoid triple nested loop
+                ((int*)Influence)[i]+=asserted<int>(((float*)BiasData->CndBiases)[i] ); //cast!!! - trick to avoid triple nested loop
             }
 
             // Searching for maxima - less trivial here:
@@ -175,9 +167,9 @@ void    jworld::_one_step_conditional_bias1()
                 // /////////////////////////////////////////////////////////////
                 int width=BIAS_FOR_ANY+1;    ///< "Width" of the cube array for counters.
 
-                int offsetA=RANDOM(NumOfCate);            assert(0 <= offsetA && offsetA < NumOfCate);
-                int offsetB=RANDOM(NumOfCate);            assert(0 <= offsetB && offsetB < NumOfCate);
-                int offsetC=RANDOM(NumOfCate);            assert(0 <= offsetC && offsetC < NumOfCate);
+                int offsetA=RANDOM(NumOfCate);								assert(0 <= offsetA && offsetA < NumOfCate);
+                int offsetB=RANDOM(NumOfCate);								assert(0 <= offsetB && offsetB < NumOfCate);
+                int offsetC=RANDOM(NumOfCate);								assert(0 <= offsetC && offsetC < NumOfCate);
 
                 int Max=-1,pA=-1,pB=-1,pC=-1;
                 FillStat[0]++; //Relapse counting
@@ -186,25 +178,25 @@ void    jworld::_one_step_conditional_bias1()
                 //(a bit wasteful, you can speed it up a bit if BIAS_FOR_ANY is a variable == NumOfCate) (???)
                 for(int i=0;i<width;i++)
                 {
-                    int a=(i+offsetA)%width;            assert(a>=0 && a<width);
+                    int a=(i+offsetA)%width;													assert(a>=0 && a<width);
                     for(int j=0;j<width;j++)
                     {
-                        int b=(j+offsetB)%width;        assert(b>=0 && b<width);
+                        int b=(j+offsetB)%width;												assert(b>=0 && b<width);
                         for(int k=0;k<width;k++)
                         {
-                            int c=(k+offsetC)%width;    assert(c>=0 && c<width);
+                            int c=(k+offsetC)%width;											assert(c>=0 && c<width);
 
                             int pom=Influence[a][b][c];
                             if(pom>Max)
                             {
                                 Max=pom;
-                                pA=a;pB=b;pC=c;         //Remembering where the maximum was found.
+                                pA=a;pB=b;pC=c;								  //Remembering where the maximum was found.
                             }
                         }
                     }
                 }
-                                                        //He had to find something (?)
-                                                        assert(pA!=-1 && pB!=-1 && pC!=-1);
+                                                                                     //He had to find something (?)
+                                                                                     assert(pA!=-1 && pB!=-1 && pC!=-1);
                 //What to do with the maximum???
                 Influence[pA][pB][pC]=0; //Reset it to zero so that it doesn't mess up in your next search!
 
@@ -217,9 +209,10 @@ void    jworld::_one_step_conditional_bias1()
                     indT=pC;
                 FillStat[(indF!=-1)+(indS!=-1)+(indT!=-1)]++;
             }while( indF==-1 || indS==-1 || indT==-1  );
-
-            assert(indF!=-1 && indS!=-1 && indT!=-1); //After leaving the loop, they all need to be set.
-                                                      //And like a lonely agent with no neighbors.
+                                                                            // After leaving the loop,
+                                                                            // they all need to be set and like a lonely
+                                                                            // agent with no neighbors.
+                                                                               assert(indF!=-1 && indS!=-1 && indT!=-1);
             //We change in the central agent:
             if(CenterAgent.First!=indF)
                 { CenterAgent.First=asserted<short>(indF); CenterAgent.Age=0;}

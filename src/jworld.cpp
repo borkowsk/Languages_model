@@ -1,6 +1,6 @@
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
-/// @date 2026-05-31 (modified)
+/// @date 2026-06-01 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <cstring>
@@ -12,12 +12,11 @@
 #include "clstsour.hpp"
 #include "spatcors.hpp"
 #include "coincsou.hpp"
-#include "gadgets.hpp"
-
 //#include "SYMSHELL/ohistosou.hpp" //Old histogram with sliding number of classes
 #include "dhistosou.hpp" //A discrete histogram with a fixed number of classes.
 #include "fhistosou.hpp" //A histogram with an arbitrarily determined number of classes.
 
+#include "gadgets.hpp"
 #include "jrand.h"
 #include "jworld.h"
 #include "jagent.h"
@@ -1004,20 +1003,24 @@ void    jworld::_connect_far_links(double Percent)
         if(Agents.filled(a, b)) //Note! Only for a non-empty cell!
         {
             const jagent& on=Agents.get(a, b);
-            double r=on.Power/asserted<double>(jagent::max_pow * MyWidth / 2); ///< Distance to random target.
-//			r=NeighRadius+r*DRAND(); // Usually radius is draw within a radius, but not less than `NeighRadius`.
+            double r=asserted<double>(double(on.Power)/jagent::max_pow * MyWidth / 2.0); ///< Distance to random target.
+            //			r=NeighRadius+r*DRAND(); // Usually radius is draw within a radius, but not less than `NeighRadius`.
             r= NeighRadius + r * DRAND() * DRAND() * DRAND(); // Randomisation of radius, which is now draw condensed, closer to the agent.
-            double Angle=DRAND()*2*M_PI; ///< Drawing the angle is rather simple (flat distribution).
+
+            double Angle=DRAND()*2.0*M_PI; ///< Drawing the angle is rather simple (flat distribution).
+
             int ta=asserted<int>(a+r*sin(Angle)); ///< Calculated target coordinate `a`.
             int tb=asserted<int>(b+r*cos(Angle)); ///< Calculated target coordinate `b`.
 
             //Adjustment to TORUS - always necessary!!!
             ta=(ta+MyWidth)%MyWidth;
             tb=(tb+MyWidth)%MyWidth;
-                                                                                   assert(0<=ta && ta<MyWidth);
-                                                                                   assert(0<=tb && tb<MyWidth);
+                                                                                            assert(0<=ta && ta<MyWidth);
+                                                                                            assert(0<=tb && tb<MyWidth);
             if((a!=ta || b!=tb) && Agents.filled(ta, tb)) //There is no point in connecting with yourself or with an empty field
             {
+//                static ofstream file("test_rnd.");
+//                file<<'\t'<<Angle<<'\t'<<r<<'\t'<<ta-a<<'\t'<<tb-b<<endl;
 #if 0
                 //OLD ALGORITHM WITHOUT RANDOMNESS:
                 if(Agents.get(ta,tb).Power>=on.Power) //Voluntary submission to protection or sometimes alliance.
@@ -1083,7 +1086,7 @@ void    jworld::_connect_far_links(double Percent)
     //Double looping through all agents just for coloring!
     for(int a=0;a<N;a++) {
         for (int b = 0; b < N; b++)
-            if (Agents.filled(a, b))    //Watch out for empty cells!
+            if (Agents.filled(a, b)) //Watch out for empty cells!
             {
                 _far_link pom = FarLinks.get(a, b);
                 if (pom.a != UINT_MAX)    //If there is any protector at all.

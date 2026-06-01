@@ -1,20 +1,15 @@
 /// @file
 /// @brief CONDITIONAL BIAS SIMULATION STEP IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-31 (modified)
+/// @date 2026-06-01 (modified)
 ///     Created a long time ago.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <cstring>
-//#include <cmath>
-//#include <strstream>
-
 //#include "compatyb.h"
-//#include "histosou.hpp"
-//#include "clstsour.hpp"
-//#include "coincsou.hpp"
 //#include "compatyb.hpp"
-#include "gadgets.hpp"
 //#include "wb_ptrio.h"
+
+#include "gadgets.hpp"
 
 #include "jrand.h"
 #include "jworld.h"
@@ -56,18 +51,18 @@ void	jworld::_one_step_conditional_bias0()
 
         if(CenterAgent.Power > TrsStrength)	// Is there no immunity to change anymore?
             // TODO And why is there no possibility of mutation here?
-                goto STARZENIE;
+                goto AGING;
 
         {	// INFLUENCE CALCULATION CODE:
             // ////////////////////////////
             iterator_h Neigh=MyGeom->make_random_neighbour_iterator(index, NeighRadius, NeighDens);	// We allocate a neighborhood iterator.
-            unsigned zliczanie=0;           //For counting neighbors
+            unsigned counting=0;           //For counting neighbors
 
             //The table of counters needs to be reset.
             //You have to zero the whole thing, even if you don't use all of it - because there are columns for BIAS_FOR_ANY
             memset(Influence, 0, sizeof(Influence));
             // TODO And where is the influence from a distant link?
-            while(Neigh)  //Loop through the neighborhood.
+            while(Neigh)	//Loop through the neighborhood.
             {
                 size_t index2=MyGeom->get_next(Neigh); ///< We get the neighbor's index.
                 if(index2==any_layer_base::FULL || index2==index)	//If it was outside the simulation area or in the center of the area, it would still be pointless.
@@ -75,9 +70,9 @@ void	jworld::_one_step_conditional_bias0()
 
                 jagent& PeryAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< A reference to a neighbor bypassing NULL assertions.
                 if(Agents.is_empty(PeryAgent))		//We check whether it is not an empty cell (NULL),
-                    continue;                       //because then it would be pointless to continue.
+                    continue;						//because then it would be pointless to continue.
 
-                zliczanie++;						//Counts the number of randomly selected neighbors.
+                counting++;							//Counts the number of randomly selected neighbors.
 
                 //Adding the forces of each neighbor to the counters in the tables:
                 Influence[PeryAgent.First][PeryAgent.Second][PeryAgent.Third]+= 3 * PeryAgent.Power;	//"counter" for ABC coincidence
@@ -92,9 +87,9 @@ void	jworld::_one_step_conditional_bias0()
 
             }
 
-            MyGeom->destroy_iterator(Neigh);    // We make sure that the iterator will be removed.
+            MyGeom->destroy_iterator(Neigh);		// We make sure that the iterator will be removed.
 
-            testing++;						// Counts the number of randomly selected agents
+            testing++;								// Counts the number of randomly selected agents
 
             if(UseSelf) //Adding your own forces to counters in tables
             {
@@ -130,10 +125,10 @@ void	jworld::_one_step_conditional_bias0()
 
             do{	// Loop of searching for subsequent maxima - to fill ind{FST}'s:
                 // //////////////////////////////////////////////////////////////
-                int width=BIAS_FOR_ANY+1;		///< "Width" of the cube array for counters.
-                int offsetA=RANDOM(NumOfCate);			assert(0 <= offsetA && offsetA < NumOfCate);
-                int offsetB=RANDOM(NumOfCate);			assert(0 <= offsetB && offsetB < NumOfCate);
-                int offsetC=RANDOM(NumOfCate);			assert(0 <= offsetC && offsetC < NumOfCate);
+                int width=BIAS_FOR_ANY+1;									///< "Width" of the cube array for counters.
+                int offsetA=RANDOM(NumOfCate);								assert(0 <= offsetA && offsetA < NumOfCate);
+                int offsetB=RANDOM(NumOfCate);								assert(0 <= offsetB && offsetB < NumOfCate);
+                int offsetC=RANDOM(NumOfCate);								assert(0 <= offsetC && offsetC < NumOfCate);
 
                 int Max=-1,pA=-1,pB=-1,pC=-1;
                 FillStat[0]++;  //Relapse counting
@@ -180,11 +175,11 @@ void	jworld::_one_step_conditional_bias0()
             CenterAgent.First=asserted<short>(indF);
             CenterAgent.Second=asserted<short>(indS);
             CenterAgent.Third=asserted<short>(indT);
-
-            //cout<<FillStat[0]<<'='<<FillStat[1]<<'+'<<FillStat[2]<<'+'<<FillStat[3]<<flush<<endl; //Print out the loop recurrence statistics
+            //Print out the loop recurrence statistics
+            //c out<<FillStat[0]<<'='<<FillStat[1]<<'+'<<FillStat[2]<<'+'<<FillStat[3]<<flush<<endl;
         }//END OF STATE CHANGES
 
-STARZENIE:
+AGING:
         if(jagent::pow_move) //Strength as age
         {
             CenterAgent.Power=asserted<short>((static_cast<int>(CenterAgent.Power)

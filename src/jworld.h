@@ -1,6 +1,6 @@
 /// @file
 /// @brief DECLARATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-05-31 (modified)
+/// @date 2026-06-01 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -33,20 +33,26 @@ public:
     class _bias_information_base
     {
     protected:
+        static constexpr unsigned MAX_NUM_OF_CATEGORIES=8;
         short* PtrHowManyCategories;		//!< A pointer to the number of categories set in child classes.
 
     public:
-        /// Get how many bias categories are there. Interface to the pointer to the number of categories.
-        short  IleKate() { return *PtrHowManyCategories;}
+        /// @brief Get how many bias categories are there. Interface to the pointer to the number of categories.
+        short  NumberOfCategories() { return *PtrHowManyCategories;}
 
-        explicit _bias_information_base(short* ini): PtrHowManyCategories(ini){}	//!< Constructor that sets a pointer.
-        virtual ~_bias_information_base()= default;	//!< Virtual destructor to ensure correct deallocation.
+        /// @brief Constructor that sets a pointer.
+        explicit _bias_information_base(short* ini): PtrHowManyCategories(ini){}
+        /// @brief Virtual destructor to ensure correct deallocation.
+        virtual ~_bias_information_base()= default;
 
-        virtual void clean()= 0;					//!< Bias definition content clearing is required.
-        virtual int read_one_bias_item(istream& i)	//!< Reading the elementary bias definition from a stream (required).
+        virtual void clean()= 0;					//!< @brief Bias definition content clearing is required.
+        virtual int read_one_bias_item(istream& i)	//!< @brief Reading the elementary bias definition from a stream (required).
         {
             assert("Pure virtual _bias_information_base::read_one_bias_item() was called"==nullptr);
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnreachableCode"
             return EOF; //Unreachable code, but only in DEBUG mode.
+#pragma clang diagnostic pop
         }
     };
 
@@ -58,14 +64,14 @@ public:
         unsigned int	a,b;	//!< World location [a,b]
         unsigned int	count;	//!< Statistic counter.
 
-        unsigned get_target_count();	//!< Main accessor which reads `count` from (a,b) location on far links layer.
+        unsigned get_target_count();	//!< @brief Main accessor which reads `count` from (a,b) location on far links layer.
 
-        _far_link():a(UINT_MAX),b(UINT_MAX),count(0){}		//!< DEFAULT CONSTRUCTOR (sole).
+        _far_link():a(UINT_MAX),b(UINT_MAX),count(0){}		//!< @brief DEFAULT CONSTRUCTOR (sole).
 
-        friend ostream& operator<<(ostream& s,const _far_link& l)		//!< Serialization.
+        friend ostream& operator<<(ostream& s,const _far_link& l)		//!< @brief Serialization.
         { s<<l.a<<' '<<l.b<<l.count; return s;}
 
-        friend istream& operator>>(istream& s,_far_link& l)				//!< Deserialization.
+        friend istream& operator>>(istream& s,_far_link& l)				//!< @brief Deserialization.
         { s>>l.a>>l.b>>l.count; return s;}
     };
 
@@ -117,9 +123,9 @@ public:
     double get_last_SW_dynamic() const { return SW_dynamic_perc;}
 
 private:
-    // Single-valued parameters/attributes of the world:
+    /// @name Single-valued parameters/attributes of the world:
     // /////////////////////////////////////////////////
-
+    /// @{
     int					MyWidth;		//!< Circumference of a torus.
     short				MaxStrength;	//!< Maximum agent power/strength.
     short				MinStrength;	//!< Minimum agent strength.
@@ -136,6 +142,7 @@ private:
     wb_pchar			MappName;		//!< Force initialization bitmap filename.
     wb_pchar			MapLName;		//!< The name of the bitmap file that initializes the language attributes.
     wb_pchar			MaskName;		//!< The name of the bitmap file that initializes the uninhabitable areas.
+    /// @}
 
     // THE TOPIC OF BIAS:
     // //////////////////
@@ -156,9 +163,9 @@ private:
     //!< A layer of long-distance connections. Not in agents, because the structure is supposed to be constant despite agent movement.
     sym2::shell::rectangle_layer_of_struct<_far_link>		FarLinks;
 
-    // Main data series. Because it's more convenient to have pointers than to search `Sources` by name:
-    // /////////////////////////////////////////////////////////////////////////////////////////////////
-
+    /// @name Main data series. Because it's more convenient to have pointers than to search `Sources` by name:
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// @{
     ptr_to_struct_matrix_source<jagent,short>		*Firsts;	//!< `=Agents.make_source("First mem",&jagent::First);`
     ptr_to_struct_matrix_source<jagent,short>		*Seconds;	//!< `=Agents.make_source("Second mem",&jagent::Second);`
     ptr_to_struct_matrix_source<jagent,short>		*Thirds;	//!< `=Agents.make_source("Third mem",&jagent::Third);`
@@ -169,11 +176,11 @@ private:
     struct_matrix_source<_far_link,unsigned>		*FarA;		//!< `=FarLinks.make_source("f.links A",&_far_link::a)`
     struct_matrix_source<_far_link,unsigned>		*FarB;		//!< `=FarLinks.make_source("f.links B",&_far_link::b)`
     method_matrix_source<_far_link,unsigned>		*FCount;	//!< `=FarLinks.make_source("far counters",&_far_link::get_count)`
-
+    /// @}
 public:
     //CONSTRUCTION & DESTRUCTION
 
-    /// The sole constructor.
+    /// @brief The sole constructor.
     jworld(size_t Width,			//!< Width of the torus for the agent matrix.
           char* log_name,			//!< File name for saving history.
           char* map_l_name,			//!< The name of the raster graphic that initializes the "language components".
@@ -195,7 +202,7 @@ public:
           double	i_SW_reconnect_percent=0		//!< Percentage of far link changes in each simulation step.
           );
 
-    ~jworld() override = default;		//!< The virtual destructor. It does a lot more than it looks.
+    ~jworld() override = default;		//!< @brief The virtual destructor. It does a lot more than it looks.
 
     /// @brief Printout of simulation parameter values.
     /// @param out is a reference to the output stream.
@@ -224,98 +231,105 @@ public:
     void set_bias_from_str(const char* lst);
 
 protected:
-    // Auxiliary methods for setting bias:
-    //------------------------------------
-    static int  _read_local(istream& in,int& Layer,int& Value);	//!< Reading simple layer-value pairs. E.g. `a1` `b3` `s2` `t4`.
-    void        _read_bias_from_stream(istream& i);		//!< Setting additional simulation parameters from the stream.
+    /// @name Auxiliary methods for setting bias:
+    //-------------------------------------------
+    /// @{
+    static int  _read_local(istream& in,int& Layer,int& Value);	//!< @brief Reading simple layer-value pairs. E.g. `a1` `b3` `s2` `t4`.
+    void        _read_bias_from_stream(istream& i);		//!< @brief Setting additional simulation parameters from the stream.
+    /// @}
 
     // ACTIONS THAT MUST BE IMPLEMENTED - the standard for each simulation:
     //---------------------------------------------------------------------
 
-    void	initialize_layers() override;		//!< Sets the starting state of the simulation.
-    void	after_read_from_image() override;	//!< Actions after read state from a file. Also updating agent static fields.
-    void	simulate_one_step() override;		//!< Implementation of one simulation step.
+    void	initialize_layers() override;		//!< @brief Sets the starting state of the simulation.
+    void	after_read_from_image() override;	//!< @briefActions after read state from a file. Also updating agent static fields.
+    void	simulate_one_step() override;		//!< @brief Implementation of one simulation step.
 
     // Cooperation with the display manager:
     //--------------------------------------
-    void	make_default_visualisation() override;	//!< Creates default display areas and places them in your display area manager.
+
+    /// @brief Creates default display areas and places them in your display area manager.
+    void	make_default_visualisation() override;
     //void actualize_out_area();	//!< Updating the `OutArea` content every `n` simulation steps
 
     // ... and with data manager:
     //---------------------------
 
-    /// Generates basic data sources for the built-in data manager.
+    /// @brief Generates basic data sources for the built-in data manager.
     void	make_basic_sources() override;
 
     // I/O implementation:
     //--------------------
-    int		implement_output(ostream& o) const override;	//!< Serialization.
-    int		implement_input(istream& i) override;			//!< Deserialization.
+    int		implement_output(ostream& o) const override;	//!< @brief Virtual serialization.
+    int		implement_input(istream& i) override;			//!< @brief Virtual deserialization.
 
-    /// Implementation of saving the simulation state in NET or NET2 format (without or with attributes).
+    /// @brief Implementation of saving the simulation state in NET or NET2 format (without or with attributes).
     void dump_net_file(const char* core_name,unsigned long Step) override;
 
 public:
     // BIAS HELPER CLASS DEFINITIONS:
     // //////////////////////////////
 
-    /// Dummy bias info. Empty implementation of bias information when we don't use it.
+    /// @brief Dummy bias info. Empty implementation of bias information when we don't use it.
     class _no_bias_information:public _bias_information_base
     {
     public:
-        MAYBE_UNUSED /// Constructor.
+        MAYBE_UNUSED /// @brief Constructor.
         explicit _no_bias_information(short* ini):_bias_information_base(ini){}
-        /// Data loading dummy.
+
+        /// @brief Data loading dummy.
         int read_one_bias_item(istream& i) override {
             return EOF;
         }
     };
 
-    /// Information about simple unconditional additive bias.
+    /// @brief Information about simple unconditional additive bias.
     class _simple_bias_information:public _bias_information_base
     {
     public:
-        /// Unconditional additive bias table.
-        short	UncdBias[3][8]={};
+        /// @brief Unconditional additive bias table.
+        short	UncdBias[3][MAX_NUM_OF_CATEGORIES]={};
 
-        explicit _simple_bias_information(short* ini):_bias_information_base(ini) ///< Constructor (sole).
+        explicit _simple_bias_information(short* ini):_bias_information_base(ini) ///< @brief Constructor (sole).
         { _simple_bias_information::clean();}
 
-        ~_simple_bias_information() override= default; ///< Virtual destructor (empty).
+        ~_simple_bias_information() override= default; ///< @brief Virtual destructor (empty).
 
-        void clean() override ///< Clearing the contents of the bias definition/information.
+        void clean() override ///< @brief Clearing the contents of the bias definition/information.
         { memset(UncdBias,0,sizeof(UncdBias));}
 
-        int read_one_bias_item(istream& i) override; ///< Loading the simple unconditional bias definition.
+        int read_one_bias_item(istream& i) override; ///< @brief Loading the simple unconditional bias definition.
     };
 
-    /// Information about conditional bias.
+    /// @brief Information about conditional bias.
     class _conditional_bias_information:public _bias_information_base
     {
     public:
-        /// Table of conditional conservative biases.
-        /// Position 9 in the table means arbitrariness in a given coordinate.
-        float	Biases[9][9][9]={}; /*TODO short	CnsrBias[9][9][9]; ????? */
+        /// @brief Table of conditional conservative biases.
+        /// @details Cell at index MAX_NUM_OF_CATEGORIES in the table means arbitrariness in a given coordinate.
+        float	CndBiases[MAX_NUM_OF_CATEGORIES+1]
+                         [MAX_NUM_OF_CATEGORIES+1]
+                         [MAX_NUM_OF_CATEGORIES+1]={};
 
-        explicit _conditional_bias_information(short* ini):_bias_information_base(ini) ///< Constructor (sole).
+        explicit _conditional_bias_information(short* ini):_bias_information_base(ini) ///< @brief Constructor (sole).
         {_conditional_bias_information::clean();}
 
-        ~_conditional_bias_information() override= default; ///< Virtual destructor (empty).
+        ~_conditional_bias_information() override= default; ///< @brief Virtual destructor (empty).
 
-        void clean() override ///< Clearing the contents of the bias definition/information.
+        void clean() override ///< @brief Clearing the contents of the bias definition/information.
         {
-            for(unsigned a=0;a<sizeof(Biases)/sizeof(Biases[0][0][0]);a++)
-                ((float*)(&Biases))[a]=0.0;//If additive bias
+            for(unsigned a=0;a<sizeof(CndBiases)/sizeof(CndBiases[0][0][0]);a++)
+                ((float*)(&CndBiases))[a]=0.0; //If additive bias
         }
 
         int read_one_bias_item(istream& i) override; ///< Loading the conditional bias definition.
     };
 
-    /// Information about sequential conditional bias.
+    /// @brief Information about sequential conditional bias.
     class _sequential_bias_information: public _bias_information_base
     {
     public:
-        /// Single conditional bias data.
+        /// @brief Single conditional bias data.
         struct IfBias
         {
             int		layer[3];	//!< Condition states for individual layers, e.g., a=1 b=3 c=*
@@ -323,7 +337,7 @@ public:
             int		wh_state;	//!< For what state.
             float	   value;	//!< And what added value
 
-            /// Checks if the conditional bias is defined correctly.
+            /// @brief Checks if the conditional bias is defined correctly.
             bool IsOK(int /*n_of_cate*/=256) const
             {
                 return what_lay != BIAS_FOR_ANY &&
@@ -332,24 +346,24 @@ public:
                         ;
             }
 
-            IfBias() ///< The constructor uses the clean() method instead of setting the fields directly.
+            IfBias() ///< @brief The constructor uses the clean() method instead of setting the fields directly.
             { clean();}
 
-            void clean() ///< A method that sets fields to default (neutral) values.
-            { layer[0]= layer[1]= layer[2]=BIAS_FOR_ANY;what_lay=BIAS_FOR_ANY;wh_state=-1;value=0;}
+            void clean() ///< @brief A method that sets fields to default (neutral) values.
+            { layer[0]= layer[1]= layer[2]=BIAS_FOR_ANY; what_lay=BIAS_FOR_ANY; wh_state=-1; value=0; }
 
-            int reg(int Index,int Value); ///< Records a value for a layer, provided it is the first time.
+            int reg(int Index,int Value); ///< @brief Records a value for a layer, provided it is the first time.
 
-            int set(int Index, int Value, float Premium); ///< Records target and bonus amount.
+            int set(int Index, int Value, float Premium); ///< @brief Records target and bonus amount.
 
-            int much(int FirstVal,int SecondVal,int ThirdVal) const ///< Checking the fulfillment of the conditional bias (???)
+            int much(int FirstVal,int SecondVal,int ThirdVal) const ///< @brief Checking the fulfillment of the conditional bias (???)
             {
                 return (layer[0] == BIAS_FOR_ANY || layer[0] == FirstVal) &&
                        (layer[1] == BIAS_FOR_ANY || layer[1] == SecondVal) &&
                        (layer[2] == BIAS_FOR_ANY || layer[2] == ThirdVal);
             }
 
-            friend ostream& operator << (ostream& o,const IfBias& b); ///< Serialization.
+            friend ostream& operator << (ostream& o,const IfBias& b); ///< @brief Serialization.
         };
 
     private:
@@ -360,27 +374,27 @@ public:
         int for_use;                    //!< Counter of already used items in the `Seq Biases` array.
 
     public:
-        /// Incrementing the counter of already used items of the `Seq Biases` table.
+        /// @brief Incrementing the counter of already used items of the `Seq Biases` table.
         /// @returns counter value before incrementation, means last proper index.
         int use_next_item() { return for_use++;}
 
-        explicit _sequential_bias_information(short* ini, unsigned maxN=20):
-            _bias_information_base(ini),SeqBiases(maxN),for_use(0)
+        explicit _sequential_bias_information(short* ini, unsigned maxN=20)
+        : _bias_information_base(ini),SeqBiases(maxN),for_use(0)
         {
             //No cleaning is necessary because the `IfBias` constructor is implicitly used.
         }
 
-        ~_sequential_bias_information() override= default; ///< Virtual destructor (empty).
+        ~_sequential_bias_information() override= default; ///< @brief Virtual destructor (empty).
 
-        void clean() override	///< Clears the contents of the bias definition. Uses clearing for the `IfBias` structure.
+        void clean() override	///< @brief Clears the contents of the bias definition. Uses clearing for the `IfBias` structure.
         {
             for(int a=0;a<for_use;a++)
                 SeqBiases[a].clean();
         }
 
-        int read_one_bias_item(istream& i) override;	///< Loading bias definition from a stream.
+        int read_one_bias_item(istream& i) override;	///< @brief Loading bias definition from a stream.
 
-        /// Implementing bias usage. It is quite complicated here and resembles executing a program.
+        /// @brief Implementing bias usage. It is quite complicated here and resembles executing a program.
         void UseBiasForAgent(   int FirstVal,int SecondVal,int ThirdVal,
                                 wb_dynarray<int>& CountFirsts,
                                 wb_dynarray<int>& CountSeconds,
@@ -418,9 +432,8 @@ void	jworld::_connect_flink_to(	unsigned aa,
     auto& farLinkAABB=FarLinks.get(aa, bb);
 
     if((farLinkAABB.a) != UINT_MAX)	//You have to subtract the old target from the counter
-    { 		 		 		 		 		 		 		 		 		assert(farLinkAABB.b != UINT_MAX);
-        (FarLinks.get(farLinkAABB.a, farLinkAABB.b).count)--;
- 		 		 		 assert(FarLinks.get(farLinkAABB.a, farLinkAABB.b).count != UINT_MAX);
+    { 																				assert(farLinkAABB.b != UINT_MAX);
+        (FarLinks.get(farLinkAABB.a, farLinkAABB.b).count)--;	assert(FarLinks.get(farLinkAABB.a, farLinkAABB.b).count != UINT_MAX);
     }
 
     farLinkAABB.a=target_a;	//Sets `a` of the new connection

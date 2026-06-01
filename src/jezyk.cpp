@@ -1,6 +1,6 @@
 /// @file
 /// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover.
-/// @date 2026-05-31 (modified)
+/// @date 2026-06-01 (modified)
 ///
 ///     THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -10,9 +10,8 @@
 #pragma ide diagnostic ignored "cert-err34-c"
 
 #include "compatyb.h"
-const char* WINDOW_HEADER="LANGUAGES version SW 2.20d, compilation " __DATE__ ", " __TIME__ ;
-const char* Authors="(programed by W. Borkowski for ISS UW & Ohio State Univ.)";
 const char* SCREEN_DUMP_NAME="LANGUAGES";
+const char* SIMULATION_NAME= "LANGUAGES version SW 2.20d, compilation " __DATE__ ", " __TIME__ ;
 /// @details
 /// Simulation of the linguistic behaviors spread using the multi-layered meme/belief transmission method.
 ///	Polish word "JĘZYK" means LANGUAGE.
@@ -82,6 +81,7 @@ const char* SCREEN_DUMP_NAME="LANGUAGES";
 ///			version 1.01b - Improved default for a strength threshold.
 ///			version 1.05b - Built-in support for batch work and experiment repetition.
 ///			version 1.10b - Introducing "bias" for language parameters.
+const char* Authors="(programed by W. Borkowski for ISS UW & Ohio State Univ.)";
 
 int My_Rand_seed=0; ///< Random generator initializer. If 0 it uses RANDOMIZE, if other it uses SRAND(My_Rand_seed).
 
@@ -105,11 +105,11 @@ using namespace sym2::visual;
 
 /// @name General application control flags.
 /// @{
-bool		Console=false;			///< Flag for working in console mode - no graphics.
-bool		Replay=false;			///<
-bool		DUMP_NET=false;			///< Flag specifying whether to dump network files. (SW?)
-bool		AUTO_END=false;			///<
-bool		AUTOSTART=false;		///<
+bool		Console=false;		///< Flag for working in console mode - no graphics.
+bool		Replay=false;		///< Ability to play back a saved simulation (probably not implemented)
+bool		DUMP_NET=false;		///< Flag specifying whether to dump network files. (SW?)
+bool		AUTO_END=false;		///< Specifies whether to automatically exit the program after all simulations have finished.
+bool		AUTOSTART=false;	///< Specifies whether to automatically start the simulation.
 /// @}
 
 /// @name Dimensions of the usable window/screen space.
@@ -123,23 +123,23 @@ unsigned	SCR_HEIGHT=asserted<unsigned>(1080 * 0.6666);	///< Screen/window inside
 unsigned	internal_log=10000;				///< Default length of internal logs (stats history data sources).
 bool		use_spatial_corr=false;			///< Flag for using spatial correlation (expensive to compute).
 int			spatial_correlation_mode=50;	///< Number of sampling runs in calculating spatial correlation.
-unsigned	sim_to_log_ratio=10;			///<
-unsigned	sim_to_view_ratio=1;			///<
+unsigned	sim_to_log_ratio=10;			///< Defines the number of simulation steps after which statistics are counted and written to the log.
+unsigned	sim_to_view_ratio=1;			///< Determines after how many simulation steps the visualization is performed.
 /// @}
 
 /// @name Simulation parameters.
 /// @details Object-oriented passed to the constructor of world object:
 /// @{
-char	LogFName[512]="languagesSW2.log\0-------------------+--";		///<
-char	NetCName[512]="languagesSW_\0---------------------+--";			///<
-char	HistName[512]="\0--+---------languagesSW2.otx----------";		///<
-char	MapLName[512]="\0--+---------languagesSW2.gif----------";		///<
-char	MapPName[512]="\0--+---------powersSW2.gif------------";		///<
-char	MaskName[512]="\0--+---------maskSW2.gif--------------";		///<
+char	LogFName[512]="languagesSW2.log\0-------------------+--";		///< Statistics log file name.
+char	NetCName[512]="languagesSW_\0---------------------+--";			///< The core of the network dumps filenames.
+char	HistName[512]="\0--+---------languagesSW2.otx----------";		///< Simulation history file name (probably not working).
+char	MapLName[512]="\0--+---------languagesSW2.gif----------";		///< A graphic file initializing states layers.
+char	MapPName[512]="\0--+---------powersSW2.gif------------";		///< A graphic file initializing the force layer.
+char	MaskName[512]="\0--+---------maskSW2.gif--------------";		///< A graphic file initializing areas suitable for settlement.
 
-unsigned	WorldWidth=100;				///<
-unsigned	MaxIterations=0xffffffff;	///<
-short		NofCategories=128;			///<
+unsigned	WorldWidth=100;				///< Side length of the simulation world.
+unsigned	MaxIterations=0xffffffff;	///< Maximum number of simulation steps.
+short		NofCategories=128;			///< Number of linguistic/cultural categories in each of the three layers.
 
 int		DistributionLevel=6;	///< Type and degree of strength distribution.
 int		GrowingStrength=0;		///< Determines whether strength should increase "with age".
@@ -148,20 +148,23 @@ int		MinimumStrength=10;		///< Determines what the minimum force can be.
                                 ///< If the min and max are the same, then the value is the same everywhere.
 int		ThreshPercent=101;		///< Above what certain strength, changes in "attributes" become impossible.
 
-short	NeighborhoodR=1;		///<
-short	NeighborhoodD=8;		///<
+short	NeighborhoodR=1;		///< Neighborhood radius.
+short	NeighborhoodD=8;		///< How many agents within the radius are randomly selected (can they be duplicated?).
 short	ConsiderSelf=1;			///< Take yourself into account.
-const char*	BIAS_STR="";		///< Bias definition collected directly from the parameter line.
+const char*	BIAS_STR="";//"A100:10";		///< Bias definition collected directly from the parameter line.
 
-double	NoisePercent=0;			///<
-double	MutationProb=0;			///<
+double	NoisePercent=0;			///< Percentage of noise when collecting information about influence.
+double	MutationProb=0;			///< Probability of spontaneous state change.
 double	SW_start_perc=0;		///< Controlling the process of the world political hierarchization at the beginning of the simulation.
-double	SW_step_perc=1;			///< Controlling the process of the world political hierarchization at each step of the simulation.
-bool	SW_links=false;			///< ...
+double	SW_step_perc=10;			///< Controlling the process of the world political hierarchization at each step of the simulation.
+bool	SW_links=true;			///< Determines whether long links are used.
 /// @}
 
 /*
-//int parse_options(const int argc,const char* argv[]);	//Zapowiedz!
+// Not everything can be done this way.
+// Parameter consistency testing in particular cannot.
+
+--> int parse_options(const int argc,const char* argv[]);	//Zapowiedz!
 
 OptionalParameterBase* Parameters[]={ //sizeof(Parameters)/sizeof(Parameters[])
 new ParameterLabel("PARAMETERS FOR SINGLE SIMULATION"),
@@ -614,7 +617,9 @@ int parse_options(const int argc,const char* argv[])
             spatial_correlation_mode=16;
         else
             spatial_correlation_mode=atoi(loc_hlp);
-         cerr<<"* Random calculation of spatial correlation is "<<(spatial_correlation_mode==0?"d i s a b l e d":"e n a b l e d")<<". Multiplication="<<spatial_correlation_mode<<"\n";
+         cerr<<"* Random calculation of spatial correlation is "
+             <<(spatial_correlation_mode==0?"d i s a b l e d":"e n a b l e d")
+             <<". Multiplication="<<spatial_correlation_mode<<"\n";
         }
         else
         {
@@ -654,7 +659,7 @@ HELP_PRINT:
         cerr<<"\tDSTB=N - level and kind of strength distribution ("<<DistributionLevel<<")\n";
         cerr<<"\nSWST=PP/PP - percentage of SW links created at every step, and at the beginning (0)\n";
         cerr<<"\nNETD=N/Y - dumping net files parallel to statistics (N)\n";
-//		cerr<<"\tWPOW=N	- walking step of strength	("<<GrowingStrength<<")\n";
+        cerr<<"\tWPOW=N	- walking step of strength	("<<GrowingStrength<<")\n";
         cerr << "\tTRSP=N - % of threshold of strength (" << ThreshPercent << ")\n";
         cerr << "\tPRTR=2...WIDTH^2-1 - number of interaction partners (" << NeighborhoodD << ")\n";
         cerr << "\tINDI=1...WIDTH/2-1 - interaction distance (" << NeighborhoodR << ")\n";
@@ -768,7 +773,7 @@ public:
 
 int main(const int argc,const char* argv[])
 {
-    cout<<WINDOW_HEADER<<endl;
+    cout << SIMULATION_NAME << endl;
     cout<<Authors<<endl;
     assert((cerr<<"All assertions are active!"<<endl)); //THE SIDE EFFECT ON ASSERTION IS intended!
     cout<<endl<<flush;
@@ -785,7 +790,7 @@ int main(const int argc,const char* argv[])
     //INITIALIZATION of the sub-window system:
     my_area_manager Lufciki(24, SCR_WIDTH, SCR_HEIGHT, 28);  //Or just a placeholder if you don't want graphics.
 
-    if( Console || !Lufciki.start(WINDOW_HEADER,argc,argv,1) )
+    if( Console || !Lufciki.start(SIMULATION_NAME, argc, argv, 1) )
     {
         cerr<<"Graphic output isn't initialized"<<endl;
         if(!Console) exit(1);
@@ -807,8 +812,8 @@ int main(const int argc,const char* argv[])
                                  MaskName,
                                  asserted<short>(DistributionLevel),
                                  NoisePercent / 100.0,	//Noise from 0 to 1
-                               asserted<short>(MaximumStrength),	//We want it to be within range
-                               asserted<short>(MinimumStrength),
+                                 asserted<short>(MaximumStrength),	//We want it to be within range
+                                 asserted<short>(MinimumStrength),
                                  asserted<short>(NofCategories),
                                  asserted<short>(NeighborhoodR),
                                  asserted<short>(NeighborhoodD),
@@ -834,7 +839,7 @@ int main(const int argc,const char* argv[])
     theWorld.set_input_ratio(sim_to_view_ratio);
     theWorld.set_log_ratio(sim_to_log_ratio);
     theWorld.set_bias_from_str(BIAS_STR);
-    cout<<WINDOW_HEADER<<": LOADED."<<endl;
+    cout << SIMULATION_NAME << ": LOADED." << endl;
     theWorld.set_history_stream(HistName);
 
     if(DUMP_NET && *NetCName != '\0')
@@ -848,7 +853,7 @@ int main(const int argc,const char* argv[])
             exit(2);
         }
         theWorld.initialize(&Lufciki, 1); //visualization initialization
-        cout<<WINDOW_HEADER<<": PREPARED FOR READING. WAIT!"<<endl;
+        cout << SIMULATION_NAME << ": PREPARED FOR READING. WAIT!" << endl;
         Lufciki.restore(0);
         Lufciki.replot(0);
         Lufciki.process_input(); //Handling the first events. They end after Ctrl-B.
@@ -857,13 +862,13 @@ int main(const int argc,const char* argv[])
     else
     {
         theWorld.initialize(&Lufciki); //initialization of visualization and simulation layers.
-        cout<<WINDOW_HEADER<<": INITIALISED."<<endl;
+        cout << SIMULATION_NAME << ": INITIALISED." << endl;
 
         if(!AUTOSTART)
         {
             //Lufciki.process_input(); //???
             /// @internal MAIN SIMULATION LOOP:
-            cout<<WINDOW_HEADER<<": STARTED."<<endl;
+            cout << SIMULATION_NAME << ": STARTED." << endl;
 
             Lufciki.restore(0);
             Lufciki.replot(0);
@@ -882,9 +887,9 @@ int main(const int argc,const char* argv[])
             for(int symulacja=0;symulacja<AUTOSTART;symulacja++)
             {
                 /// @internal MAIN SIMULATION LOOP WITH AUTOSTART:
-                cout<<WINDOW_HEADER<<": SIMULATION "<<symulacja<<" STARTED."<<endl;
+                cout << SIMULATION_NAME << ": SIMULATION " << symulacja << " STARTED." << endl;
                 theWorld.simulation_loop(1);
-                cout<<WINDOW_HEADER<<": SIMULATION "<<symulacja<<" DONE."<<endl;
+                cout << SIMULATION_NAME << ": SIMULATION " << symulacja << " DONE." << endl;
                 if(symulacja<AUTOSTART-1)
                 {
                     //Reinitialization when repetitions.
@@ -895,7 +900,7 @@ int main(const int argc,const char* argv[])
 
     }
 
-    cout<<WINDOW_HEADER<<": CLOSING."<<endl;
+    cout << SIMULATION_NAME << ": CLOSING." << endl;
 
     cout.flush();
 
