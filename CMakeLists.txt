@@ -1,6 +1,6 @@
 # CMAKE configuration for LANGUAGES simulation project
 ######################################################################
-## @date 2026-05-11 (last update)
+## @date 2026-06-02 (last update)
 ## @author	: Wojciech Borkowski
 #
 
@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.20)
 project(LANGUAGES)
 
 set(CMAKE_CXX_STANDARD 11) # See: https://matgomes.com/setting-cpp-standard-cmake/
-#set(CMAKE_CXX_STANDARD_REQUIRED On)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
 #set(CMAKE_CXX_EXTENSIONS Off)
 
 IF (WIN32)
@@ -80,7 +80,7 @@ target_link_libraries( languages
         ${CMAKE_THREAD_LIBS_INIT}
      )
 ELSE()
-target_compile_options( languages  PRIVATE "${CMAKE_CXX_FLAGS}" "-std=c++11" "-pthread" "-fpermissive")
+target_compile_options( languages  PRIVATE "${CMAKE_CXX_FLAGS}" "-pthread" "-fpermissive")
 target_link_libraries( languages
 #        "-L ${MYLIBS}"
         wbsyshclss wbrtm wbsyshLight
