@@ -1,11 +1,16 @@
 /// @file
 /// @brief Virtual output method implementation of the jworld class. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-04-30 (modified)
+/// @date 2026-06-02 (modified)
 ///
 ///     Its is rather simply implementation. You can replace it if you need.
-// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "jrand.h"
 #include "jworld.h"  
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "modernize-use-nullptr"
+#pragma ide diagnostic ignored "modernize-use-auto"
 
 int jworld::implement_output(ostream& o) const
 {
@@ -20,15 +25,16 @@ int jworld::implement_output(ostream& o) const
     o << NeighRadius << separator;
     o<<UseSelf<<separator;
     o<<Noise<<separator<<endl;
-    o<<Agenci<<endl;
+    o << Agents << endl;
     return 1;
 }
 
+#pragma clang diagnostic pop
 /* **************************************************************** */
-/*           THIS CODE IS DESIGNED & COPYRIGHT  BY:                 */
+/*            THIS CODE IS DESIGNED & COPYRIGHT BY:                 */
 /*            W O J C I E C H   B O R K O W S K I                   */
 /* Zakład Systematyki i Geografii Roślin Uniwersytetu Warszawskiego */
-/*  & Instytut Studiow Społecznych Uniwersytetu Warszawskiego       */
+/*  & Instytut Studiów Społecznych Uniwersytetu Warszawskiego       */
 /*        WWW:  http://moderato.iss.uw.edu.pl/~borkowsk             */
 /*        MAIL: borkowsk@iss.uw.edu.pl                              */
 /*                               (Don't change or remove this note) */
