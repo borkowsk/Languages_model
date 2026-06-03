@@ -1,6 +1,6 @@
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
-/// @date 2026-06-02 (modified)
+/// @date 2026-06-03 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <cstring>
@@ -250,7 +250,7 @@ void jworld::make_default_visualisation()
 {
     // Base class method - may do nothing, but we call it just in case.
     world::make_default_visualisation(); // Should create default areas - e.g. STATUS area
-    bool WithGr=this->HasAreaMenager(); // Will there be graphical output?
+    bool WithGr= this->HasAreaManager(); // Will there be graphical output?
 
     // Data series indexes needed for the statistical log and further for graphs:
     // //////////////////////////////////////////////////////////////////////////
