@@ -1,19 +1,50 @@
+ALGORYTM OGÓLNY (bez biasu)
+
 W ka¿dym kroku symulacji:
-Dla ka¿dego agenta z losowego zbioru o liczebnoœci równej ca³kowitej liczbie pozycji (mog¹ byæ puste miejsca niedostêpne do zasiedlenia (bariery). Jest to krok monte-carlo. Pewna iloœæ agentów unika wylosowania, a pewna jest w tym zbiorze wiêcej ni¿ raz:
-Sprawdzamy: Jeœli pozycja jest pusta (NULL), pomijamy oczywiœcie. 
-Sprawdzamy: Czy si³a agenta nie jest wiêksza ni¿ treshold si³y, jeœli tak to agent jest odporny na zmiany.
-W przeciwnym wypadku obliczany zmianê dla agenta:
-1.Wybieramy zbiór N s¹siednich pozycji odleg³ych nie dalej ni¿ K komórek od badanego agenta (mog¹ siê powtórzyæ).
-[Tu jest haczyk. Wplyw postawy dziala niezale¿nie, ale losowanie jest wspolne dla kazdej warstwy-mem, czyli w kazdym kroku ten sam najsilniejszy agent mo¿e narzucic swoj¹ postawe we wszystkich trzech mem'ach]
-2.Dla ka¿dego faktycznie istniej¹cego s¹siada:
-Dodajemy jego si³ê do odpowiednich (wyznaczonych przez "postawê jêzykow¹" agenta-s¹siada) "s³upków" trzech niezale¿nych histogramów postaw. 
-//Dodawanie sil sasiadow do licznikow w tablicach; Firsts[PeryfAgent.First]+=PeryfAgent.Power;
-Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
-Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
-3.Jeœli w³¹czone jest branie pod uwagê siebie to t¹ sam¹ operacje powtarzamy dla "Si³y" i "Postaw" centralnego agenta (czyli tego dla którego zmiane liczymy).
-4.Do ka¿dego "s³upka" histogramów dodajemy niezale¿nie szum wg wzoru: V=RAND(0. do 0.99999...)*PoziomSzumu(0 do 1)*MaxSi³a*4.5;
-5.Losujemy offset w histogramach od którego zaczniemy poszukiwanie najwiêkszych wartoœci. To poprawka usuwaj¹ca preferencje wyboru postawy o ni¿szym indeksie w wypadku równoœci wp³ywu.
-6.Dla ka¿dego z trzech histogramów postaw jêzykowych odnajdujemy postawê dominuj¹c¹.
-7.Wpisujemy znalezione dominuj¹ce postawy jako postawy badanego agenta.
-Jeœli w³¹czone jest starzenie to inkrementujemy licznik si³y i dzielimy go modulo MaxSi³a, co powoduje ze po przekroczeniu MaxSi³y si³a siê zeruje i w nastêpnym kroku symulacji agent jest ca³kowicie podatny na zewnêtrzne wp³ywy.
+- Dla ka¿dego agenta z LOSOWEGO zbioru o liczebno¶ci równej ca³kowitej liczbie 
+  komórek (mog± byæ puste miejsca niedostêpne do zasiedlenia - bariery). 
+  Jest to krok monte-carlo, zatem pewna liczba agentów unika wylosowania, 
+  a pewna liczba pojawia siê w zbiorze wylosowanych wiêcej ni¿ raz:
+        - Sprawdzamy: Je¶li pozycja jest pusta (NULL), pomijamy oczywi¶cie. 
+        - Sprawdzamy: Czy si³a agenta nie jest wiêksza ni¿ próg si³y, 
+                - je¶li tak to agent jest odporny na zmiany.
+                - W przeciwnym wypadku obliczany zmianê dla agenta:
+                1.Wybieramy zbiór N s±siednich pozycji odleg³ych nie dalej ni¿ K 
+                  komórek od badanego agenta (mog± siê powtórzyæ).              
+                  [Tu jest haczyk. Wp³yw ka¿dej postawy dzia³a niezale¿nie, ale 
+                   losowanie jest wspólne dla wszystkich warstw memetycznych, 
+                   czyli w danym kroku ten sam najsilniejszy agent mo¿e narzuciæ 
+                   swoj± postawê we wszystkich trzech memach!]
+                2.Dla ka¿dego faktycznie istniej±cego s±siada:
+                - Dodajemy jego si³ê do odpowiednich (wyznaczonych przez 
+                 "postawê jêzykow±" agenta-s±siada) koszyków trzech niezale¿nych 
+                 histogramów postaw. 
+                 
+                 //Dodawanie si³ s±siadów do liczników w tablicach: 
+                 Firsts[PeryfAgent.First]+=PeryfAgent.Power;
+                 Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
+                 Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
+                 
+                3.Je¿eli w³±czone jest branie pod uwagê siebie to tê sam±  
+                  operacje powtarzamy dla "Si³y" i "Postaw" centralnego agenta 
+                  (czyli tego dla którego zmianê w³a¶nie liczymy).
+                4.Do ka¿dego koszyka histogramów dodajemy niezale¿nie szum 
+                  wg wzoru: 
+                  
+                  V=RAND(0. do 0.99999...)*PoziomSzumu(0 do 1)*MaxSi³a*4.5;
+                  
+                5.Dla ka¿dego z trzech histogramów postaw jêzykowych odnajdujemy
+                  postawê dominuj±c±.
+                  Losujemy offset czyli indeks koszyka, od którego zaczniemy 
+                  poszukiwanie najwiêkszych warto¶ci w histogramach wp³ywu. 
+                  U¿ywaj±c indeksu modulo sprawdzamy oczywi¶cie wszystkie koszyki.  
+                  Ta poprawka usuwa preferencje wyboru postawy o ni¿szym 
+                  indeksie w wypadku równo¶ci wp³ywu!
+                6.Wpisujemy znalezione dominuj±ce postawy jako nowe postawy 
+                  badanego agenta.
+                7.Je¿eli w³±czone jest starzenie to zwiêkszamy licznik si³y agenta 
+                  i dzielimy go modulo 'MaxSi³a', co powoduje ¿e po przekroczeniu 
+                  'MaxSi³y' si³a siê przewija i w nastêpnym kroku symulacji 
+                  agent w danym miejscu jest znowu "m³ody" czyli s³aby, zatem
+                  ca³kowicie (a przynajmniej bardzo) podatny na zewnêtrzne wp³ywy.
 
