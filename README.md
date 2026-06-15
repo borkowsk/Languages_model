@@ -14,6 +14,17 @@ A model for the evolution of humanity's number of languages used in projects wit
 * 2007: Modelowanie konkurencji między językami/Modeling the competition between languages. https://www.researchgate.net/publication/260059539_Modelowanie_konkurencji_miedzy_jezykami_Modeling_the_competition_between_languages
 * 2010: Social influence model of language competition. https://www.researchgate.net/publication/299287224_Social_influence_model_of_language_competition
 
+## Book
+
+This model is also used in the book:
+
+* 2003:  Peter W Culicover, Andrzej Nowak,__"Dynamical Grammar: Minimalism, Acquisition, and Change"__.
+  - https://academic.oup.com/book/48191
+  - doi.org/10.1093/oso/9780198700265.001.0001
+  - Online ISBN:9781383031355
+  - Print ISBN:9780198700265
+  - Publisher: Oxford University Press
+
 ## COMPILATION
 
 To compile, you need to download the "https://github.com/borkowsk/symShell2andRTM" repository and place it in the cousin directory as below (or modify the path in the CMakeLists.txt file)
