@@ -1,50 +1,52 @@
-ALGORYTM OGÓLNY (bez biasu)
 
-W ka¿dym kroku symulacji:
-- Dla ka¿dego agenta z LOSOWEGO zbioru o liczebno¶ci równej ca³kowitej liczbie 
-  komórek (mog± byæ puste miejsca niedostêpne do zasiedlenia - bariery). 
-  Jest to krok monte-carlo, zatem pewna liczba agentów unika wylosowania, 
-  a pewna liczba pojawia siê w zbiorze wylosowanych wiêcej ni¿ raz:
-        - Sprawdzamy: Je¶li pozycja jest pusta (NULL), pomijamy oczywi¶cie. 
-        - Sprawdzamy: Czy si³a agenta nie jest wiêksza ni¿ próg si³y, 
-                - je¶li tak to agent jest odporny na zmiany.
-                - W przeciwnym wypadku obliczany zmianê dla agenta:
-                1.Wybieramy zbiór N s±siednich pozycji odleg³ych nie dalej ni¿ K 
-                  komórek od badanego agenta (mog± siê powtórzyæ).              
-                  [Tu jest haczyk. Wp³yw ka¿dej postawy dzia³a niezale¿nie, ale 
-                   losowanie jest wspólne dla wszystkich warstw memetycznych, 
-                   czyli w danym kroku ten sam najsilniejszy agent mo¿e narzuciæ 
-                   swoj± postawê we wszystkich trzech memach!]
-                2.Dla ka¿dego faktycznie istniej±cego s±siada:
-                - Dodajemy jego si³ê do odpowiednich (wyznaczonych przez 
-                 "postawê jêzykow±" agenta-s±siada) koszyków trzech niezale¿nych 
-                 histogramów postaw. 
+ALGORYTM OGÃ“LNY (bez biasu):
+============================
+
+W kaÅ¼dym kroku symulacji:
+- Dla kaÅ¼dego agenta z LOSOWEGO zbioru o liczebnoÅ›ci rÃ³wnej caÅ‚kowitej liczbie 
+  komÃ³rek (mogÄ… byÄ‡ puste miejsca niedostÄ™pne do zasiedlenia â€” bariery).
+  Jest to krok monte-carlo, zatem pewna liczba agentÃ³w unika wylosowania, 
+  a pewna liczba pojawia siÄ™ w zbiorze wylosowanych agentÃ³w wiÄ™cej niÅ¼ raz:
+        - Sprawdzamy: JeÅ›li pozycja jest pusta (NULL), pomijamy oczywiÅ›cie. 
+        - Sprawdzamy: Czy siÅ‚a agenta nie jest wiÄ™ksza niÅ¼ prÃ³g siÅ‚y, 
+                - jeÅ›li tak to agent jest odporny na zmiany.
+                - W przeciwnym wypadku obliczany zmianÄ™ dla agenta:
+                1. Wybieramy zbiÃ³r N sÄ…siednich pozycji odlegÅ‚ych nie dalej niÅ¼ K
+                  komÃ³rek od badanego agenta (mogÄ… siÄ™ powtÃ³rzyÄ‡).              
+                  [Tu jest haczyk. WpÅ‚yw kaÅ¼dej postawy dziaÅ‚a niezaleÅ¼nie, ale 
+                   losowanie jest wspÃ³lne dla wszystkich warstw memetycznych, 
+                   czyli w danym kroku ten sam najsilniejszy agent moÅ¼e narzuciÄ‡ 
+                   swojÄ… postawÄ™ we wszystkich trzech memach!]
+                2. Dla kaÅ¼dego faktycznie istniejÄ…cego sÄ…siada:
+                - Dodajemy jego siÅ‚Ä™ do odpowiednich (wyznaczonych przez 
+                 "postawÄ™ jÄ™zykowÄ…" agenta-sÄ…siada) koszykÃ³w trzech niezaleÅ¼nych 
+                 histogramÃ³w postaw. 
                  
-                 //Dodawanie si³ s±siadów do liczników w tablicach: 
-                 Firsts[PeryfAgent.First]+=PeryfAgent.Power;
-                 Seconds[PeryfAgent.Second]+=PeryfAgent.Power;
-                 Thirds[PeryfAgent.Third]+=PeryfAgent.Power;
+                 //Dodawanie siÅ‚ sÄ…siadÃ³w do licznikÃ³w w tablicach: 
+                 Firsts[OtherAgent.First]+=OtherAgent.Power;
+                 Seconds[OtherAgent.Second]+=OtherAgent.Power;
+                 Thirds[OtherAgent.Third]+=OtherAgent.Power;
                  
-                3.Je¿eli w³±czone jest branie pod uwagê siebie to tê sam±  
-                  operacje powtarzamy dla "Si³y" i "Postaw" centralnego agenta 
-                  (czyli tego dla którego zmianê w³a¶nie liczymy).
-                4.Do ka¿dego koszyka histogramów dodajemy niezale¿nie szum 
+                3. JeÅ¼eli wÅ‚Ä…czone jest branie pod uwagÄ™ siebie, to tÄ™ samÄ…
+                  operacjÄ™ powtarzamy dla "SiÅ‚y" i "Postaw" centralnego agenta
+                  (czyli tego, dla ktÃ³rego zmianÄ™ wÅ‚aÅ›nie liczymy).
+                4. Do kaÅ¼dego koszyka histogramÃ³w dodajemy niezaleÅ¼nie szum
                   wg wzoru: 
                   
-                  V=RAND(0. do 0.99999...)*PoziomSzumu(0 do 1)*MaxSi³a*4.5;
+                  V=RAND(0. do 0.99999...)*PoziomSzumu(0 do 1)*MaxSiÅ‚a*4.5;
                   
-                5.Dla ka¿dego z trzech histogramów postaw jêzykowych odnajdujemy
-                  postawê dominuj±c±.
-                  Losujemy offset czyli indeks koszyka, od którego zaczniemy 
-                  poszukiwanie najwiêkszych warto¶ci w histogramach wp³ywu. 
-                  U¿ywaj±c indeksu modulo sprawdzamy oczywi¶cie wszystkie koszyki.  
-                  Ta poprawka usuwa preferencje wyboru postawy o ni¿szym 
-                  indeksie w wypadku równo¶ci wp³ywu!
-                6.Wpisujemy znalezione dominuj±ce postawy jako nowe postawy 
+                5. Dla kaÅ¼dego z trzech histogramÃ³w postaw jÄ™zykowych odnajdujemy
+                  postawÄ™ dominujÄ…cÄ….
+                  Losujemy "offset" czyli indeks koszyka, od ktÃ³rego zaczniemy
+                  poszukiwanie najwiÄ™kszych wartoÅ›ci w histogramach wpÅ‚ywu. 
+                  UÅ¼ywajÄ…c indeksu modulo, sprawdzamy oczywiÅ›cie wszystkie koszyki.
+                  Ta poprawka usuwa preferencje wyboru postawy o niÅ¼szym 
+                  indeksie w wypadku rÃ³wnoÅ›ci wpÅ‚ywu!
+                6. Wpisujemy znalezione dominujÄ…ce postawy jako nowe postawy
                   badanego agenta.
-                7.Je¿eli w³±czone jest starzenie to zwiêkszamy licznik si³y agenta 
-                  i dzielimy go modulo 'MaxSi³a', co powoduje ¿e po przekroczeniu 
-                  'MaxSi³y' si³a siê przewija i w nastêpnym kroku symulacji 
-                  agent w danym miejscu jest znowu "m³ody" czyli s³aby, zatem
-                  ca³kowicie (a przynajmniej bardzo) podatny na zewnêtrzne wp³ywy.
+                7. JeÅ¼eli wÅ‚Ä…czone jest starzenie, to zwiÄ™kszamy licznik siÅ‚y agenta
+                  i dzielimy go modulo 'MaxSiÅ‚a', co powoduje, Å¼e po przekroczeniu
+                  'MaxSiÅ‚y' siÅ‚a siÄ™ przewija i w nastÄ™pnym kroku symulacji 
+                  agent w danym miejscu jest znowu "mÅ‚ody" czyli sÅ‚aby, zatem
+                  caÅ‚kowicie (a przynajmniej bardzo) podatny na zewnÄ™trzne wpÅ‚ywy.
 

@@ -1,106 +1,110 @@
-POPRAWKI RÓ¯NE (koniec 2002):
 
-1) Warto¶ci brzegowe ju¿ nie znikaj± - liczba kolumn histogramu jest teraz zafiksowana.
+POPRAWKI RÃ“Å»NE (koniec 2002):
+=============================
 
-2) Koincydencja to po prostu tablica zliczeñ wspó³wystêpowania. Je¶li chodzi o korelacje 
-jakie liczê, to o ile nie pope³ni³em gdzie¶ b³êdu to licz± siê wg. wzorów z Blalocka, na 
+1) WartoÅ›ci brzegowe juÅ¼ nie znikajÄ… â€” liczba kolumn histogramu jest teraz zafiksowana.
+
+2) Koincydencja to po prostu tablica zliczeÅ„ wspÃ³Å‚wystÄ™powania. JeÅ›li chodzi o korelacje,
+jakie liczÄ™, to, o ile nie popeÅ‚niÅ‚em gdzieÅ› bÅ‚Ä™du, to liczÄ… siÄ™ wg. wzorÃ³w z Blalocka, na
 podstawie tablicy koincydencji.
 
 3) Entropia wg wzoru Piotra
 
-4) Interakcja: z kwadratu o zadanym boku wybierana jest losowo grupa N s±siadów, z 
-pominiêciem agenta centralnego. Agent centralny wykonuje mini histogram popularno¶ci
-ka¿dej warto¶ci dla ka¿dej z trzech cech jêzyka. Nastêpnie je¶li jest w³±czona opcja 
-SELF dopisuje do histogramów w³asny stan.
-Potem wybiera dla ka¿dej cechy najpopularniejszy stan i taki przybiera.
+4) Interakcja: z kwadratu o zadanym boku wybierana jest losowo grupa N sÄ…siadÃ³w, z 
+pominiÄ™ciem agenta centralnego. Agent centralny wykonuje mini histogram popularnoÅ›ci
+kaÅ¼dej wartoÅ›ci dla kaÅ¼dej z trzech cech jÄ™zyka. NastÄ™pnie, jeÅ›li jest wÅ‚Ä…czona opcja
+SELF, dopisuje do histogramÃ³w wÅ‚asny stan.
+Potem wybiera dla kaÅ¼dej cechy najpopularniejszy stan i taki przybiera.
 
-5) S(Clasification) to entropia dla histogramu jêzyków.
+5) S(Classification) to entropia dla histogramu jÄ™zykÃ³w.
 
-6) Zapisywanie ca³ej symulacji - pracoch³onne - w przysz³o¶ci...
-6A) Obecnie (XI2002) wygl±da na zrobione
+6) Zapisywanie caÅ‚ej symulacji â€” pracochÅ‚onne â€” w przyszÅ‚oÅ›ci...
+6A) Obecnie (XI2002) wyglÄ…da na zrobione
 
-7) Inicjacja z górkami do osi±gniêcia edytorem plików graficznych i parametrem inicjalizacji 
-si³y z pliku. S± przyk³adowe pliki graficzne zrobione w Photoshopie.
+7) Inicjacja z gÃ³rkami do osiÄ…gniÄ™cia edytorem plikÃ³w graficznych i parametrem inicjalizacji 
+siÅ‚y z pliku. SÄ… przykÅ‚adowe pliki graficzne zrobione w Photoshopie.
 
-8) Mo¿na w tej chwili traktowaæ si³± jako wiek, parametr WPOW >0 s³u¿y jako krok zwiêkszania,
-ale zwiêkszanie jest losowe - tzn agent starzeje siê nie zawsze, ale tylko gdy zostaje wylosowany.
+8) MoÅ¼na w tej chwili traktowaÄ‡ siÅ‚Ä… jako wiek, parametr WPOW >0 sÅ‚uÅ¼y jako krok zwiÄ™kszania,
+ale zwiÄ™kszanie jest losowe â€” tzn. agent starzeje siÄ™ nie zawsze, ale tylko, gdy zostaje wylosowany.
 
-9) Wiêcej cech - w nastêpnym programie - WYMAGA£O BY BARDZO ZNACZNYCH PRZERÓBEK bo prawie wszêdzie kod 
-opiera siê na za³o¿eniu ze cech jêzyka jest 3!!!
-9A) TO BY£BY ZUPE£NIE INNY PROGRAM!!! (2002)
+9) WiÄ™cej cech â€” w nastÄ™pnym programie â€” WYMAGAÅOBY BARDZO ZNACZNYCH PRZERÃ“BEK, bo prawie wszÄ™dzie kod
+opiera siÄ™ na zaÅ‚oÅ¼eniu, Å¼e cech jÄ™zyka jest 3!!!
+9A) TO BYÅBY ZUPEÅNIE INNY PROGRAM!!! (2002)
 
-10) W tej chwili jednolita macierz nie pozwala na pojawienie siê czego¶ nowego. Klasy mog± znikaæ,
- lecz nie mog± siê pojawiaæ nawet jak jest szum. Pojawianie siê by³o wynikiem b³êdu w szukaniu max 
- - tzn czasami wybór by³ niezamierzenie przypadkowy.
-10A) Od 2000 roku klasy mog± siê pojawiaæ samorzutnie je¶li w³±czony jest "szum zewnêtrzny"
+10) W tej chwili jednolita macierz nie pozwala na pojawienie siÄ™ czegoÅ› nowego. Klasy mogÄ… znikaÄ‡,
+ lecz nie mogÄ… siÄ™ pojawiaÄ‡, nawet jak jest szum. Pojawianie siÄ™ byÅ‚o wynikiem bÅ‚Ä™du w szukaniu max.
+ â€” tzn. czasami wybÃ³r byÅ‚ niezamierzenie przypadkowy.
 
-11) Teoretycznie ruchy (migracje agentów) s± mo¿liwe w ka¿dej chwili - by³a nawet gotowa funkcja
-11A) Ale teraz (2002) ju¿ nie wiem gdzie jej szukaæ
+10A) Od 2000 roku klasy mogÄ… siÄ™ pojawiaÄ‡ samorzutnie, jeÅ›li wÅ‚Ä…czony jest "szum zewnÄ™trzny"
 
-12) Ponadto wprowadzi³em mo¿liwo¶æ inicjowania i maskowania warstw za pomoc± plików BMP
-16 lub 256 kolorowych poniewa¿ niektóre programy graficzne pod Windows nie umiej± zapisywaæ 
-GIF'ów.
+11) Teoretycznie ruchy (migracje agentÃ³w) sÄ… moÅ¼liwe w kaÅ¼dej chwili â€” byÅ‚a nawet gotowa funkcja
+11A) Jednak teraz (2002) juÅ¼ nie wiem, gdzie jej szukaÄ‡
+
+12) Ponadto wprowadziÅ‚em moÅ¼liwoÅ›Ä‡ inicjowania i maskowania warstw za pomocÄ… plikÃ³w BMP
+16 lub 256 kolorowych, poniewaÅ¼ niektÃ³re programy graficzne pod Windows nie umiejÄ… zapisywaÄ‡
+GIF-Ã³w.
 
 
-13) Rozbudowanie programu o ro¿ne postacie bias'ów:
-+++++++++++++++++++++++++++++++++++++++++++++++++++
+13) Rozbudowanie programu o rÃ³Å¼ne postacie biasÃ³w (patrz niÅ¼ej)
+
 
 TEST BIASU BEZWARUNKOWEGO (SIMPLE_BIAS)
 ========================================
+
 cd S:\jezyk\langevol\data
 CLSS=2 MAPL=mw1a.gif MASK=mw1a-mask.gif MAPP=mw1a-strength.gif WIDTH=30 INDI=4 BIAS="A0:10"  NOIP=20 -gray+
 
 
-Sk³adnia "biasu nastêpczego" (SEQUENTIAL BIAS)
+SkÅ‚adnia "biasu nastÄ™pczego" (SEQUENTIAL BIAS)
 ==============================================
 
 [aM [& bN [& cP]]?] dR : [-] S
 
-a,b,c - oznaczenie warstw warunkowych. Litera ze zbioru: a b c A B C f s t F S T. 
-	Kolejno¶æ dowolna, ale w pojedynczej definicji nie moze byc powtorzen.
-M,N,P - oznaczenie stanów poszukiwanych w warstwach warunkowych. Liczby ca³kowite od 1 do "liczby stanów".
+a,b,c â€” oznaczenie warstw warunkowych. Litera ze zbioru: a b c A B C f s t F S T.
+	KolejnoÅ›Ä‡ dowolna, ale w pojedynczej definicji nie moÅ¼e byc powtÃ³rzeÅ„.
+M,N,P â€” oznaczenie stanÃ³w poszukiwanych w warstwach warunkowych. Liczby caÅ‚kowite od 1 do "liczby stanÃ³w".
 
-d - oznaczenie warstwy docelowej. Musi wyst±piæ.
-R - oznaczenie stanu w warstwie docelowej. Musi wyst±piæ. Liczba ca³kowita od 1 do "liczby stanów".
+d â€” oznaczenie warstwy docelowej. Musi wystÄ…piÄ‡.
+R â€” oznaczenie stanu w warstwie docelowej. Musi wystÄ…piÄ‡. Liczba caÅ‚kowita od 1 do "liczby stanÃ³w".
 
-? - ? a la jêzyk C  - koñczy warunek w instrukcji biasowej
-: - poprzedza warto¶æ biasu
-S - warto¶æ biasu. Liczba ca³kowita. Powinna byæ sensownie proporcjonalna do maksymalnej si³y.
+? â€” ? Ã  la jÄ™zyk C  â€” koÅ„czy warunek w instrukcji biasowej.
+: â€” poprzedza wartoÅ›Ä‡ biasu
+S â€”  wartoÅ›Ä‡ biasu. Liczba caÅ‚kowita. Powinna byÄ‡ sensownie proporcjonalna do maksymalnej siÅ‚y.
  
 [...] - oznacza ze ... jest elementem opcjonalnym
 
-T³umaczenie na jêzyk naturalny(-niejszy):
-        Je¿eli dla agenta 
-        warto¶æ memu 'a' jest równa "M" i warto¶æ memu 'b' jest równa "N" i warto¶æ memu 'c' jest równa "P" 
+TÅ‚umaczenie na jÄ™zyk naturalny(-niejszy):
+        JeÅ¼eli dla agenta 
+        wartoÅ›Ä‡ memu 'a' jest rÃ³wna "M" i wartoÅ›Ä‡ memu 'b' jest rÃ³wna "N" i wartoÅ›Ä‡ memu 'c' jest rÃ³wna "P" 
         to
-        dla warto¶ci "R" memu 'd' zwiêksz licznik o "S"
+        dla wartoÅ›ci "R" memu 'd' zwiÄ™ksz licznik o "S"
 
 
-PRZYK£ADY:
+PRZYKÅADY:
 ----------
 dla CLSS=4
 
 BIAS="a1:25" - sam bias bezwarunkowy (symulacja realizowana procedura SIMPLE_BIAS)
-BIAS="a1?b1:25" - typowy bias nastêpczy. Je¶li ju¿ jest "a1" to przyjêcie "b1" ma bias = 25
-BIAS="a1:25 a1?b1:25" - przyk³ad bias'u nastêpczego poprzedzonego bezwarunkowym
-BIAS="a4:10 a4?b4:10 a4&b4?c4:20" - bias bezwarunkowy wspomagaj±cy sekwencje biasów nastêpczych
+BIAS="a1?b1:25" - typowy bias nastÄ™pczy. JeÅ›li juÅ¼ jest "a1" to przyjÄ™cie "b1" ma bias = 25
+BIAS="a1:25 a1?b1:25" - przykÅ‚ad biasu nastÄ™pczego poprzedzonego bezwarunkowym
+BIAS="a4:10 a4?b4:10 a4&b4?c4:20" - bias bezwarunkowy wspomagajÄ…cy sekwencje biasÃ³w nastÄ™pczych
 
-BIAS="b4?a4:10 c4?a4:10" - dwa bias nastêpcze z innych warstw wspieraj± stan w warstwie pierwszej
-BIAS="b4?a4:10 c4?a4:10 a4?b4:5 a4?c4:5" - to samo, ale z rewan¿em
-BIAS="a4:10 b4?a4:10 c4?a4:10" - bias bezwarunkowy wspierany przez nastêpcze z innych warstw - mo¿e osi±gaæ czasem 30
+BIAS="b4?a4:10 c4?a4:10" - dwa biasy nastÄ™pcze z innych warstw wspierajÄ… stan w warstwie pierwszej
+BIAS="b4?a4:10 c4?a4:10 a4?b4:5 a4?c4:5" - to samo, ale z rewanÅ¼em
+BIAS="a4:10 b4?a4:10 c4?a4:10" - bias bezwarunkowy wspierany przez nastÄ™pcze z innych warstw â€” moÅ¼e osiÄ…gaÄ‡ czasem 30
 
-BIAS="a1?a1:-10" - cecha samobójcza
-BIAS="a1?a4:10" - cecha samobójcza altruistyczna
+BIAS="a1?a1:-10" - cecha samobÃ³jcza
+BIAS="a1?a4:10" - cecha samobÃ³jcza altruistyczna
 
-BIAS="a4?a4:50" - bias zapadkowy. Je¶li ju¿ jest "a1" to decyzja pozostania ma bias = 50
-BIAS="a4?a4:50 a4&b4?b4:50 a4&b4&c4?c4:50" - biasy zapadkowe po³±czone w sekwencjê
+BIAS="a4?a4:50" - bias zapadkowy. JeÅ›li juÅ¼ jest "a1" to decyzja pozostania ma bias = 50
+BIAS="a4?a4:50 a4&b4?b4:50 a4&b4&c4?c4:50" - biasy zapadkowe poÅ‚Ä…czone w sekwencjÄ™
 
-BIAS="a4?b4:50 b4?a4:-50" - krótka pêtla samobójcza
-BIAS="a4?b4:50 b4?c4:50 c4?a4:-50" - d³uga pêtla samobójcza
-BIAS="a4?b4:50 b4?a4:-50 b4?c4:50 c4?b4:-50 c4?a4:50 a4?c4:-50" - "wzajemnie niesprawiedliwe reakcje odwetowe" - w sumie pozytywne, szczególnie gdy zwiêkszyæ warto¶æ do 150
+BIAS="a4?b4:50 b4?a4:-50" - krÃ³tka pÄ™tla samobÃ³jcza
+BIAS="a4?b4:50 b4?c4:50 c4?a4:-50" â€” dÅ‚uga pÄ™tla samobÃ³jcza
+BIAS="a4?b4:50 b4?a4:-50 b4?c4:50 c4?b4:-50 c4?a4:50 a4?c4:-50" - "wzajemnie niesprawiedliwe reakcje odwetowe" â€” w sumie pozytywne, szczegÃ³lnie gdy zwiÄ™kszyÄ‡ wartoÅ›Ä‡ do 150
 
-BIAS="a4?b4:-150 b4?a4:-150" - proste wykluczanie. Wygrywaj± inne stany
-BIAS="a4?b4:50 b4?a4:50 b4?c4:-50 c4?b4:-50 c4?a4:50 a4?c4:50" - "konflikt trójk±ta"
-BIAS="a4?b4:150 b4?a4:150 b4?c4:-150 c4?b4:-150 c4?a4:150 a4?c4:150" - "drastyczny konflikt trójk±ta"
-BIAS="a4?b4:50 b4?a4:50 b4?c4:-100 c4?b4:-100 c4?a4:50 a4?c4:50" - "konflikt trójk±ta" symetryczny energetycznie - po¶rednie wykluczanie, gdzie inne stany przygrywaj±
+BIAS="a4?b4:-150 b4?a4:-150" - proste wykluczanie. WygrywajÄ… inne stany
+BIAS="a4?b4:50 b4?a4:50 b4?c4:-50 c4?b4:-50 c4?a4:50 a4?c4:50" â€” "konflikt trÃ³jkÄ…ta"
+BIAS="a4?b4:150 b4?a4:150 b4?c4:-150 c4?b4:-150 c4?a4:150 a4?c4:150" â€” "drastyczny konflikt trÃ³jkÄ…ta"
+BIAS="a4?b4:50 b4?a4:50 b4?c4:-100 c4?b4:-100 c4?a4:50 a4?c4:50" â€” "konflikt trÃ³jkÄ…ta" symetryczny energetycznie â€” poÅ›rednie wykluczanie, gdzie inne stany przygrywajÄ…
 
