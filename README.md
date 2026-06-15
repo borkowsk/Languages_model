@@ -1,7 +1,9 @@
 # Languages_model
-# @date 2026-04-09 (modified)
+# @date 2026-06-15 (modified)
 
 A model for the evolution of humanity's number of languages used in projects with Peter Culicover.
+
+<img src="./docs/historical-bulding.gif"  width="200" title="Historical project">
 
 ## Papers and presentations related to this model
 
