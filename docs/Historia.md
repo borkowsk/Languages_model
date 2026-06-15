@@ -14,15 +14,15 @@
  *	ver.   2.10 - implementacja procesu zaciągania władzy i wyświetlanie mapy politycznej.
  *	ver.   2.06 - działające sterowanie częstością wyświetlania i `my_area_manager` zadeklarowany.
  *	ver.   2.05 - rozbudowane menu, zwłaszcza nowe opcje wizualizacji, parametr `SRND` i `DUMP`.
- *	ver.   2.04 - Ciagłe zrzucanie sieci jako parametr.
+ *	ver.   2.04 - Ciągłe zrzucanie sieci jako parametr.
  *	ver.   2.03a - Implementacja zrzutu sieci SW w postaci plików NET.
  *	ver.   2.01-2 - Uruchomienie modelu Small Worlds.
  *	ver.   1.99b - przejście do modelu Small Worlds:
-                  - Przygotowanie nowego układu wizualizacji.
-                  - Przygotowanie źródeł danych i grafu dla dalekich połączeń.
-                  - Implementable algorytmu dynamicznych dalekich połączeń "politycznych".
-                  - Włączenie wpływów z dalekich połączeń do implementacji modeli wpływu
-                    (nie przetestowane dla skomplikowanych biasów).
+                 - Przygotowanie nowego układu wizualizacji.
+                 - Przygotowanie źródeł danych i grafu dla dalekich połączeń.
+                 - Implementable algorytmu dynamicznych dalekich połączeń "politycznych".
+                 - Włączenie wpływów z dalekich połączeń do implementacji modeli wpływu
+                   (nie przetestowane dla skomplikowanych biasów).
 
  *	ver.   1.53a    - drobne zmiany konieczne do uruchomienia kompilacji pod BDS 2006.
 

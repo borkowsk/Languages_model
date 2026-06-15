@@ -5,51 +5,51 @@ POLA PLIKU LOG "LANGUAGE SIMULATION v 1.0"
 POLA WSPÓLNE:
 -------------
 
-EXP:	Thu Jul 01 16:51:32 1999		-> data i czas wykonania eksperymentu
-Max Power=	100							-> maksymalna siła agenta
-Tresh of Power=	100						-> granica siły, powyżej której agent jest całkowicie odporny na zmiany
-Num of Kl=	4							-> liczba klas(możliwych wartości stanów) w każdej z warstw "pamięci"
-Noise %=	0							-> poziom (procent) szumu w decyzji przejmowania stanu pamięci
-Self=	1								-> jeśli 1 to poprzedni stan agenta wpływa na decyzje, jeśli 0 to nie
-Naighborhood=	8/(3*3)					-> liczba "rozmówców" losowanych z kwadratowego sąsiedztwa
+EXP:    Thu Jul 01 16:51:32 1999        -> data i czas wykonania eksperymentu
+Max Power=    100                       -> maksymalna siła agenta
+Tresh of Power=    100                  -> granica siły, powyżej której agent jest całkowicie odporny na zmiany
+Num of Kl=    4                         -> liczba klas(możliwych wartości stanów) w każdej z warstw "pamięci"
+Noise %=    0                           -> poziom (procent) szumu w decyzji przejmowania stanu pamięci
+Self=    1                              -> jeśli 1 to poprzedni stan agenta wpływa na decyzje, jeśli 0 to nie
+Naighborhood=    8/(3*3)                -> liczba "rozmówców" losowanych z kwadratowego sąsiedztwa
 
 
 LISTA NAGŁÓWKÓW KOLUMN:
 -----------------------
 
-STEP/VERSION				-> Numer kroku symulacji z którego wzięto dane
-NumOfClass(Classification)	-> Liczba klas w pełnej klasyfikacji (po złożeniu warstw)
-S(Classification)			-> Entropia pełnej klasyfikacji
-nS(Classification)			-> Normalizowana entropia pełnej klasyfikacji
-MainClass(Classification)	-> Liczebność głównej klasy klasyfikacji
-WhichMain(Classification)	-> Środek przedziału klasy głównej (dlatego z ułamkiem)
-Stress(First mem)			-> Stres dla pierwszej warstwy pamięci
-Stress(Second mem)			-> Stres dla drugiej
-Stress(Third mem)			-> Stres dla trzeciej
-S(First mem,Second mem)		-> Entropia związku pierwszej i drugiej warstwy pamięci
-S(Second mem,Third mem)		-> Entropia związku 2. i 3. warstwy
-S(Third mem,First mem)		-> Entropia związku 3. i 1. warstwy
-nS(First mem,Second mem)	-> Normalizowana entropia związku pierwszej i drugiej warstwy pamięci
-nS(Second mem,Third mem)	-> Normalizowana entropia związku 2. i 3. warstwy
-nS(Third mem,First mem)		-> Normalizowana entropia związku 3. i 1. warstwy
-Chi^2(First mem,Second mem)	-> Chi Kwadrat dla tablicy koincydencji pierwszej i drugiej warstwy pamięci
-Loff(First mem,Second mem)	-> i jego liczba stopni swobody
-Chi^2(Second mem,Third mem)	-> Chi Kwadrat dla tablicy koincydencji 2. i 3. warstwy
-Loff(Second mem,Third mem)	-> i jego liczba stopni swobody
-Chi^2(Third mem,First mem)	-> Chi Kwadrat dla tablicy koincydencji 3. i 1. warstwy
-Loff(Third mem,First mem)	-> i jego liczba stopni swobody
-V^2(First mem,Second mem)	-> Korelacja V^2 Cramera dla pierwszej i drugiej warstwy pamięci
-V^2(Second mem,Third mem)	-> Korelacja V^2 Cramera dla 2. i 3. warstwy
-V^2(Third mem,First mem)	-> Korelacja V^2 Cramera dla 3. i 1. warstwy
-T^2(First mem,Second mem)	-> Korelacja T^2 Czupurowa dla pierwszej i drugiej warstwy pamięci
-T^2(Second mem,Third mem)	-> Korelacja T^2 Czupurowa dla 2. i 3. warstwy
-T^2(Third mem,First mem)	-> Korelacja T^2 Czupurowa dla 3. i 1. warstwy
-Tau_b(First mem,Second mem)	-> Asymetryczna korelacja Tau pierwszej i drugiej warstwy pamięci
-Tau_a(First mem,Second mem)	-> Asymetryczna korelacja Tau drugiej i pierwszej warstwy pamięci
-Tau_b(Second mem,Third mem)	-> Asymetryczna korelacja Tau 2. i 3. warstwy pamięci
-Tau_a(Second mem,Third mem)	-> Asymetryczna korelacja Tau 3. i 2. warstwy pamięci
-Tau_b(Third mem,First mem)	-> Asymetryczna korelacja Tau 3. i 1. warstwy pamięci
-Tau_a(Third mem,First mem)	-> Asymetryczna korelacja Tau 1. i 3. warstwy pamięci
+STEP/VERSION                  -> Numer kroku symulacji z którego wzięto dane
+NumOfClass(Classification)    -> Liczba klas w pełnej klasyfikacji (po złożeniu warstw)
+S(Classification)             -> Entropia pełnej klasyfikacji
+nS(Classification)            -> Normalizowana entropia pełnej klasyfikacji
+MainClass(Classification)     -> Liczebność głównej klasy klasyfikacji
+WhichMain(Classification)     -> Środek przedziału klasy głównej (dlatego z ułamkiem)
+Stress(First mem)             -> Stres dla pierwszej warstwy pamięci
+Stress(Second mem)            -> Stres dla drugiej
+Stress(Third mem)             -> Stres dla trzeciej
+S(First mem,Second mem)       -> Entropia związku pierwszej i drugiej warstwy pamięci
+S(Second mem,Third mem)       -> Entropia związku 2. i 3. warstwy
+S(Third mem,First mem)        -> Entropia związku 3. i 1. warstwy
+nS(First mem,Second mem)      -> Normalizowana entropia związku pierwszej i drugiej warstwy pamięci
+nS(Second mem,Third mem)      -> Normalizowana entropia związku 2. i 3. warstwy
+nS(Third mem,First mem)       -> Normalizowana entropia związku 3. i 1. warstwy
+Chi^2(First mem,Second mem)   -> Chi Kwadrat dla tablicy koincydencji pierwszej i drugiej warstwy pamięci
+Loff(First mem,Second mem)    -> i jego liczba stopni swobody
+Chi^2(Second mem,Third mem)   -> Chi Kwadrat dla tablicy koincydencji 2. i 3. warstwy
+Loff(Second mem,Third mem)    -> i jego liczba stopni swobody
+Chi^2(Third mem,First mem)    -> Chi Kwadrat dla tablicy koincydencji 3. i 1. warstwy
+Loff(Third mem,First mem)     -> i jego liczba stopni swobody
+V^2(First mem,Second mem)     -> Korelacja V^2 Cramera dla pierwszej i drugiej warstwy pamięci
+V^2(Second mem,Third mem)     -> Korelacja V^2 Cramera dla 2. i 3. warstwy
+V^2(Third mem,First mem)      -> Korelacja V^2 Cramera dla 3. i 1. warstwy
+T^2(First mem,Second mem)     -> Korelacja T^2 Czupurowa dla pierwszej i drugiej warstwy pamięci
+T^2(Second mem,Third mem)     -> Korelacja T^2 Czupurowa dla 2. i 3. warstwy
+T^2(Third mem,First mem)      -> Korelacja T^2 Czupurowa dla 3. i 1. warstwy
+Tau_b(First mem,Second mem)   -> Asymetryczna korelacja Tau pierwszej i drugiej warstwy pamięci
+Tau_a(First mem,Second mem)   -> Asymetryczna korelacja Tau drugiej i pierwszej warstwy pamięci
+Tau_b(Second mem,Third mem)   -> Asymetryczna korelacja Tau 2. i 3. warstwy pamięci
+Tau_a(Second mem,Third mem)   -> Asymetryczna korelacja Tau 3. i 2. warstwy pamięci
+Tau_b(Third mem,First mem)    -> Asymetryczna korelacja Tau 3. i 1. warstwy pamięci
+Tau_a(Third mem,First mem)    -> Asymetryczna korelacja Tau 1. i 3. warstwy pamięci
 
 Normalizowana entropia:
 ==Entropy/log(rows*columns)
