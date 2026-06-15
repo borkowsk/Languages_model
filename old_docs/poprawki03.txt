@@ -1,4 +1,3 @@
-
 POPRAWKI RÓŻNE (koniec 2002):
 =============================
 
@@ -16,15 +15,15 @@ każdej wartości dla każdej z trzech cech języka. Następnie, jeśli jest wł
 SELF, dopisuje do histogramów własny stan.
 Potem wybiera dla każdej cechy najpopularniejszy stan i taki przybiera.
 
-5) S(Classification) to entropia dla histogramu języków.
+5) "S(Classification)" to entropia dla histogramu języków.
 
 6) Zapisywanie całej symulacji — pracochłonne — w przyszłości...
 6A) Obecnie (XI2002) wygląda na zrobione
 
-7) Inicjacja z górkami do osiągnięcia edytorem plików graficznych i parametrem inicjalizacji 
+7) Inicjacja "z górkami" do osiągnięcia edytorem plików graficznych i parametrem inicjalizacji
 siły z pliku. Są przykładowe pliki graficzne zrobione w Photoshopie.
 
-8) Można w tej chwili traktować siłą jako wiek, parametr WPOW >0 służy jako krok zwiększania,
+8) Można w tej chwili traktować siłą jako wiek, parametr WPOW > 0 służy jako krok zwiększania,
 ale zwiększanie jest losowe — tzn. agent starzeje się nie zawsze, ale tylko, gdy zostaje wylosowany.
 
 9) Więcej cech — w następnym programie — WYMAGAŁOBY BARDZO ZNACZNYCH PRZERÓBEK, bo prawie wszędzie kod
@@ -44,7 +43,6 @@ opiera się na założeniu, że cech języka jest 3!!!
 16 lub 256 kolorowych, ponieważ niektóre programy graficzne pod Windows nie umieją zapisywać
 GIF-ów.
 
-
 13) Rozbudowanie programu o różne postacie biasów (patrz niżej)
 
 
@@ -60,7 +58,7 @@ Składnia "biasu następczego" (SEQUENTIAL BIAS)
 
 [aM [& bN [& cP]]?] dR : [-] S
 
-a,b,c — oznaczenie warstw warunkowych. Litera ze zbioru: a b c A B C f s t F S T.
+a,b,c — oznaczenie warstw warunkowych. Litera ze zbioru: "a b c A B C f s t F S T".
 	Kolejność dowolna, ale w pojedynczej definicji nie może byc powtórzeń.
 M,N,P — oznaczenie stanów poszukiwanych w warstwach warunkowych. Liczby całkowite od 1 do "liczby stanów".
 
