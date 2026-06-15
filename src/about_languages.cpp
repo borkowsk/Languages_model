@@ -1,11 +1,7 @@
 /// @file
 /// @brief COPYRIGHT BOX ETC. ("LANGUAGES" PROJECT WITH P.Culicover).
-/// @date 2026-06-02 (modified)
+/// @date 2026-06-15 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
 
 #ifdef USE_WINDOWS
 #include "../WIN/symshwin.h"
@@ -16,6 +12,10 @@ constexpr int ILE_SEC=30; //How many seconds wait for OK?
 extern const char* ble_ble_ble;
 
 #ifndef NDEBUG
+#include <cstdlib>
+#include <cstdio>
+#include <ctime>
+
 __attribute__((unused))
 class time_checker
 {
@@ -139,7 +139,7 @@ public:
             HINSTANCE hMainInstance=GetModuleHandle(NULL);	//???MainInstance - where???
 
             Dialog=CreateDialog(
-                hMainInstance,	//, //APLICATION INSTANCE
+                hMainInstance,	//, //APPLICATION INSTANCE
                 pom,
                 MyHwnd,	//0,	//hDlg, //OWNER WINDOW
                 AutorsDialog);

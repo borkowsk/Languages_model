@@ -1,6 +1,6 @@
 /// @file
-/// @brief DECLARATION OF A G E N T FOR "LANGUAGES" SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-06-02 (modified)
+/// @brief DECLARATION OF AGENT FOR "LANGUAGES" SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
+/// @date 2026-06-15 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "layer.hpp"

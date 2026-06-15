@@ -1,6 +1,6 @@
 /// @file
-/// @brief Virtual output method implementation of the jworld class. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-06-02 (modified)
+/// @brief Virtual output method implementation of the `jworld` class. (LANGUAGES PROJECT WITH P.Culicover)
+/// @date 2026-06-15 (modified)
 ///
 ///     Its is rather simply implementation. You can replace it if you need.
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

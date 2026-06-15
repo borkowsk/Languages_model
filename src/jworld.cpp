@@ -1,18 +1,12 @@
 /// @file
 /// @brief IMPLEMENTATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P. Culicover)
-/// @date 2026-06-03 (modified)
+/// @date 2026-06-15 (modified)
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#include <cstring>
-#include <cmath>
-#include <strstream>
-
-#include "wb_ptrio.h"
 
 #include "clstsour.hpp"
 #include "spatcors.hpp"
 #include "coincsou.hpp"
-//#include "SYMSHELL/ohistosou.hpp" //Old histogram with sliding number of classes
+
 #include "dhistosou.hpp" //A discrete histogram with a fixed number of classes.
 #include "fhistosou.hpp" //A histogram with an arbitrarily determined number of classes.
 
@@ -20,6 +14,12 @@
 #include "jrand.h"
 #include "jworld.h"
 #include "jagent.h"
+
+#include "wb_ptrio.h"
+
+#include <cstring>
+#include <cmath>
+#include <strstream>
 
 using namespace sym2;
 using namespace sym2::data;
@@ -480,7 +480,8 @@ void jworld::make_default_visualisation()
         if(!SpatialCorr3) ON_ERROR_MAKE
         iSpatialCorr3=Sources.insert(SpatialCorr3);
 
-        fifo_source<double>* ClusterSize1Log=new fifo_source<double>(SpatialCorr1->ApproximatedClusterSize(),internal_log);//Fifo z rozmiaru klastra
+        /// "Fifo" queue with cluster size.
+        fifo_source<double>* ClusterSize1Log=new fifo_source<double>(SpatialCorr1->ApproximatedClusterSize(),internal_log);
         if(!ClusterSize1Log) ON_ERROR_MAKE
         iClusterSize1=Sources.insert(ClusterSize1Log);
 
@@ -667,8 +668,8 @@ void jworld::make_default_visualisation()
                 );
             pom->set_data_colors(0, 255);
             pom->set_title("Histogram of languages");
-            int ipom=Manager.insert(pom);
-            Manager.minimize(ipom);
+            int i_hlp=Manager.insert(pom);
+            Manager.minimize(i_hlp);
         }
 
         // Log-Log histogram of languages - how many languages are there in each size class (10, 100, 1000, 10 000 users)
@@ -848,7 +849,7 @@ void jworld::make_default_visualisation()
     // FINALLY, DONE - YOU CAN ALSO DRAW IT ALL:
     Sources.new_data_version(1,1); // Notifies the series that data has been updated (after initialization)
     if(WithGr)
-        this->MyAreaManager().maximize(0); // Minimizing the zero-index area (OutArea?)
+        this->MyAreaManager().maximize(0); // Minimizing the zero-index area (probably `OutArea`)
 }
 
 
@@ -1091,8 +1092,8 @@ void    jworld::_connect_far_links(double Percent)
                 _far_link pom = FarLinks.get(a, b);
                 if (pom.a != UINT_MAX)    //If there is any protector at all.
                 {
-                    unsigned long politOfProtector= Agents.get(pom.a, pom.b).Politics; ///< A political marker of the Protector.
-                    Agents.get(a, b).Politics = politOfProtector; // An agent adopts the political marker of his protector.
+                    unsigned long protectorAffiliation= Agents.get(pom.a, pom.b).Politics; ///< A political marker of the Protector.
+                    Agents.get(a, b).Politics = protectorAffiliation; // An agent adopts the political marker of his protector.
                 }
             }
     }

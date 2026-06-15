@@ -1,6 +1,6 @@
 /// @file
 /// @brief SIMULATION STEP WITH BIAS IMPLEMENTATION ("LANGUAGES" PROJECT WITH P.Culicover)
-/// @date 2026-06-02 (modified)
+/// @date 2026-06-15 (modified)
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <cstring>
@@ -96,33 +96,33 @@ INVALID_PARAM:
     //return;
 }
 
-// For pairs like a1 or b3 etc.
+// For pairs like "a1" or "b3" etc.
 int jworld::_read_local(istream& in,int& Layer,int& Value)
 {
-    char  Znak;
+    char  CChar;
     int  Numer;
 
-    in>>Znak;
+    in >> CChar;
     if(in.fail())
         return -10;
 
     in>>Numer;
     if(in.fail())
         return -10;
+
+    CChar=tolower(CChar);	//Unification of letter size. NOLINT(*-narrowing-conversions)
     
-    Znak=tolower(Znak);	//Unification of letter size
-    
-    switch(Znak){   //Conversion from f[irst], s[econd], t[hird]
+    switch(CChar){   //Conversion from f[irst], s[econd], t[hird]
     case 'f':
-            Znak='a';break;
+        CChar='a';break;
     case 's':
-            Znak='b';break;
+        CChar='b';break;
     case 't':
-            Znak='c';break;
+        CChar='c';break;
     default:break;
     }
 
-    Layer=Znak-'a';
+    Layer= CChar - 'a';
     Value=Numer-1;
     return 0;
 }
@@ -131,19 +131,19 @@ int jworld::_read_local(istream& in,int& Layer,int& Value)
 /// Simple bias info.
 struct BiasInfo
 {  
-    int Warstwa[3];	///< Value for each of the three layers.
+    int Layer[3];	///< Value for each of the three layers.
 
     /// Constructor. The value for each of the three layers is initialized in the old style.
-    BiasInfo(){Warstwa[0]=Warstwa[1]=Warstwa[2]=BIAS_FOR_ANY;} // NOLINT(*-pro-type-member-init)
+    BiasInfo(){ Layer[0]= Layer[1]= Layer[2]=BIAS_FOR_ANY;} // NOLINT(*-pro-type-member-init)
 
     /// Sets the value for the layer, but only if it is the first time, otherwise it signals an error.
     int reg(int Index,int Value)
     {
         if(Index>=0 && Index<=2)
         {
-            if(Warstwa[Index]==BIAS_FOR_ANY)
+            if(Layer[Index] == BIAS_FOR_ANY)
             {
-                Warstwa[Index]=Value;
+                Layer[Index]=Value;
                 return 0;
             }
             else
@@ -163,21 +163,21 @@ struct BiasInfo
         ostream& operator << (ostream& o,const BiasInfo& b)
     {
         bool was=false;
-        if(b.Warstwa[0]!=BIAS_FOR_ANY)
+        if(b.Layer[0] != BIAS_FOR_ANY)
         {
-            o<<'A'<<b.Warstwa[0]+1;
+            o<<'A'<< b.Layer[0] + 1;
             was=true;
         }
-        if(b.Warstwa[1]!=BIAS_FOR_ANY)
+        if(b.Layer[1] != BIAS_FOR_ANY)
         {
             if(was) o << '&';
-            o<<'B'<<b.Warstwa[1]+1;
+            o<<'B'<< b.Layer[1] + 1;
             was=true;
         }
-        if(b.Warstwa[2]!=BIAS_FOR_ANY)
+        if(b.Layer[2] != BIAS_FOR_ANY)
         {
             if(was) o << '&';
-            o<<'C'<<b.Warstwa[2]+1;
+            o<<'C'<< b.Layer[2] + 1;
             was=true;
         }
         return o;
@@ -218,34 +218,34 @@ int  jworld::_simple_bias_information::read_one_bias_item(istream& in)
     
     cout<<info<<':'<<BiasValue<<' '<<flush;	//Echo
     
-    if((info.Warstwa[0]<0 || info.Warstwa[0] >= NumberOfCategories()) && info.Warstwa[0] != BIAS_FOR_ANY )
-        {cerr<<"The value "<<info.Warstwa[0]+1<<" for the layer A is invalid"<<endl;return -11;}
-    if((info.Warstwa[1]<0 || info.Warstwa[1] >= NumberOfCategories()) && info.Warstwa[1] != BIAS_FOR_ANY )
-        {cerr<<"The value "<<info.Warstwa[1]+1<<" for the layer B is invalid"<<endl;return -11;}
-    if((info.Warstwa[2]<0 || info.Warstwa[2] >= NumberOfCategories()) && info.Warstwa[2] != BIAS_FOR_ANY )
-        {cerr<<"The value "<<info.Warstwa[2]+1<<" for the layer C is invalid"<<endl;return -11;}
+    if((info.Layer[0] < 0 || info.Layer[0] >= NumberOfCategories()) && info.Layer[0] != BIAS_FOR_ANY )
+        {cerr << "The value " << info.Layer[0] + 1 << " for the layer A is invalid" << endl;return -11;}
+    if((info.Layer[1] < 0 || info.Layer[1] >= NumberOfCategories()) && info.Layer[1] != BIAS_FOR_ANY )
+        {cerr << "The value " << info.Layer[1] + 1 << " for the layer B is invalid" << endl;return -11;}
+    if((info.Layer[2] < 0 || info.Layer[2] >= NumberOfCategories()) && info.Layer[2] != BIAS_FOR_ANY )
+        {cerr << "The value " << info.Layer[2] + 1 << " for the layer C is invalid" << endl;return -11;}
 
     //If there are two BIAS_FOR_ANY it is unconditional bias
-    assert((info.Warstwa[0]==BIAS_FOR_ANY)+(info.Warstwa[1]==BIAS_FOR_ANY)+(info.Warstwa[2]==BIAS_FOR_ANY)==2);
+    assert((info.Layer[0] == BIAS_FOR_ANY) + (info.Layer[1] == BIAS_FOR_ANY) + (info.Layer[2] == BIAS_FOR_ANY) == 2);
     
     {//Now write to the conditional bias table `UncdBias[3][8]`.
-        if(info.Warstwa[0]!=BIAS_FOR_ANY)
+        if(info.Layer[0] != BIAS_FOR_ANY)
         {
-            UncdBias[0][info.Warstwa[0]]= asserted<short>(BiasValue);
+            UncdBias[0][info.Layer[0]]= asserted<short>(BiasValue);
         }
         else 
-            if(info.Warstwa[1]!=BIAS_FOR_ANY)
+            if(info.Layer[1] != BIAS_FOR_ANY)
             {
-                UncdBias[1][info.Warstwa[1]]=asserted<short>(BiasValue);
+                UncdBias[1][info.Layer[1]]=asserted<short>(BiasValue);
             }
             else
-                if(info.Warstwa[2]!=BIAS_FOR_ANY)
+                if(info.Layer[2] != BIAS_FOR_ANY)
                 {
-                    UncdBias[2][info.Warstwa[2]]=asserted<short>(BiasValue);
+                    UncdBias[2][info.Layer[2]]=asserted<short>(BiasValue);
                 }
                 else
                 {
-                    assert("This line should never be reached."==NULL);	//Upss...
+                    assert("This line should never be reached."==NULL);	//Ups...
                 }
     }
     
@@ -324,14 +324,14 @@ int  jworld::_conditional_bias_information::read_one_bias_item(istream& in)
     
     cout<<info<<':'<<BiasValue<<' '<<flush;	//Echo
     
-    if((info.Warstwa[0]<0 || info.Warstwa[0] >= NumberOfCategories()) && info.Warstwa[0] != BIAS_FOR_ANY )
-        {cerr<<"The value "<<info.Warstwa[0]+1<<" for the layer A is invalid"<<endl;return -11;}
-    if((info.Warstwa[1]<0 || info.Warstwa[1] >= NumberOfCategories()) && info.Warstwa[1] != BIAS_FOR_ANY )
-        {cerr<<"The value "<<info.Warstwa[1]+1<<" for the layer B is invalid"<<endl;return -11;}
-    if((info.Warstwa[2]<0 || info.Warstwa[2] >= NumberOfCategories()) && info.Warstwa[2] != BIAS_FOR_ANY )
-        {cerr<<"The value "<<info.Warstwa[2]+1<<" for the layer C is invalid"<<endl;return -11;}
+    if((info.Layer[0] < 0 || info.Layer[0] >= NumberOfCategories()) && info.Layer[0] != BIAS_FOR_ANY )
+        {cerr << "The value " << info.Layer[0] + 1 << " for the layer A is invalid" << endl;return -11;}
+    if((info.Layer[1] < 0 || info.Layer[1] >= NumberOfCategories()) && info.Layer[1] != BIAS_FOR_ANY )
+        {cerr << "The value " << info.Layer[1] + 1 << " for the layer B is invalid" << endl;return -11;}
+    if((info.Layer[2] < 0 || info.Layer[2] >= NumberOfCategories()) && info.Layer[2] != BIAS_FOR_ANY )
+        {cerr << "The value " << info.Layer[2] + 1 << " for the layer C is invalid" << endl;return -11;}
     
-    CndBiases[info.Warstwa[0]][info.Warstwa[1]][info.Warstwa[2]]=asserted<short>(BiasValue);	//All possible biases (???)
+    CndBiases[info.Layer[0]][info.Layer[1]][info.Layer[2]]=asserted<short>(BiasValue);	//All possible biases (???)
     
     //Can we continue next time?
     eat_blanks(in);
@@ -589,11 +589,11 @@ void    jworld::_one_step_no_bias()
                                                                          //assert("NOT TESTED AFTER PORTING!"==nullptr);
                 if(_xy_of_far_link_of(a,b,x,y)) //Get the "protector" index of this agent if it has anyone (?????)
                 {																   assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-                    jagent& PeryAgent=Agents.get(x,y); //We get references to the "protector".
-                                                                                    assert(!Agents.is_empty(PeryAgent));
-                    CFirsts[PeryAgent.First]+=PeryAgent.Power;
-                    CSeconds[PeryAgent.Second]+=PeryAgent.Power;
-                    CThirds[PeryAgent.Third]+=PeryAgent.Power;
+                    jagent& OthAgent=Agents.get(x, y); //We get references to the "protector".
+                                                                                    assert(!Agents.is_empty(OthAgent));
+                    CFirsts[OthAgent.First]+=OthAgent.Power;
+                    CSeconds[OthAgent.Second]+=OthAgent.Power;
+                    CThirds[OthAgent.Third]+=OthAgent.Power;
                     counting++; //He's also kind of a neighbor.
                 }
             }
@@ -605,16 +605,16 @@ void    jworld::_one_step_no_bias()
                 if(index2==geometry::FULL || index2==index)   //If it was outside the simulation area or in the center of the area,
                     continue; //TODO But does it happen?      //it would still be pointless.
 
-                jagent& PeryAgent=*(Agents.get_ptr(index2).get_ptr_val()); //We get a reference to the neighbor by bypassing NULL assertions
-                if(Agents.is_empty(PeryAgent)) //We check whether it is not an empty cell.
+                jagent& OthAgent=*(Agents.get_ptr(index2).get_ptr_val()); //We get a reference to the neighbor by bypassing NULL assertions
+                if(Agents.is_empty(OthAgent)) //We check whether it is not an empty cell.
                     continue;
 
                 counting++; //This is a real neighbor, not an empty field.
 
                 //Adding neighbor forces to counters in tables:
-                CFirsts[PeryAgent.First]+=PeryAgent.Power;
-                CSeconds[PeryAgent.Second]+=PeryAgent.Power;
-                CThirds[PeryAgent.Third]+=PeryAgent.Power;
+                CFirsts[OthAgent.First]+=OthAgent.Power;
+                CSeconds[OthAgent.Second]+=OthAgent.Power;
+                CThirds[OthAgent.Third]+=OthAgent.Power;
             }
 
             //We make sure that the iterator that is no longer needed will be removed:
@@ -748,12 +748,12 @@ void    jworld::_one_step_simple_bias()
                 dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b);
                 if(_xy_of_far_link_of(a,b,x,y))
                 {																   assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-                    jagent& PeryAgent=Agents.get(x, y); ///< The references to "protector".
-                                                                                    assert(!Agents.is_empty(PeryAgent));
+                    jagent& OthAgent=Agents.get(x, y); ///< The references to "protector".
+                                                                                    assert(!Agents.is_empty(OthAgent));
                     //Adding protector strength to counters in arrays
-                    CountFirsts[PeryAgent.First]+=PeryAgent.Power;
-                    CountSeconds[PeryAgent.Second]+=PeryAgent.Power;
-                    CountThirds[PeryAgent.Third]+=PeryAgent.Power;
+                    CountFirsts[OthAgent.First]+=OthAgent.Power;
+                    CountSeconds[OthAgent.Second]+=OthAgent.Power;
+                    CountThirds[OthAgent.Third]+=OthAgent.Power;
 
                     counting++;
                 }
@@ -766,16 +766,16 @@ void    jworld::_one_step_simple_bias()
                 if(index2==geometry::FULL || index2==index)
                     continue;  //TODO But does it happen?
 
-                jagent& PeryAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< reference to the neighbor
-                if(Agents.is_empty(PeryAgent))
+                jagent& OthAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< reference to the neighbor
+                if(Agents.is_empty(OthAgent))
                     continue;
 
                 counting++; //This is a real neighbor, not an empty field.
 
                 //Adding neighbor forces to counters in tables:
-                CountFirsts[PeryAgent.First]+=PeryAgent.Power;
-                CountSeconds[PeryAgent.Second]+=PeryAgent.Power;
-                CountThirds[PeryAgent.Third]+=PeryAgent.Power;
+                CountFirsts[OthAgent.First]+=OthAgent.Power;
+                CountSeconds[OthAgent.Second]+=OthAgent.Power;
+                CountThirds[OthAgent.Third]+=OthAgent.Power;
             }
 
             //We make sure that the iterator that is no longer needed will be removed:
@@ -922,7 +922,7 @@ void    jworld::_one_step_sequential_bias0()
 
             // Cleaning the arrays of counters:
             fill(CFirst,0); //memset(Firsts.get_ptr_val(),0,sizeof(int)*NumOfCate);
-            fill(CSecond,0);//memset(Seconds.get_ptr_val(),0,sizeof(int)*NumOfCate);
+            fill(CSecond,0); //memset(Seconds.get_ptr_val(),0,sizeof(int)*NumOfCate);
             fill(CThird,0); //memset(Thirds.get_ptr_val(),0,sizeof(int)*NumOfCate);
 
             if(Use_SW_links)
@@ -930,17 +930,17 @@ void    jworld::_one_step_sequential_bias0()
             size_t   a,b;
             unsigned x,y;
             dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index,a,b);
-                                                                           assert("Not tested after porting!"==nullptr);
+                                                                         //assert("Not tested after porting!"==nullptr);
              if(_xy_of_far_link_of(a,b,x,y)) //Download the "protector" index of this agent if it has anyone
              {																	   assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-                jagent& PeryAgent=Agents.get(x,y); ///< The references to "protector".
-                                                                                    assert(!Agents.is_empty(PeryAgent));
-                                                                                    assert("NOT TESTED IMPLEMENTATION");
+                jagent& OthAgent=Agents.get(x, y); ///< The references to "protector".
+                                                                                    assert(!Agents.is_empty(OthAgent));
+                                                                                   //assert("NOT TESTED IMPLEMENTATION");
 
                 //Adding protector strength to counters in arrays
-                CFirst[PeryAgent.First]+=PeryAgent.Power;
-                CSecond[PeryAgent.Second]+=PeryAgent.Power;
-                CThird[PeryAgent.Third]+=PeryAgent.Power;
+                CFirst[OthAgent.First]+=OthAgent.Power;
+                CSecond[OthAgent.Second]+=OthAgent.Power;
+                CThird[OthAgent.Third]+=OthAgent.Power;
 
                 counting++;
              }
@@ -953,16 +953,16 @@ void    jworld::_one_step_sequential_bias0()
                 if(index2==geometry_base::FULL || index2==index)
                     continue;
 
-                jagent& PeryAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< reference to the neighbor
-                if(Agents.is_empty(PeryAgent))
+                jagent& OthAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< reference to the neighbor
+                if(Agents.is_empty(OthAgent))
                     continue;
 
                 counting++; //This is a real neighbor, not an empty field.
 
                 //Adding neighbor forces to counters in tables:
-                CFirst[PeryAgent.First]+=PeryAgent.Power;
-                CSecond[PeryAgent.Second]+=PeryAgent.Power;
-                CThird[PeryAgent.Third]+=PeryAgent.Power;
+                CFirst[OthAgent.First]+=OthAgent.Power;
+                CSecond[OthAgent.Second]+=OthAgent.Power;
+                CThird[OthAgent.Third]+=OthAgent.Power;
             }
 
             //We make sure that the iterator that is no longer needed will be removed:
@@ -1059,14 +1059,14 @@ AGING:
 //     for (int i = 0; i < N; i++)
 //         for (int j = 0; j < N - 1; j++)
 //         {
-//             if (tab[j].Warstwa != BIAS_FOR_ANY &&
-//                 tab[j + 1].Warstwa != BIAS_FOR_ANY &&
-//                 tab[j].Warstwa == tab[j + 1].Warstwa)
+//             if (tab[j].Layer != BIAS_FOR_ANY &&
+//                 tab[j + 1].Layer != BIAS_FOR_ANY &&
+//                 tab[j].Layer == tab[j + 1].Layer)
 //             {
 //                 cerr << tab[j] << " & " << tab[j + 1] << " concern the same layer" << endl;
 //                 return -11; //Invalid definition
 //             }
-//             else if (tab[j].Warstwa > tab[j + 1].Warstwa)
+//             else if (tab[j].Layer > tab[j + 1].Layer)
 //             {
 //                 BiasInfo pom = tab[j];
 //                 tab[j] = tab[j + 1];
@@ -1102,7 +1102,7 @@ AGING:
 // {
 //     o << tab[0];
 //     for (int i = 1; i < tab.get_size(); i++)
-//         if (tab[i].Warstwa != BIAS_FOR_ANY)
+//         if (tab[i].Layer != BIAS_FOR_ANY)
 //         {
 //             o << " " << tab[i];
 //         }

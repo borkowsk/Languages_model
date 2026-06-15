@@ -1,8 +1,10 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "bugprone-assert-side-effect"
 /// @file
 /// @brief MAIN SOURCE FILE OF LANGUAGES PROJECT WITH P.Culicover.
-/// @date 2026-06-02 (modified)
+/// @date 2026-06-15 (modified)
 ///
-///     THIS PROGRAM IS DESIGNED FOR CFCS OF ISS UW!
+///     THIS PROGRAM IS DESIGNED FOR CFCS OF ISS University of Warsaw!
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-use-nullptr"
@@ -14,7 +16,7 @@ const char* SCREEN_DUMP_NAME="LANGUAGES";
 const char* SIMULATION_NAME= "LANGUAGES version SW 2.20d, compilation " __DATE__ ", " __TIME__ ;
 /// @details
 /// Simulation of the linguistic behaviors spread using the multi-layered meme/belief transmission method.
-///	Polish word "JĘZYK" means LANGUAGE.
+///	Polish word "J Ę Z Y K" means "LANGUAGE". Hence, the "j" prefix appearing here and there.
 /// #HISTORY:
 //  ////////////////////////
 ///			ver.  2.20c - English-language comments.
@@ -120,7 +122,7 @@ unsigned	SCR_HEIGHT=asserted<unsigned>(1080 * 0.6666);	///< Screen/window inside
 
 /// @name No Object-wise passed to the source initialization method or used to configure general loops:
 /// @{
-unsigned	internal_log=10000;				///< Default length of internal logs (stats history data sources).
+unsigned	internal_log=10000;			///< Default length of internal logs (stats history data sources).
 bool		use_spatial_corr=false;			///< Flag for using spatial correlation (expensive to compute).
 int			spatial_correlation_mode=50;	///< Number of sampling runs in calculating spatial correlation.
 unsigned	sim_to_log_ratio=10;			///< Defines the number of simulation steps after which statistics are counted and written to the log.
@@ -151,7 +153,7 @@ int		ThreshPercent=101;		///< Above what certain strength, changes in "attribute
 short	NeighborhoodR=1;		///< Neighborhood radius.
 short	NeighborhoodD=8;		///< How many agents within the radius are randomly selected (can they be duplicated?).
 short	ConsiderSelf=1;			///< Take yourself into account.
-const char*	BIAS_STR="";//"A100:10";		///< Bias definition collected directly from the parameter line.
+const char*	BIAS_STR=""; //"A100:10";		///< Bias definition collected directly from the parameter line.
 
 double	NoisePercent=0;			///< Percentage of noise when collecting information about influence.
 double	MutationProb=0;			///< Probability of spontaneous state change.
@@ -164,7 +166,7 @@ bool	SW_links=true;			///< Determines whether long links are used.
 // Not everything can be done this way.
 // Parameter consistency testing in particular cannot.
 
---> int parse_options(const int argc,const char* argv[]);	//Zapowiedz!
+--> int parse_options(const int argc,const char* argv[]);	//Announcement!
 
 OptionalParameterBase* Parameters[]={ //sizeof(Parameters)/sizeof(Parameters[])
 new ParameterLabel("PARAMETERS FOR SINGLE SIMULATION"),
@@ -226,7 +228,7 @@ cerr<<"YOU CAN USE:\n";
         cerr<<"\tMIPO=NN - min strength for initilization ("<<MinimumStrength<<")\n"	;
         cerr<<"\tDSTB=N - level and kind of strength distribution ("<<DistributionLevel<<")\n";
         cerr<<"\nSWST=PP/PP - percent of SW links created at every step, and at the beginning (0)\n";
-        cerr<<"\nNETD=N/Y - dumping net files for statistics parallely (N)\n";
+        cerr<<"\nNETD=N/Y - parallelly dumping net files for statistics (N)\n";
 //      cerr<<"\tWPOW=N	- walking step of strength	("<<GrowingStrength<<")\n";
         cerr<<"\tTRSP=N - % of threshold of strength ("<<ThreshPercent<<")\n";
         cerr<<"\tPRTR=2..WIDTH^2-1 - number of interaction partners ("<<NeighborhoodD<<")\n";
@@ -263,7 +265,7 @@ int parse_options(const int argc,const char* argv[])
     //Uppercasing
     char* pom=strchr(rob,'=');
     if(pom==NULL) // NOLINT(*-use-nullptr)
-            goto ERROR; //NA PEWNO ZLE
+            goto ERROR; //DEFINITELY BAD
 
     *pom='\0';strupr(rob);*pom='=';	//Part to the = sign
 
@@ -881,16 +883,16 @@ int main(const int argc,const char* argv[])
             {
                 int statusWin=Lufciki.search("STATUS");
                 Lufciki.maximize(statusWin); // The large status window obscures the rest and limits visualization and lazy calculations.
-                set_char('\02');//ctrl-B ?
+                set_char('\02'); //ctrl-B ?
             }
 
-            for(int symulacja=0;symulacja<AUTOSTART;symulacja++)
+            for(int simulation=0; simulation < AUTOSTART; simulation++)
             {
                 /// @internal MAIN SIMULATION LOOP WITH AUTOSTART:
-                cout << SIMULATION_NAME << ": SIMULATION " << symulacja << " STARTED." << endl;
+                cout << SIMULATION_NAME << ": SIMULATION " << simulation << " STARTED." << endl;
                 theWorld.simulation_loop(1);
-                cout << SIMULATION_NAME << ": SIMULATION " << symulacja << " DONE." << endl;
-                if(symulacja<AUTOSTART-1)
+                cout << SIMULATION_NAME << ": SIMULATION " << simulation << " DONE." << endl;
+                if(simulation < AUTOSTART - 1)
                 {
                     //Reinitialization when repetitions.
                     theWorld.restart();
@@ -923,3 +925,5 @@ int main(const int argc,const char* argv[])
 /*        MAIL: borkowsk@iss.uw.edu.pl                              */
 /*                               (Don't change or remove this note) */
 /* **************************************************************** */
+
+#pragma clang diagnostic pop

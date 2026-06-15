@@ -1,7 +1,7 @@
 /// @file
-/// @brief DECLARATION OF W O R L D FOR THE SIMULATION. (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-06-02 (modified)
-// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @brief DECLARATION OF THE SIMULATION WORLD. (LANGUAGES PROJECT WITH P.Culicover)
+/// @date 2026-06-15 (modified)
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 #include <climits> //SHRT_MAX
@@ -11,7 +11,7 @@
 #include "layer.hpp"
 #include "jagent.h" //Agent definition
 
-using namespace sym2::data; //This has a global impact, as jworld.h is included almost everywhere!
+using namespace sym2::data; //This has a global impact, as "jworld.h" is included almost everywhere!
 
 extern bool				 Console;	///< Flag for working in console mode - without any graphics. By default, it is `false`.
 extern const int	BIAS_FOR_ANY;	///< The value that represents "all-the-same" in conditional biases.
@@ -209,8 +209,8 @@ public:
     /// @param sep specifies the character used to separate individual fields. This can be a space or a tab.
     void	print_experiment_info(ostream& out,const char sep) const
     {
-        char bufor1[100];
-        char bufor2[100];
+        char buf1[100];
+        char buf2[100];
         out     << "\nNum of Kl=" << sep << NumOfCate
                 << "\n" << this->MyWidth << sep << "x" << sep << MyWidth << sep << "=" << sep << MyWidth * MyWidth
                 << "\nPower range:" << sep << MinStrength << '-' << MaxStrength
@@ -219,10 +219,10 @@ public:
                 << "\nNoise %=" << sep << Noise * 100 << sep << " Spontaneous change %=" << sep << Spontaneous
                 << "\nSelf=" << sep << UseSelf
                 << "\nNeighborhood=" << sep << NeighDens << "/(" << (1 + 2 * NeighRadius) << "*" << (1 + 2 * NeighRadius) << ")"
-                << "\nSmall World:" << sep << (!Use_SW_links?"NO":dtoa(SW_reconnect_percent, bufor1))
-                << sep << (!Use_SW_links?"NO":dtoa(SW_start_connect_percent, bufor2))
+                << "\nSmall World:" << sep << (!Use_SW_links?"NO":dtoa(SW_reconnect_percent, buf1))
+                << sep << (!Use_SW_links?"NO":dtoa(SW_start_connect_percent, buf2))
                 <<endl;
-        cout<<"SW: "<<bufor1<<'/'<<bufor2<<endl;
+        cout << "SW: " << buf1 << '/' << buf2 << endl;
     }
 
     /// Setting bias parameters from a text.
@@ -270,7 +270,7 @@ public:
     // BIAS HELPER CLASS DEFINITIONS:
     // //////////////////////////////
 
-    /// @brief Dummy bias info. Empty implementation of bias information when we don't use it.
+    /// @brief Empty bias info. An implementation of bias information when we don't use it.
     class _no_bias_information:public _bias_information_base
     {
     public:
@@ -346,7 +346,8 @@ public:
                         ;
             }
 
-            IfBias() ///< @brief The constructor uses the clean() method instead of setting the fields directly.
+            //NOLINTNEXTLINE(*-pro-type-member-init)
+            IfBias() ///< @brief The constructor uses the `clean()` method instead of setting the fields directly.
             { clean();}
 
             void clean() ///< @brief A method that sets fields to default (neutral) values.
@@ -440,8 +441,8 @@ void	jworld::_connect_flink_to(	unsigned aa,
     farLinkAABB.b=target_b;	//Sets `b` of the new connection
     FarLinks.get(target_a,target_b).count++;	//We add to the counter in the new target
 
-    unsigned long polit_of_prot=Agents.get(target_a, target_b).Politics;
-    Agents.get(aa, bb).Politics=polit_of_prot;
+    unsigned long protectorAffiliation=Agents.get(target_a, target_b).Politics;
+    Agents.get(aa, bb).Politics=protectorAffiliation;
     //			Agents.get(aa,bb).Politics=RANDOM(0xffffff); /// TODO Why changed?
 }
 

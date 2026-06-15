@@ -1,19 +1,15 @@
 /// @file
 /// @brief ALTERNATIVE CONDITIONAL BIAS SIMULATION STEP IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-06-02 (created)
+/// @date 2026-06-15 (created)
 ///     Split from "jbias.cpp" by borkowsk on 14.04.2026.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <cstring>
-
-//#include "compatyb.h"
-//#include "compatyb.hpp"
-//#include "wb_ptrio.h"
+#include "jrand.h"
+#include "jworld.h"
 #include "gadgets.hpp"
 #include "asserted.h"
 
-#include "jrand.h"
-#include "jworld.h"
+#include <cstring>
 
 using namespace sym2::data;
 using namespace sym2::shell;
@@ -43,7 +39,7 @@ void    jworld::_one_step_conditional_bias1()
                                                                                      assert(NumOfCate <= BIAS_FOR_ANY);
     /// Monte-Carlo iterator (may have data allocations inside).
     iterator_h Monte=MyGeom->make_random_global_iterator();
-    int testowanie=0; ///< An auxiliary counter for testing the algorithm.
+    int testing=0; ///< An auxiliary counter for testing the algorithm.
 
     //We go through the agents with a Monte-Carlo iterator. Some may be drawn again.
     while(Monte)
@@ -61,12 +57,12 @@ void    jworld::_one_step_conditional_bias1()
             ||
                 (jagent::mutation_level > 0 && CenterAgent.try_mutate()) //Or didn't it just mutate spontaneously?
           )
-            goto STARZENIE;
+            goto AGING;
 
         {   // INFLUENCE CALCULATION CODE:
             // ////////////////////////////
             iterator_h Neigh=MyGeom->make_random_neighbour_iterator(index, NeighRadius, NeighDens); // We allocate the neighborhood iterator
-            unsigned zliczanie=0;           //For counting neighbors
+            unsigned counting=0;           //For counting neighbors
 
             //The table of counters needs to be reset.
             //You have to zero the whole thing, even if you don't use all of it - because there are columns for BIAS_FOR_ANY.
@@ -76,26 +72,26 @@ void    jworld::_one_step_conditional_bias1()
             {
                 size_t a,b;
                 dynamic_cast<const rectangle_geometry*>(MyGeom)->WhatCoordinates(index, a, b); //Retrieve x and y from the agent index
-                                                                           assert("Not tested after porting!"==nullptr);
+                                                                         //assert("Not tested after porting!"==nullptr);
                 unsigned x,y;
-                // if(_xy_of_far_link_of(0,TODO,x,y)) //Pobrać indeks "protektora" tego agenta  o ile go ma
-                // {
-                // 										assert((y!=UINT_MAX)&&(x!=UINT_MAX));
-                // 	    jagent& PeryAgent=Agents.get(x,y);
-                // 										assert(!Agents.is_empty(PeryAgent));
-                // 										assert("NOT TESTED IMPLEMENTATION"==NULL);
-                // 	    Influence[PeryAgent.First][PeryAgent.Second][PeryAgent.Third]+=3*PeryAgent.Power; //"counter" for ABC coincidence.
-                //
-                // 	    Influence[BIAS_FOR_ANY][PeryAgent.Second][PeryAgent.Third]+=2*PeryAgent.Power; //"counter" of the BxC histogram.
-                // 	    Influence[PeryAgent.First][BIAS_FOR_ANY][PeryAgent.Third]+=2*PeryAgent.Power; //"counter" of the AxC histogram.
-                // 	    Influence[PeryAgent.First][PeryAgent.Second][BIAS_FOR_ANY]+=2*PeryAgent.Power; //"counter" of the AxB histogram.
-                //
-                // 	    Influence[PeryAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=PeryAgent.Power; //histogram "counter" for Axx.
-                // 	    Influence[BIAS_FOR_ANY][PeryAgent.Second][BIAS_FOR_ANY]+=PeryAgent.Power; //histogram "counter" for xBx.
-                // 	    Influence[BIAS_FOR_ANY][BIAS_FOR_ANY][PeryAgent.Third]+=PeryAgent.Power; //histogram "counter" for xxC.
-                //
-                // 	    zliczanie++;
-                // }
+                if(_xy_of_far_link_of(a,b,x,y)) //To find the "protector" index of this agent if it has one.
+                {
+                                                                                   assert((y!=UINT_MAX)&&(x!=UINT_MAX));
+                    jagent& OthAgent=Agents.get(x, y);
+                                                                                   assert( !Agents.is_empty(OthAgent));
+                                                                            //assert("NOT TESTED IMPLEMENTATION"==NULL);
+                    Influence[OthAgent.First][OthAgent.Second][OthAgent.Third]+= 3 * OthAgent.Power; //"counter" for "ABC" coincidence.
+
+                    Influence[BIAS_FOR_ANY][OthAgent.Second][OthAgent.Third]+= 2 * OthAgent.Power; //"counter" of the "BxC" histogram.
+                    Influence[OthAgent.First][BIAS_FOR_ANY][OthAgent.Third]+= 2 * OthAgent.Power; //"counter" of the "AxC" histogram.
+                    Influence[OthAgent.First][OthAgent.Second][BIAS_FOR_ANY]+= 2 * OthAgent.Power; //"counter" of the "AxB" histogram.
+
+                    Influence[OthAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=OthAgent.Power; //histogram "counter" for "Axx".
+                    Influence[BIAS_FOR_ANY][OthAgent.Second][BIAS_FOR_ANY]+=OthAgent.Power; //histogram "counter" for "xBx".
+                    Influence[BIAS_FOR_ANY][BIAS_FOR_ANY][OthAgent.Third]+=OthAgent.Power; //histogram "counter" for "xxC".
+
+                    counting++;
+                }
             }
 
             while(Neigh) //Loop through the neighborhood.
@@ -104,27 +100,27 @@ void    jworld::_one_step_conditional_bias1()
                 if(index2==geometry::FULL || index2==index) //If it was outside the simulation area or in the center of the area,
                     continue;                               //it would still be pointless.
 
-                jagent& PeryAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< A reference to a neighbor bypassing NULL assertions
-                if(Agents.is_empty(PeryAgent))     //We check whether it is not an empty cell (NULL),
+                jagent& OthAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< A reference to a neighbor bypassing NULL assertions
+                if(Agents.is_empty(OthAgent))     //We check whether it is not an empty cell (NULL),
                     continue;                      //because then it would be pointless to continue.
 
-                zliczanie++;                        //Counts the number of randomly selected neighbors.
+                counting++;                        //Counts the number of randomly selected neighbors.
 
                 //Adding the forces of each neighbor to the counters in the tables:
-                Influence[PeryAgent.First][PeryAgent.Second][PeryAgent.Third]+= 3 * PeryAgent.Power; //"counter" for ABC coincidence
+                Influence[OthAgent.First][OthAgent.Second][OthAgent.Third]+= 3 * OthAgent.Power; //"counter" for ABC coincidence
 
-                Influence[BIAS_FOR_ANY][PeryAgent.Second][PeryAgent.Third]+= 2 * PeryAgent.Power; //BxC histogram "counter".
-                Influence[PeryAgent.First][BIAS_FOR_ANY][PeryAgent.Third]+= 2 * PeryAgent.Power; //AxC histogram "counter".
-                Influence[PeryAgent.First][PeryAgent.Second][BIAS_FOR_ANY]+= 2 * PeryAgent.Power; //AxB histogram "counter".
+                Influence[BIAS_FOR_ANY][OthAgent.Second][OthAgent.Third]+= 2 * OthAgent.Power; //"BxC" histogram "counter".
+                Influence[OthAgent.First][BIAS_FOR_ANY][OthAgent.Third]+= 2 * OthAgent.Power; //"AxC" histogram "counter".
+                Influence[OthAgent.First][OthAgent.Second][BIAS_FOR_ANY]+= 2 * OthAgent.Power; //"AxB" histogram "counter".
 
-                Influence[PeryAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=PeryAgent.Power; //histogram "counter" for Axx
-                Influence[BIAS_FOR_ANY][PeryAgent.Second][BIAS_FOR_ANY]+=PeryAgent.Power; //histogram "counter" for xBx
-                Influence[BIAS_FOR_ANY][BIAS_FOR_ANY][PeryAgent.Third]+=PeryAgent.Power; //histogram "counter" for xxC
+                Influence[OthAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=OthAgent.Power; //histogram "counter" for "Axx"
+                Influence[BIAS_FOR_ANY][OthAgent.Second][BIAS_FOR_ANY]+=OthAgent.Power; //histogram "counter" for "xBx"
+                Influence[BIAS_FOR_ANY][BIAS_FOR_ANY][OthAgent.Third]+=OthAgent.Power; //histogram "counter" for "xxC"
             }
 
             MyGeom->destroy_iterator(Neigh);    // We make sure that the iterator will be removed.
 
-            testowanie++;                       // Counts the number of randomly selected agents
+            testing++;                       // Counts the number of randomly selected agents
 
             if(UseSelf) //Adding your own forces to counters in tables
             {
@@ -163,7 +159,7 @@ void    jworld::_one_step_conditional_bias1()
             int indS=-1;
             int indT=-1;
 
-            do{ // Loop of searching for subsequent maxima - to fill ind{FST}'s:
+            do{ // Loop of searching for current maxima - to fill ind{FST}'s:
                 // /////////////////////////////////////////////////////////////
                 int width=BIAS_FOR_ANY+1;    ///< "Width" of the cube array for counters.
 
@@ -224,7 +220,7 @@ void    jworld::_one_step_conditional_bias1()
             //c out<<FillStat[0]<<'='<<FillStat[1]<<'+'<<FillStat[2]<<'+'<<FillStat[3]<<flush<<endl;
         }
 
-STARZENIE:
+AGING:
         if(jagent::pow_move) //Strength as age
         {
             CenterAgent.Power=asserted<short>((CenterAgent.Power+jagent::pow_move) % jagent::max_pow); //Never exceeds maximum force

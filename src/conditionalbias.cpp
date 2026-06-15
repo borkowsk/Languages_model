@@ -1,18 +1,15 @@
 /// @file
 /// @brief CONDITIONAL BIAS SIMULATION STEP IMPLEMENTATION (LANGUAGES PROJECT WITH P.Culicover)
-/// @date 2026-06-02 (modified)
-///     Created a long time ago.
+/// @date 2026-06-15 (modified)
+///       Created a long time ago.
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#include <cstring>
-//#include "compatyb.h"
-//#include "compatyb.hpp"
-//#include "wb_ptrio.h"
-
-#include "gadgets.hpp"
 
 #include "jrand.h"
 #include "jworld.h"
+
+#include "gadgets.hpp"
+
+#include <cstring>
 
 using namespace sym2;
 using namespace sym2::data;
@@ -41,7 +38,7 @@ void	jworld::_one_step_conditional_bias0()
     while(Monte) // Loop through the neighborhood.
     {
         size_t index=MyGeom->get_next(Monte); //We get the index of a randomly selected agent.
-        //if(index==FULL) continue;
+        //--> if(index==any_layer_base::FULL) continue;
                                                                                     assert(index!=any_layer_base::FULL);
         /// Reference to the agent. Obtained bypassing the NULL assertion.
         jagent& CenterAgent=*(Agents.get_ptr(index).get_ptr_val());
@@ -49,7 +46,7 @@ void	jworld::_one_step_conditional_bias0()
         if(Agents.is_empty(CenterAgent)) // Check if it is not an empty cell (NULL)
                 continue;
 
-        if(CenterAgent.Power > TrsStrength)	// Is there no immunity to change anymore?
+        if(CenterAgent.Power > TrsStrength)	// Is there no immunity to change any more?
             // TODO And why is there no possibility of mutation here?
                 goto AGING;
 
@@ -68,23 +65,22 @@ void	jworld::_one_step_conditional_bias0()
                 if(index2==any_layer_base::FULL || index2==index)	//If it was outside the simulation area or in the center of the area, it would still be pointless.
                     continue;
 
-                jagent& PeryAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< A reference to a neighbor bypassing NULL assertions.
-                if(Agents.is_empty(PeryAgent))		//We check whether it is not an empty cell (NULL),
+                jagent& OthAgent=*(Agents.get_ptr(index2).get_ptr_val()); ///< A reference to a neighbor bypassing NULL assertions.
+                if(Agents.is_empty(OthAgent))		//We check whether it is not an empty cell (NULL),
                     continue;						//because then it would be pointless to continue.
 
                 counting++;							//Counts the number of randomly selected neighbors.
 
                 //Adding the forces of each neighbor to the counters in the tables:
-                Influence[PeryAgent.First][PeryAgent.Second][PeryAgent.Third]+= 3 * PeryAgent.Power;	//"counter" for ABC coincidence
+                Influence[OthAgent.First][OthAgent.Second][OthAgent.Third]+= 3 * OthAgent.Power;	//"counter" for ABC coincidence
 
-                Influence[BIAS_FOR_ANY][PeryAgent.Second][PeryAgent.Third]+= 2 * PeryAgent.Power;	//BxC histogram "counter".
-                Influence[PeryAgent.First][BIAS_FOR_ANY][PeryAgent.Third]+= 2 * PeryAgent.Power;	//AxC histogram "counter".
-                Influence[PeryAgent.First][PeryAgent.Second][BIAS_FOR_ANY]+= 2 * PeryAgent.Power;	//AxB histogram "counter".
+                Influence[BIAS_FOR_ANY][OthAgent.Second][OthAgent.Third]+= 2 * OthAgent.Power;	//BxC histogram "counter".
+                Influence[OthAgent.First][BIAS_FOR_ANY][OthAgent.Third]+= 2 * OthAgent.Power;	//AxC histogram "counter".
+                Influence[OthAgent.First][OthAgent.Second][BIAS_FOR_ANY]+= 2 * OthAgent.Power;	//AxB histogram "counter".
 
-                Influence[PeryAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=PeryAgent.Power;	//histogram "counter" for Axx
-                Influence[BIAS_FOR_ANY][PeryAgent.Second][BIAS_FOR_ANY]+=PeryAgent.Power;	//histogram "counter" for xBx
-                Influence[BIAS_FOR_ANY][BIAS_FOR_ANY][PeryAgent.Third]+=PeryAgent.Power;	//histogram "counter" for xxC
-
+                Influence[OthAgent.First][BIAS_FOR_ANY][BIAS_FOR_ANY]+=OthAgent.Power;	//histogram "counter" for Axx
+                Influence[BIAS_FOR_ANY][OthAgent.Second][BIAS_FOR_ANY]+=OthAgent.Power;	//histogram "counter" for xBx
+                Influence[BIAS_FOR_ANY][BIAS_FOR_ANY][OthAgent.Third]+=OthAgent.Power;	//histogram "counter" for xxC
             }
 
             MyGeom->destroy_iterator(Neigh);		// We make sure that the iterator will be removed.
@@ -108,9 +104,16 @@ void	jworld::_one_step_conditional_bias0()
             //----------------------------------
             for(int i=0,width=(BIAS_FOR_ANY+1)*(BIAS_FOR_ANY+1)*(BIAS_FOR_ANY+1);i<width;i++)
             {
-                // TODO Nie ma BiasData, nie wiem dlaczego
+                // TODO There is no `BiasData`, I don't know why
                 // TODO ((int*)Influence)[i]+=long(DRAND()*Noise*(4.5*MaxStrength))+((float*)BiasData->Biases)[i];
                 // Why this cast??? Old info: "trick to avoid triple nested loop" (???)
+//                if(Noise>0)
+//                {
+//                    double Rnd=DRAND();
+//                    if(Rnd>0) //Using a cast, we change a three-dimensional array into a one-dimensional one.
+//                        ((int*)Influence)[i]+=asserted<int>(Rnd * Noise * (4.5 * MaxStrength) ); // NOLINT(*-narrowing-conversions)
+//                }
+//                ((int*)Influence)[i]+=asserted<int>(((float*)BiasData->CndBiases)[i] ); //cast!!! - trick to avoid triple nested loop
             }
 
             // Searching for maxima - less trivial here:
@@ -123,15 +126,15 @@ void	jworld::_one_step_conditional_bias0()
             int indS=-1;
             int indT=-1;
 
-            do{	// Loop of searching for subsequent maxima - to fill ind{FST}'s:
-                // //////////////////////////////////////////////////////////////
+            do{	// Loop of searching for current maxima - to fill ind{FST}'s:
+                // //////////////////////////////////////////////////////////
                 int width=BIAS_FOR_ANY+1;									///< "Width" of the cube array for counters.
                 int offsetA=RANDOM(NumOfCate);								assert(0 <= offsetA && offsetA < NumOfCate);
                 int offsetB=RANDOM(NumOfCate);								assert(0 <= offsetB && offsetB < NumOfCate);
                 int offsetC=RANDOM(NumOfCate);								assert(0 <= offsetC && offsetC < NumOfCate);
 
                 int Max=-1,pA=-1,pB=-1,pC=-1;
-                FillStat[0]++;  //Relapse counting
+                FillStat[0]++;  //Relapse counting (?)
 
                 //Searching for the current maximum:
                 //(a bit wasteful, you can speed it up a bit if BIAS_FOR_ANY is a variable == NumOfCate) (???)

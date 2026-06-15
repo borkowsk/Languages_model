@@ -1,7 +1,6 @@
 /// @file
-/// @brief Default context menu definition for area manager class /
-///        Domyślna definicja menu kontekstowego dla zarządcy obszarów.
-/// @date 2026-04-30 (last modification)
+/// @brief Default context menu definition for area manager class.
+/// @date 2026-06-15 (last modification)
 //        ============================================================
 //  Created by borkowsk on 17.04.26.
 
@@ -12,12 +11,12 @@
 #include "symshell.h"
 #include "lang_res.h"
 
-/* Domyślna definicja menu kontekstowego dla zarządcy obszarów z biblioteki klas SymShell-a.
- * Default context menu definition for area manager class. */
+/* The context menu definition for area manager class.
+ * App-specific: "LANGUAGES" */
 ssh_menu_item_definition  context_menu_default[]= {
         { "QUIT", SSH_FILE_EXIT },
         { "ABOUT", SSH_HELP_AUTHORSWWWPAGE },
- //       { "One step more", SSH_ONESTEP }, //To nie działa tak, jak powinno.
+ //       { "One step more", SSH_ONESTEP }, //This doesn't work as it should.
         { "Start/Stop", SSH_STARTSTOP },
         { "Dump screen", SSH_FILE_DUMPSCREEN },
         { "Shortcuts help", SSH_HELP_SHORTCUTHELP  },
@@ -37,13 +36,13 @@ ssh_menu_item_definition  context_menu_default[]= {
         {"View every 100 steps", ID_VIEWOPT_EVERY100},
         {"View every 1000 steps", ID_VIEWOPT_EVERY1000},
         {"Dump screen every time", ID_VIEWOPT_DUMPCO},
-        {"... ", -1 } //Oddaj obsługę programowi (jak prawy klawisz myszy)
+        {"... ", -1 } //Give the decision to the program (like the right mouse button)
     };
 
 unsigned context_menu_default_size= sizeof(context_menu_default) / sizeof(context_menu_default[0]);
 
 /*v******************************************************************/
-/*              SYMSHELLLIGHT version 2026-04...                    */
+/*                    LANGUAGES version 2026                        */
 /*v******************************************************************/
 /*           THIS CODE IS DESIGNED & COPYRIGHT BY:                  */
 /*            W O J C I E C H   B O R K O W S K I                   */
