@@ -1,71 +1,72 @@
 POLA PLIKU LOG "LANGUAGE SIMULATION v 1.0"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-POLA WSPOLNE:
+
+POLA WSPÓLNE:
 -------------
 
-EXP:	Thu Jul 01 16:51:32 1999 -> data i czas wykonania eksperymentu
-Max Power=	100			-> maksymalna sila agenta
-Tresh of Power=	100		-> granica sily powyzej ktorej agent jest calkowicie odporny na zmiany
-Num of Kl=	4			-> ilosc klas(mozliwych wartosci) w kazdej z warstw "pamieci"
-Noise %=	0			-> poziom (procent) szumu w decyzji przejmowania stanu pamieci
-Self=	1				-> jesli jeden to poprzedni stan agenta wplywa na decyzje, jesli 0 to nie
-Naighborhood=	8/(3*3)	-> ilosc "rozmowcow" loasowanych z kwadratowego sasiedztwa
+EXP:	Thu Jul 01 16:51:32 1999        -> data i czas wykonania eksperymentu
+Max Power=	100			-> maksymalna si³a agenta
+Tresh of Power=	100		        -> granica si³y, powy¿ej której agent jest ca³kowicie odporny na zmiany
+Num of Kl=	4			-> liczba klas(mo¿liwych warto¶ci stanów) w ka¿dej z warstw "pamiêci"
+Noise %=	0			-> poziom (procent) szumu w decyzji przejmowania stanu pamiêci
+Self=	1				-> je¶li 1 to poprzedni stan agenta wp³ywa na decyzje, je¶li 0 to nie
+Naighborhood=	8/(3*3)	                -> liczba "rozmówców" losowanych z kwadratowego s±siedztwa
 
 
-LISTA NAGLOWKOW KOLUMN:
+LISTA NAG£ÓWKÓW KOLUMN:
 ----------------------- 
-STEP/VERSION				-> Numer kroku symulacji z ktorego wzieto dane
-NumOfClass(Classification)	-> Ilosc klas w pelnej klasyfikacji (po zlozeniu warstw)
-S(Classification)			-> Entropia pelnej klasyfikacji
-nS(Classification)			-> Normalizowana entropia pelnej klasyfikacji
-MainClass(Classification)	-> Liczebnosc glownej klasy klasyfikacji
-WhichMain(Classification)	-> Srodek przedzialu klasy glownej (dlatego z ulamkiem)
-Stress(First mem)			-> Stres dla pierwszej warstwy pamieci
-Stress(Second mem)			-> Stres dla drugiej
-Stress(Third mem)			-> Stres dla trzeciej
-S(First mem,Second mem)		-> Entropia zwiazku pierwszej i drugiej warstwy pamieci
-S(Second mem,Third mem)		-> Entropia zwiazku 2. i 3. warstwy
-S(Third mem,First mem)		-> Entropia zwiazku 3. i 1. warstwy
-nS(First mem,Second mem)	-> Normalizowana entropia zwiazku pierwszej i drugiej warstwy pamieci
-nS(Second mem,Third mem)	-> Normalizowana entropia zwiazku 2. i 3. warstwy
-nS(Third mem,First mem)		-> Normalizowana entropia zwiazku 3. i 1. warstwy
-Chi^2(First mem,Second mem)	-> Chi Kwadrat dla tablicy koincydencji pierwszej i drugiej warstwy pamieci
+STEP/VERSION			-> Numer kroku symulacji z którego wziêto dane
+NumOfClass(Classification)	-> Liczba klas w pe³nej klasyfikacji (po z³o¿eniu warstw)
+S(Classification)		-> Entropia pe³nej klasyfikacji
+nS(Classification)		-> Normalizowana entropia pe³nej klasyfikacji
+MainClass(Classification)	-> Liczebno¶æ g³ównej klasy klasyfikacji
+WhichMain(Classification)	-> ¦rodek przedzia³u klasy g³ównej (dlatego z u³amkiem)
+Stress(First mem)		-> Stres dla pierwszej warstwy pamiêci
+Stress(Second mem)		-> Stres dla drugiej
+Stress(Third mem)		-> Stres dla trzeciej
+S(First mem,Second mem)		-> Entropia zwi±zku pierwszej i drugiej warstwy pamiêci
+S(Second mem,Third mem)		-> Entropia zwi±zku 2. i 3. warstwy
+S(Third mem,First mem)		-> Entropia zwi±zku 3. i 1. warstwy
+nS(First mem,Second mem)	-> Normalizowana entropia zwi±zku pierwszej i drugiej warstwy pamiêci
+nS(Second mem,Third mem)	-> Normalizowana entropia zwi±zku 2. i 3. warstwy
+nS(Third mem,First mem)		-> Normalizowana entropia zwi±zku 3. i 1. warstwy
+Chi^2(First mem,Second mem)	-> Chi Kwadrat dla tablicy koincydencji pierwszej i drugiej warstwy pamiêci
 Loff(First mem,Second mem)	-> i jego liczba stopni swobody
 Chi^2(Second mem,Third mem)	-> Chi Kwadrat dla tablicy koincydencji 2. i 3. warstwy
 Loff(Second mem,Third mem)	-> i jego liczba stopni swobody
 Chi^2(Third mem,First mem)	-> Chi Kwadrat dla tablicy koincydencji 3. i 1. warstwy
 Loff(Third mem,First mem)	-> i jego liczba stopni swobody
-V^2(First mem,Second mem)	-> Korelacja V^2 Cramera dla pierwszej i drugiej warstwy pamieci
+V^2(First mem,Second mem)	-> Korelacja V^2 Cramera dla pierwszej i drugiej warstwy pamiêci
 V^2(Second mem,Third mem)	-> Korelacja V^2 Cramera dla 2. i 3. warstwy
 V^2(Third mem,First mem)	-> Korelacja V^2 Cramera dla 3. i 1. warstwy
-T^2(First mem,Second mem)	-> Korelacja T^2 Czupurowa dla pierwszej i drugiej warstwy pamieci
+T^2(First mem,Second mem)	-> Korelacja T^2 Czupurowa dla pierwszej i drugiej warstwy pamiêci
 T^2(Second mem,Third mem)	-> Korelacja T^2 Czupurowa dla 2. i 3. warstwy
 T^2(Third mem,First mem)	-> Korelacja T^2 Czupurowa dla 3. i 1. warstwy
-Tau_b(First mem,Second mem)	-> Asymetryczna korelacja Tau pierwszej i drugiej warstwy pamieci
-Tau_a(First mem,Second mem)	-> Asymetryczna korelacja Tau drugiej i pierwszej warstwy pamieci
-Tau_b(Second mem,Third mem)	-> Asymetryczna korelacja Tau 2. i 3. warstwy pamieci
-Tau_a(Second mem,Third mem)	-> Asymetryczna korelacja Tau 3. i 2. warstwy pamieci
-Tau_b(Third mem,First mem)	-> Asymetryczna korelacja Tau 3. i 1. warstwy pamieci
-Tau_a(Third mem,First mem)	-> Asymetryczna korelacja Tau 1. i 3. warstwy pamieci
+Tau_b(First mem,Second mem)	-> Asymetryczna korelacja Tau pierwszej i drugiej warstwy pamiêci
+Tau_a(First mem,Second mem)	-> Asymetryczna korelacja Tau drugiej i pierwszej warstwy pamiêci
+Tau_b(Second mem,Third mem)	-> Asymetryczna korelacja Tau 2. i 3. warstwy pamiêci
+Tau_a(Second mem,Third mem)	-> Asymetryczna korelacja Tau 3. i 2. warstwy pamiêci
+Tau_b(Third mem,First mem)	-> Asymetryczna korelacja Tau 3. i 1. warstwy pamiêci
+Tau_a(Third mem,First mem)	-> Asymetryczna korelacja Tau 1. i 3. warstwy pamiêci
 
 Normalizowana entropia:
 ==Entropy/log(rows*columns)
 
-V^2 Cramera - oparty o Chi^2 miernik zale¿nosci dla minimalnej liczby stopni swobody,
+V^2 Cramera - oparty o Chi^2 miernik zale¿no¶ci dla minimalnej liczby stopni swobody,
 =Hi/(double(Pairs)*min(rows-1,columns-1)));
 	
 
-T^2 Czupurowa - oparty o Chi^2 miernik zale¿nosci 
+T^2 Czupurowa - oparty o Chi^2 miernik zale¿no¶ci 
 =Hi/(double(Pairs)*sqrt((rows-1)*(columns-1))));
 
-Tau_b - Oparta o probabilistyke asymetryczna miara zaleznosci B od A wg Goodman'a i Kruskal'a
-=(Na-Za)/Na Za//Ilosc bledow w przewidywaniu dla Tau_b
+Tau_b - Oparta o probabilistykê asymetryczna miara zale¿no¶ci B od A wg Goodman'a i Kruskal'a
+=(Na-Za)/Na Za - Liczba b³êdów w przewidywaniu dla Tau_b
 
-Tau_a - Oparta o probabilistyke asymetryczna miara zaleznosci A od B wg Goodman'a i Kruskal'a
-=(Nb-Zb)/Nb Zb//Ilosc bledow w przewidywaniu  dla Tau_a 
+Tau_a - Oparta o probabilistykê asymetryczna miara zale¿no¶ci A od B wg Goodman'a i Kruskal'a
+=(Nb-Zb)/Nb Zb - Liczba b³êdów w przewidywaniu dla Tau_a 
 
-UWAGA: Jako rows & columns brane sa pod uwage jedynie niezerowe wiersze i kolumny, a nie wszystkie mozliwe
-Stad zapewne skoki na wykresach korelacji i normalizowanej entropi, gdy znikaja stopnie swobody.
+UWAGA: Jako "rows & columns" brane s± pod uwagê jedynie niezerowe wiersze i kolumny, a nie wszystkie mo¿liwe
+St±d zapewne skoki na wykresach korelacji i normalizowanej entropii, gdy znikaj± stopnie swobody.
 
-NA WYKRESACH "PRZYZYCIOWYCH" SYMULACJI JEST KORELACJA Tau_a. Moge dac co innego, ale nie bardzo wszystko
+NA WYKRESACH "PRZY¯YCIOWYCH" SYMULACJI JEST KORELACJA Tau_a.
 na raz. 
