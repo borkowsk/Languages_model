@@ -41,6 +41,11 @@
 # debug information files
 *.dwo
 
+# Products
+*.txt
+*.ini
+*.log
+
 # cmake and IDEs junk
 .idea/
 cmake-build-debug/
