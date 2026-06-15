@@ -1,0 +1,58 @@
+GENERAL ALGORITHM (without bias): 
+=================================== 
+
+In each simulation step: 
+
+        * For each agent from a RANDOM set with a size equal to the total number of cells 
+        (there may be empty spaces unavailable for colonization — barriers). 
+        This is a Monte Carlo step, so a certain number of agents avoid being selected, 
+        and a certain number appear in the set of selected agents more than once: 
+        - We check: If the position is empty (NULL), we obviously skip it. 
+        - We check: Whether the agent's power is not greater than the power threshold, 
+        - if so, the agent is resistant to changes. 
+        - Otherwise, the change for the agent is calculated:
+        
+        1. We select a set N of neighboring positions located no further than K 
+           cells from the analyzed agent (they may repeat). 
+           [Here is the catch. The influence of each attitude works independently, 
+           but the selection is shared for all memetic layers, meaning that in 
+           a given step, the same strongest agent can impose its attitude across 
+           all three memes!] 
+
+        2. For each actually existing neighbor:
+           - We add their power to the corresponding (determined by the
+           "linguistic attitude" of the neighboring agent) bins of three independent
+           attitude histograms.
+           
+           //Adding neighbors' powers to the counters in the arrays:
+           Firsts[OtherAgent.First]+=OtherAgent.Power;
+           Seconds[OtherAgent.Second]+=OtherAgent.Power;
+           Thirds[OtherAgent.Third]+=OtherAgent.Power;
+
+        3. If taking oneself into account is enabled, we repeat the same
+           operation for the "Power" and "Attitudes" of the central agent
+           (i.e., the one for whom we are currently calculating the change).
+           
+        4. To each histogram bin, we independently add noise
+           according to the formula:
+                V=RAND(0. to 0.99999...)*NoiseLevel(0 to 1)*MaxPower*4.5;
+                
+        5. For each of the three linguistic attitude histograms, we find
+           the dominant attitude.
+           We randomly draw an "offset," i.e., the bin index from which we will
+           start the search for the largest values in the influence histograms.
+           Using the modulo index, we obviously check all bins.
+           This fix removes the preference for choosing an attitude with a lower
+           index in case of equal influence!
+           
+        6. We assign the found dominant attitudes as the new attitudes
+           of the analyzed agent.
+           
+        7. If aging is enabled, we increase the agent's power counter
+           and divide it by modulo 'MaxPower'. It causes that after exceeding
+           'MaxPower', the power wraps around, and in the next simulation step,
+           the agent in the given location is "young" again, meaning weak, 
+           therefore completely (or at least highly) susceptible to external 
+           influences.
+
+

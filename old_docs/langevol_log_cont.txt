@@ -1,0 +1,68 @@
+LOG FILE FIELDS "LANGUAGE SIMULATION v 1.0"
+=========================================== 
+
+COMMON FIELDS:
+--------------
+
+EXP:    Thu Jul 01 16:51:32 1999        -> date and time of the experiment execution 
+Max Power=    100                       -> agent's maximum power 
+Tresh of Power=    100                  -> power threshold above which the agent is completely resistant to changes 
+Num of Kl=    4                         -> number of classes (possible state values) in each "memory" layer 
+Noise %=    0                           -> noise level (percentage) in the memory state adoption decision 
+Self=    1                              -> if 1, the agent's previous state influences decisions; if 0, it does not 
+Neighborhood=    8/(3*3)                -> number of "interlocutors" drawn from a square neighborhood
+
+
+COLUMN HEADERS LIST:
+--------------------
+
+STEP/VERSION                  -> Simulation step number from which the data was taken.
+NumOfClass(Classification)    -> Number of classes in the full classification (after combining layers).
+S(Classification)             -> Entropy of the full classification.
+nS(Classification)            -> Normalized entropy of the full classification.
+MainClass(Classification)     -> Size of the main classification class.
+WhichMain(Classification)     -> Center of the main class interval (hence the fraction).
+Stress(First mem)             -> Stress for the first memory layer.
+Stress(Second mem)            -> Stress for the second.
+Stress(Third mem)             -> Stress for the third.
+S(First mem,Second mem)       -> Entropy of the association between the first and second memory layers.
+S(Second mem,Third mem)       -> Entropy of the association between the 2-nd and 3-rd layers.
+S(Third mem,First mem)        -> Entropy of the association between the 3-rd and 1-st layers.
+nS(First mem,Second mem)      -> Normalized entropy of the association between the first and second memory layers.
+nS(Second mem,Third mem)      -> Normalized entropy of the association between the 2-nd and 3-rd layers.
+nS(Third mem,First mem)       -> Normalized entropy of the association between the 3-rd and 1-st layers.
+Chi^2(First mem,Second mem)   -> Chi-Square for the coincidence table of the first and second memory layers.
+Loff(First mem,Second mem)    -> and its number of degrees of freedom.
+Chi^2(Second mem,Third mem)   -> Chi-Square for the coincidence table of the 2-nd and 3-rd layers.
+Loff(Second mem,Third mem)    -> and its number of degrees of freedom.
+Chi^2(Third mem,First mem)    -> Chi-Square for the coincidence table of the 3-rd and 1-st layers.
+Loff(Third mem,First mem)     -> and its number of degrees of freedom.
+V^2(First mem,Second mem)     -> Cramér's V^2 correlation for the first and second memory layers.
+V^2(Second mem,Third mem)     -> Cramér's V^2 correlation for the 2-nd and 3-rd layers.
+V^2(Third mem,First mem)      -> Cramér's V^2 correlation for the 3-rd and 1-st layers.
+T^2(First mem,Second mem)     -> Tschuprow's T^2 correlation for the first and second memory layers.
+T^2(Second mem,Third mem)     -> Tschuprow's T^2 correlation for the 2-nd and 3-rd layers.
+T^2(Third mem,First mem)      -> Tschuprow's T^2 correlation for the 3-rd and 1-st layers.
+Tau_b(First mem,Second mem)   -> Asymmetric Tau correlation of the first and second memory layers.
+Tau_a(First mem,Second mem)   -> Asymmetric Tau correlation of the second and first memory layers.
+Tau_b(Second mem,Third mem)   -> Asymmetric Tau correlation of the 2-nd and 3-rd memory layers.
+Tau_a(Second mem,Third mem)   -> Asymmetric Tau correlation of the 3-rd and 2-nd memory layers.
+Tau_b(Third mem,First mem)    -> Asymmetric Tau correlation of the 3-rd and 1-st memory layers.
+Tau_a(Third mem,First mem)    -> Asymmetric Tau correlation of the 1-st and 3-rd memory layers.
+
+Normalized entropy:
+==Entropy/log(rows*columns) 
+
+Cramér's V^2 — a Chi-Square-based measure of dependence for the minimum number of degrees of freedom, 
+=Hi/(double(Pairs)*min(rows-1,columns-1))); Tschuprow's T^2 — a Chi-Square-based measure of dependence =Hi/(double(Pairs)*sqrt((rows-1)*(columns-1)))); 
+
+Tau_b - Probability-based asymmetric measure of dependence of B on A, according to Goodman and Kruskal.
+=(Na-Za)/Na Za — Number of prediction errors for Tau_b 
+
+Tau_a - Probability-based asymmetric measure of dependence of A on B, according to Goodman and Kruskal.
+=(Nb-Zb)/Nb Zb — Number of prediction errors for Tau_a 
+
+NOTE: Only non-zero rows and columns are taken into account, rather than all possible ones.
+Hence, probably the jumps in the correlation and normalized entropy charts when degrees of freedom disappear.
+
+THE "REAL-TIME" SIMULATION CHARTS SHOW THE Tau_a CORRELATION all at once.

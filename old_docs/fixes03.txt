@@ -1,0 +1,105 @@
+MISCELLANEOUS FIXES (late 2002):
+================================
+
+1) Boundary values no longer disappear — the number of histogram columns is now fixed.
+
+2) Coincidence is simply a co-occurrence count table. As for the correlations I calculate,
+unless I made a mistake somewhere, they are calculated according to the formulas
+from Blalock, based on the coincidence table.
+
+3) Entropy according to Piotr's formula.
+
+4. Interaction: a group of N neighbors is randomly selected from a square of a given side length,
+excluding the central agent. The central agent creates a mini popularity histogram
+for each value of each of the three language traits. Then, if the SELF option
+is enabled, it adds its own state to the histograms.
+Afterwards, it selects the most popular state for each trait and adopts it.
+
+5) "S(Classification)" is the entropy for the languages' histogram.
+
+6. Saving the entire simulation — labor-intensive — in the future...
+6A) Currently (XI2002) looks done.
+
+7) Initialization with "hills" to be achieved with a graphics file editor and a strength initialization parameter from a file.
+There are sample graphics files made in Photoshop.
+
+8. At the moment, strength can be treated as age; the WPOW > 0 parameter serves as the increment step,
+but the increase is random — meaning the agent does not always age, but only when selected.
+
+9. More traits — in the next program — WOULD REQUIRE VERY SIGNIFICANT REWORKS, because almost everywhere the code
+relies on the assumption that the number of language traits is 3!!! 
+9A) THAT WOULD BE A COMPLETELY DIFFERENT PROGRAM!!! (2002) 
+
+10) At the moment, a uniform matrix does not allow for anything new to appear. Classes can disappear,
+but they cannot appear, even when noise is present. The appearing was a result of an error in finding the max —
+meaning that sometimes the choice was unintentionally accidental.
+
+10A) Since 2000, classes can appear spontaneously if "external noise" is enabled.
+
+11) Theoretically, movements (agent migrations) are possible at any time — there was even a ready function.
+11A) However, now (2002) I no longer know where to look for it.
+
+12) Furthermore, I introduced the possibility of initializing and masking layers using 16- or 256-color BMP files,
+since some graphics programs under Windows cannot save GIFs.
+
+13) Expanding the program with various forms of biases (see below).
+
+UNCONDITIONAL BIAS TEST (SIMPLE_BIAS)
+=====================================
+
+cd S:\jezyk\langevol\data
+CLSS=2 MAPL=mw1a.gif MASK=mw1a-mask.gif MAPP=mw1a-strength.gif WIDTH=30 INDI=4 BIAS="A0:10"  NOIP=20 -gray+ 
+
+"Sequential bias" syntax
+========================
+
+[aM [& bN [& cP]]?] dR : [-] S 
+
+a,b,c — designation of conditional layers.
+A letter from the set: "a b c A B C f s t F S T."
+Any order, but there can be no repetitions in a single definition.
+M,N,P — designation of the states searched for in the conditional layers. Integers from 1 to the "number of states".
+
+d — designation of the target layer. It must be present.
+R — designation of the state in the target layer. It must be present. An integer from 1 to the "number of states".
+
+? — ? à la C language — ends the condition in the bias instruction.
+: — precedes the bias value.
+S — bias value. An integer. It should be reasonably proportional to the maximum strength.
+[...] - means that ... is an optional element.
+
+Translation into a natural(-ish) language:
+If for an agent
+the value of meme 'a' equals "M" and the value of meme 'b' equals "N" and the value of meme 'c' equals "P"
+then
+for value "R" of meme 'd', increase the counter by "S" 
+
+
+EXAMPLES:
+---------
+
+for CLSS=4 
+
+BIAS="a1:25" - unconditional bias itself (simulation performed via SIMPLE_BIAS procedure)
+BIAS="a1?b1:25" - a typical sequential bias. If "a1" is already present, adopting "b1" has a bias = 25
+BIAS="a1:25 a1?b1:25" - an example of a sequential bias preceded by an unconditional one
+BIAS="a4:10 a4?b4:10 a4&b4?c4:20" - an unconditional bias supporting a sequence of sequential biases
+
+BIAS="b4?a4:10 c4?a4:10" - two sequential biases from other layers support the state in the first layer
+BIAS="b4?a4:10 c4?a4:10 a4?b4:5 a4?c4:5" - the same, but with reciprocation
+BIAS="a4:10 b4?a4:10 c4?a4:10" - an unconditional bias supported by sequential ones from other layers — can sometimes reach 30
+
+BIAS="a1?a1:-10" - a suicidal trait
+BIAS="a1?a4:10" - an altruistic suicidal trait
+
+BIAS="a4?a4:50" - a ratchet bias. If "a1" is already present, the decision to remain has a bias = 50
+BIAS="a4?a4:50 a4&b4?b4:50 a4&b4&c4?c4:50" - ratchet biases combined into a sequence
+
+BIAS="a4?b4:50 b4?a4:-50" - a short suicidal loop
+BIAS="a4?b4:50 b4?c4:50 c4?a4:-50" — a long suicidal loop
+BIAS="a4?b4:50 b4?a4:-50 b4?c4:50 c4?b4:-50 c4?a4:50 a4?c4:-50" - "mutually unfair retaliatory reactions" — overall positive, especially if the value is increased to 150
+
+BIAS="a4?b4:-150 b4?a4:-150" - simple exclusion. Other states win
+BIAS="a4?b4:50 b4?a4:50 b4?c4:-50 c4?b4:-50 c4?a4:50 a4?c4:50" — "triangle conflict"
+BIAS="a4?b4:150 b4?a4:150 b4?c4:-150 c4?b4:-150 c4?a4:150 a4?c4:150" — "drastic triangle conflict"
+BIAS="a4?b4:50 b4?a4:50 b4?c4:-100 c4?b4:-100 c4?a4:50 a4?c4:50" — energetically symmetrical "triangle conflict" — indirect exclusion where other states lose
