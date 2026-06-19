@@ -65,3 +65,5 @@ NOTE: Polish word "J Ę Z Y K" means "LANGUAGE". Hence, the "j" prefix appearing
  *    version 1.01b - Improved default for a strength threshold.
  *    version 1.05b - Built-in support for batch work and experiment repetition.
  *    version 1.10b - Introducing "bias" for language parameters.
+
+   [^BACK TO REPOSITORY TOP](https://github.com/borkowsk/Languages_model/)
