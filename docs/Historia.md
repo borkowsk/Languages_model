@@ -65,3 +65,5 @@
  *	ver.   1.01b - poprawiony default dla progu siły.
  *	ver.   1.05b - wbudowana obsługa pracy w batch-u i powtarzania eksperymentu.
  *	ver.   1.10b - wprowadzenie "biasu" dla parametrów języka.
+
+ [^WRÓĆ DO GŁÓWNEGO FOLDERU REPOZYTORIUM](https://github.com/borkowsk/Languages_model/)  
