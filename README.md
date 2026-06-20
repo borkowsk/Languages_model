@@ -1,5 +1,5 @@
 # Languages_model
-# @date 2026-06-15 (modified)
+# @date 2026-06-20 (modified)
 
 A model for the evolution of humanity's number of languages used in projects with Peter Culicover.
 
@@ -55,3 +55,4 @@ Most useful options:
 * LOGF=log2.out - output filename.
 * HELP - list of all possible options.
 
+Src: https://github.com/borkowsk/Languages_model
