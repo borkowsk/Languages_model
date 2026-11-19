@@ -14,6 +14,7 @@ A model for the evolution of humanity's number of languages used in projects wit
 * 2007: [Modelowanie konkurencji między językami/Modeling the competition between languages.](https://www.researchgate.net/publication/260059539_Modelowanie_konkurencji_miedzy_jezykami_Modeling_the_competition_between_languages)
 * 2010: [Social influence model of language competition.](https://www.researchgate.net/publication/299287224_Social_influence_model_of_language_competition)
 
+
 ## Book
 
 This model is also used in the book:
