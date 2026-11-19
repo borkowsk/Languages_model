@@ -1,5 +1,5 @@
 # Languages_model
-# @date 2026-06-20 (modified)
+# @date 2026-11-19 (modified)
 
 A model for the evolution of humanity's number of languages used in projects with Peter Culicover.
 
@@ -28,7 +28,7 @@ This model is also used in the book:
 
 ## COMPILATION
 
-To compile, you need to download the "https://github.com/borkowsk/symShell2andRTM" repository and place it in the cousin directory as below (or modify the path in the CMakeLists.txt file)
+To compile, you need to download the _https://github.com/borkowsk/symShell2andRTM_ repository and place it in the cousin directory as below (or modify the path in the _CMakeLists.txt_ file)
 
 ```
 FolderChosenByYou/
@@ -46,6 +46,7 @@ Compiled application you can start from command line with many possible options:
 ```
 language -gray+ AUTO=5 WIDTHWIN=150 HEIGHTWIN=51 MAX=10 LOGC=10 LOGF=log2.out
 ```
+
 Most useful options:
 
 * -gray+  - displays in grayscale
